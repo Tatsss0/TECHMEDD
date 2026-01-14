@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Availability Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #667eea;
+      margin-top: 0;
+    }
+    
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .warning-box {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .success-box {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .error-box {
+      background: #f8d7da;
+      border-left: 4px solid #dc3545;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    
+    button:hover {
+      background: #5568d3;
+    }
+    
+    input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 300px;
+      font-size: 14px;
+    }
+    
+    .format-example {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .status.good {
+      background: #28a745;
+      color: white;
+    }
+    
+    .status.bad {
+      background: #dc3545;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Doctor Availability Checker</h1>
+    <p>This tool checks if a doctor's availability is properly configured for the automated scheduler.</p>
+    
+    <div>
+      <label><strong>Enter Doctor ID:</strong></label><br>
+      <input type="text" id="doctorId" placeholder="Enter doctor's Firestore document ID">
+      <button onclick="checkDoctor()">Check Availability</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <div class="info-box" style="margin-top: 40px;">
+      <h3>📋 How Availability is Set</h3>
+      <p><strong>Two ways to set doctor availability:</strong></p>
+      
+      <div class="success-box">
+        <h5>Method 1: Doctor Sets Their Own (profile.html)</h5>
+        <p>Doctors log into their profile and add available dates/times</p>
+      </div>
+      
+      <div class="success-box">
+        <h5>Method 2: Secretary Sets for Doctor (secretary.html)</h5>
+        <p>Secretary logs in and sets availability for their assigned doctor</p>
+      </div>
+      
+      <p><strong>Both methods save in the same format:</strong></p>
+      
+      <h4>Format: Specific Dates Array</h4>
+      <div class="format-example">
+        <pre>{
+  "schedule": [
+    {
+      "date": "2026-01-15",
+      "time": "9:00 AM - 5:00 PM"
+    },
+    {
+      "date": "2026-01-16",
+      "time": "10:00 AM - 3:00 PM"
+    }
+  ]
+}</pre>
+      </div>
+      
+      <p class="mb-1"><strong>Saved to:</strong></p>
+      <ul>
+        <li><code>users/doctors/doctors/{doctorId}</code></li>
+        <li><code>public_doctors/{doctorId}</code></li>
+      </ul>
+      
+      <h4>Format 2: Weekly Schedule</h4>
+      <div class="format-example">
+        <pre>{
+  "schedule": {
+    "workingDays": [1, 2, 3, 4, 5],
+    "startHour": "09:00",
+    "endHour": "17:00",
+    "byDay": {
+      "1": { "startHour": "09:00", "endHour": "17:00" },
+      "2": { "startHour": "10:00", "endHour": "18:00" }
+    }
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="./firebase-init.js"></script>
+  <script src="./constraint-scheduler.js"></script>
+
+  <script>
+    const db = firebase.firestore();
+    
+    async function checkDoctor() {
+      const doctorId = document.getElementById('doctorId').value.trim();
+      const resultsDiv = document.getElementById('results');
+      
+      if (!doctorId) {
+        resultsDiv.innerHTML = '<div class="error-box">Please enter a doctor ID</div>';
+        return;
+      }
+      
+      resultsDiv.innerHTML = '<div class="info-box">🔍 Checking doctor availability...</div>';
+      
+      try {
+        // Try multiple collections
+        let doctorDoc = await db.collection('public_doctors').doc(doctorId).get();
+        let source = 'public_doctors';
+        
+        if (!doctorDoc.exists) {
+          doctorDoc = await db.collection('doctors').doc(doctorId).get();
+          source = 'doctors';
+        }
+        
+        if (!doctorDoc.exists) {
+          doctorDoc = await db.collection('users').doc('doctors').collection('doctors').doc(doctorId).get();
+          source = 'users/doctors/doctors';
+        }
+        
+        if (!doctorDoc.exists) {
+          resultsDiv.innerHTML = `
+            <div class="error-box">
+              <strong>❌ Doctor Not Found</strong>
+              <p>No doctor found with ID: <code>${doctorId}</code></p>
+              <p>Checked collections: public_doctors, doctors, users/doctors/doctors</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const doctorData = doctorDoc.data();
+        const schedule = doctorData.schedule;
+        
+        let html = `
+          <div class="success-box">
+            <strong>✅ Doctor Found</strong>
+            <p><strong>Name:</strong> ${doctorData.fullName || 'N/A'}</p>
+            <p><strong>Specialty:</strong> ${doctorData.specialty || 'N/A'}</p>
+            <p><strong>Collection:</strong> ${source}</p>
+          </div>
+        `;
+        
+        // Check schedule
+        if (!schedule) {
+          html += `
+            <div class="error-box">
+              <strong>❌ No Schedule Found</strong>
+              <p>This doctor has no availability schedule set.</p>
+              <p><strong>Action Required:</strong> Doctor needs to set availability in profile.html</p>
+            </div>
+          `;
+        } else {
+          // Determine format
+          const isArray = Array.isArray(schedule);
+          const hasWorkingDays = schedule.workingDays || schedule.byDay;
+          
+          html += `
+            <div class="info-box">
+              <strong>📅 Schedule Found</strong>
+              <p><strong>Format:</strong> ${isArray ? 'Specific Dates (Array)' : 'Weekly Schedule (Object)'}</p>
+            </div>
+          `;
+          
+          if (isArray) {
+            // Specific dates format
+            if (schedule.length === 0) {
+              html += `
+                <div class="error-box">
+                  <strong>⚠️ Empty Schedule</strong>
+                  <p>Schedule array is empty. No dates configured.</p>
+                </div>
+              `;
+            } else {
+              // Check if any dates are in the future
+              const now = new Date();
+              const futureDates = schedule.filter(s => {
+                const dateStr = s.date;
+                const slotDate = new Date(dateStr + 'T00:00:00');
+                return slotDate >= now;
+              });
+              
+              html += `
+                <div class="success-box">
+                  <strong>✅ Specific Dates Configured</strong>
+                  <p><strong>Total dates:</strong> ${schedule.length}</p>
+                  <p><strong>Future dates:</strong> ${futureDates.length}</p>
+                </div>
+                
+                <h4>Available Dates:</h4>
+                <div class="format-example">
+                  <pre>${JSON.stringify(schedule.slice(0, 10), null, 2)}${schedule.length > 10 ? '\n... (showing first 10)' : ''}</pre>
+                </div>
+              `;
+              
+              if (futureDates.length === 0) {
+                html += `
+                  <div class="warning-box">
+                    <strong>⚠️ No Future Dates</strong>
+                    <p>All configured dates are in the past. Doctor needs to add future availability.</p>
+                  </div>
+                `;
+              }
+            }
+          } else if (hasWorkingDays) {
+            // Weekly schedule format
+            html += `
+              <div class="success-box">
+                <strong>✅ Weekly Schedule Configured</strong>
+                <p><strong>Working Days:</strong> ${schedule.workingDays ? schedule.workingDays.join(', ') : 'Not specified'}</p>
+                <p><strong>Hours:</strong> ${schedule.startHour || 'N/A'} - ${schedule.endHour || 'N/A'}</p>
+              </div>
+              
+              <h4>Schedule Details:</h4>
+              <div class="format-example">
+                <pre>${JSON.stringify(schedule, null, 2)}</pre>
+              </div>
+            `;
+          } else {
+            html += `
+              <div class="error-box">
+                <strong>❌ Invalid Schedule Format</strong>
+                <p>Schedule exists but doesn't match expected format.</p>
+              </div>
+              
+              <div class="format-example">
+                <pre>${JSON.stringify(schedule, null, 2)}</pre>
+              </div>
+            `;
+          }
+        }
+        
+        // Test with scheduler
+        if (schedule && window.ConstraintScheduler) {
+          html += `<div class="info-box"><strong>🧪 Testing with Constraint Scheduler...</strong></div>`;
+          
+          try {
+            const scheduler = new ConstraintScheduler(doctorData, []);
+            
+            // Test a future date
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() + 7);
+            testDate.setHours(10, 0, 0, 0);
+            
+            const isAvailable = scheduler.constraints.hard.doctorAvailability(testDate);
+            
+            html += `
+              <div class="${isAvailable ? 'success-box' : 'error-box'}">
+                <strong>${isAvailable ? '✅' : '❌'} Scheduler Test</strong>
+                <p>Test date: ${testDate.toLocaleString()}</p>
+                <p>Result: ${isAvailable ? 'Available' : 'Not Available'}</p>
+              </div>
+            `;
+            
+            // Try finding optimal slots
+            html += `<div class="info-box">🔍 Finding optimal slots...</div>`;
+            
+            const optimalSlots = await scheduler.findOptimalSlots({
+              urgency: 'normal',
+              maxResults: 5
+            });
+            
+            if (optimalSlots.length > 0) {
+              html += `
+                <div class="success-box">
+                  <strong>✅ Found ${optimalSlots.length} Available Slots</strong>
+                  <ul>
+                    ${optimalSlots.map(s => 
+                      `<li>${s.slot.toLocaleString()} (Score: ${s.score.toFixed(2)})</li>`
+                    ).join('')}
+                  </ul>
+                </div>
+              `;
+            } else {
+              html += `
+                <div class="error-box">
+                  <strong>❌ No Slots Found</strong>
+                  <p>The scheduler could not find any available slots in the next 30 days.</p>
+                  <p><strong>Possible reasons:</strong></p>
+                  <ul>
+                    <li>No availability configured for future dates</li>
+                    <li>Schedule format not recognized</li>
+                    <li>All dates are in the past</li>
+                    <li>Working days/hours not properly set</li>
+                  </ul>
+                </div>
+              `;
+            }
+            
+          } catch (error) {
+            html += `
+              <div class="error-box">
+                <strong>❌ Scheduler Error</strong>
+                <p>${error.message}</p>
+              </div>
+            `;
+          }
+        }
+        
+        resultsDiv.innerHTML = html;
+        
+      } catch (error) {
+        resultsDiv.innerHTML = `
+          <div class="error-box">
+            <strong>❌ Error</strong>
+            <p>${error.message}</p>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TECHMED — Doctor Registration</title>
+  <link rel="stylesheet" href="register.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    #registerForm { display: grid; row-gap: 14px; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .fname .input, .lname .input, .email .input, .pass .input, .confirm-pass .input { width: 100%; height: 44px; }
+    .email textarea.input { height: auto; min-height: 100px; }
+    @media (max-width: 640px) { .row-2 { grid-template-columns: 1fr; } }
+    /* Back buttons: same style as other buttons */
+    #backBtn, #backBtn2 { flex: 1; }
+    .password-wrapper { position: relative; }
+    .password-wrapper input { width: 100%; padding-right: 40px; }
+    .toggle-password { position: absolute; right: 10px; top: 75%; transform: translateY(-50%); cursor: pointer; color: #000000; font-size: 16px; }
+    /* Top-left brand */
+    .brand { position: fixed; top: 16px; left: 16px; z-index: 50; font-weight: 800; letter-spacing: 1px; }
+    .brand .tech { color: #ffffff; }
+    .brand .med { color: var(--accent, #197c2e); }
+    .brand a { text-decoration: none; font-size: 28px; }
+  </style>
+</head>
+<body>
+
+  <div class="brand"><a ><span class="tech">TECH</span><span class="med">MED</span></a></div>
+
+
+  <div class="login">
+    <h1 class="log">DOCTOR REGISTER</h1>
+
+    <form id="registerForm" class="row g-3" novalidate>
+      <!-- Step 1: Personal + Account Info -->
+      <div id="step1">
+        <div class="row-2">
+          <div class="fname">
+            <label class="form-label" for="firstName">First Name</label>
+            <input type="text" id="firstName" class="input" required />
+          </div>
+          <div class="lname">
+            <label class="form-label" for="lastName">Last Name</label>
+            <input type="text" id="lastName" class="input" required />
+          </div>
+        </div>
+
+        <div class="email">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" class="input" required />
+        </div>
+
+        <div class="email">
+          <label class="form-label" for="phone">Phone Number</label>
+          <input type="tel" id="phone" class="input" placeholder="09123456789" inputmode="numeric" pattern="09[0-9]{9}" maxlength="11" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required />
+        </div>
+
+        <div class="pass password-wrapper">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" class="input" minlength="6" required />
+          <span class="toggle-password" onclick="togglePassword('password')"><i class="fa-solid fa-eye"></i></span>
+        </div>
+        <div class="confirm-pass password-wrapper">
+          <label class="form-label" for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" class="input" minlength="6" required />
+          <span class="toggle-password" onclick="togglePassword('confirmPassword')"><i class="fa-solid fa-eye"></i></span>
+        </div>
+
+        <br>
+        
+        <p id="msg1" style="color: #fff; font-weight: bold; text-align: center; min-height: 1.2em;"></p>
+
+        <div>
+          <button id="nextBtn" class="signn" type="button">Next</button>
+        </div>
+        <h2 class="second" style="font-size: 0.9rem; margin-top: 1rem;"><strong>Already have an Account? <a class="loggg" href="doclogin.html" style="text-decoration: underline; font-size: 0.85rem;">Login</a></strong></h2>
+      </div>
+
+      <!-- Step 2: Professional Details -->
+      <div id="step2" style="display:none;">
+        <div class="row-2">
+          <div class="fname">
+            <label class="form-label" for="specialty">Specialty</label>
+            <input type="text" id="specialty" class="input" placeholder="e.g. Endocrinologist" required />
+          </div>
+          <div class="lname">
+            <label class="form-label" for="yearsExperience">Years of Experience</label>
+            <input type="number" id="yearsExperience" class="input" min="0" step="1" required />
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="fname">
+            <label class="form-label" for="licenseNumber">Medical License Number</label>
+            <input type="text" id="licenseNumber" class="input" required />
+          </div>
+          <div class="lname">
+            <label class="form-label" for="licenseAuthority">Issuing Authority</label>
+            <input type="text" id="licenseAuthority" class="input" placeholder="e.g. PRC" required />
+          </div>
+        </div>
+
+        <div class="email">
+          <label class="form-label" for="licenseExpiry">License Expiry</label>
+          <input type="date" id="licenseExpiry" class="input" required />
+        </div>
+<br>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="backBtn" class="signn" type="button">Back</button>
+          <button id="nextBtn2" class="signn" type="button">Next</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Additional Details -->
+      <div id="step3" style="display:none;">
+        <div class="row-2">
+          <div class="fname">
+            <label class="form-label" for="clinicName">Clinic/Hospital</label>
+            <input type="text" id="clinicName" class="input" />
+          </div>
+          <div class="lname">
+            <label class="form-label" for="country">Country</label>
+            <input type="text" id="country" class="input" />
+          </div>
+        </div>
+
+        <div class="email">
+          <label class="form-label" for="clinicAddress">Clinic Address</label>
+          <input type="text" id="clinicAddress" class="input" />
+        </div>
+        <div class="email">
+          <label class="form-label" for="about">About</label>
+          <textarea id="about" class="input" rows="3" placeholder="Short bio"></textarea>
+        </div>
+
+        <div class="terms" style="margin: 10px 0;">
+          <label style="display:flex; align-items:center; gap:8px;">
+            <input class="form-check-input" type="checkbox" value="1" id="terms" />
+            <span>I agree to the Terms and Privacy Policy</span>
+          </label>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="backBtn2" class="signn" type="button">Back</button>
+          <button class="signn" type="submit">Create Account</button>
+        </div>
+        <div class="mt-3" style="margin-top:12px;">
+          <div id="alert" class="alert d-none" role="alert"></div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="./firebase-init.js"></script>
+
+  <script>
+  const form = document.getElementById('registerForm');
+  const alertEl = document.getElementById('alert');
+  const nextBtn = document.getElementById('nextBtn');
+  const nextBtn2 = document.getElementById('nextBtn2');
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  const msg1 = document.getElementById('msg1');
+  const backBtn = document.getElementById('backBtn');
+  const backBtn2 = document.getElementById('backBtn2');
+
+  function showAlert(msg, type = 'danger') {
+    if (alertEl) {
+      alertEl.textContent = msg;
+      alertEl.className = 'alert alert-' + type;
+      alertEl.classList.remove('d-none');
+    }
+  }
+
+  function withDrPrefix(name) {
+    if (!name) return '';
+    return /^dr\./i.test(name) ? name.trim() : `Dr. ${name.trim()}`;
+  }
+
+  function showAlertAndFocus(msg, elId) {
+    // show on step 1 inline message
+    if (msg1) { msg1.textContent = msg; }
+    // also set the alert in step 2 so it's ready if user navigates
+    showAlert(msg, 'warning');
+    const el = document.getElementById(elId);
+    if (el) el.focus();
+  }
+
+  function normalizePhone(value) {
+    if (!value) return null;
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 11 && digits.startsWith('09')) return digits;
+    if (digits.length === 12 && digits.startsWith('63')) return '0' + digits.slice(2);
+    if (digits.length === 10 && digits.startsWith('9')) return '0' + digits;
+    return null;
+  }
+
+  nextBtn.addEventListener('click', () => {
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!firstName) return showAlertAndFocus('Enter your first name', 'firstName');
+    if (!lastName) return showAlertAndFocus('Enter your last name', 'lastName');
+    if (!email) return showAlertAndFocus('Enter your email', 'email');
+    if (!normalizePhone(phone)) return showAlertAndFocus('Enter a valid PH phone number (e.g., 09123456789)', 'phone');
+    if (password !== confirmPassword) return showAlertAndFocus('Passwords do not match', 'confirmPassword');
+
+    if (msg1) msg1.textContent = '';
+    if (alertEl) alertEl.classList.add('d-none');
+    step1.style.display = 'none';
+    step2.style.display = 'block';
+  });
+
+  // Eye icon toggle function
+  window.togglePassword = function(id) {
+    const input = document.getElementById(id);
+    if (!input) return;
+    const icon = input.parentElement.querySelector('.toggle-password i');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    if (icon) { icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); }
+  };
+
+  // Match MED color to button accent
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.querySelector('.signn, .inside');
+    const med = document.querySelector('.brand .med');
+    if (btn && med) {
+      const cs = getComputedStyle(btn);
+      const bg = cs.backgroundColor || cs.borderColor || cs.color;
+      if (bg) med.style.color = bg;
+    }
+  });
+
+  // Step 2 to Step 3 navigation
+  nextBtn2.addEventListener('click', () => {
+    const specialty = document.getElementById('specialty').value.trim();
+    const yearsExperience = document.getElementById('yearsExperience').value.trim();
+    const licenseNumber = document.getElementById('licenseNumber').value.trim();
+    const licenseAuthority = document.getElementById('licenseAuthority').value.trim();
+    const licenseExpiry = document.getElementById('licenseExpiry').value;
+
+    if (!specialty) { showAlert('Enter your specialty', 'warning'); return; }
+    if (!yearsExperience) { showAlert('Enter years of experience', 'warning'); return; }
+    if (!licenseNumber) { showAlert('Enter your medical license number', 'warning'); return; }
+    if (!licenseAuthority) { showAlert('Enter the issuing authority', 'warning'); return; }
+    if (!licenseExpiry) { showAlert('Enter license expiry date', 'warning'); return; }
+
+    if (alertEl) alertEl.classList.add('d-none');
+    step2.style.display = 'none';
+    step3.style.display = 'block';
+  });
+
+  // Back from Step 2 to Step 1
+  backBtn.addEventListener('click', () => {
+    // Clear any messages and go back to step 1
+    if (msg1) msg1.textContent = '';
+    if (alertEl) alertEl.classList.add('d-none');
+    step2.style.display = 'none';
+    step1.style.display = 'block';
+    // Focus first field for convenience
+    const first = document.getElementById('firstName');
+    if (first) first.focus();
+  });
+
+  // Back from Step 3 to Step 2
+  backBtn2.addEventListener('click', () => {
+    if (alertEl) alertEl.classList.add('d-none');
+    step3.style.display = 'none';
+    step2.style.display = 'block';
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const fullName = `${firstName} ${lastName}`.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    const specialty = document.getElementById('specialty').value.trim();
+    const yearsExperience = Number(document.getElementById('yearsExperience').value || 0);
+    const licenseNumber = document.getElementById('licenseNumber').value.trim();
+    const licenseAuthority = document.getElementById('licenseAuthority').value.trim();
+    const licenseExpiry = document.getElementById('licenseExpiry').value;
+    const phoneRaw = document.getElementById('phone').value.trim();
+    const clinicName = document.getElementById('clinicName').value.trim();
+    const clinicAddress = document.getElementById('clinicAddress').value.trim();
+    const country = document.getElementById('country').value.trim();
+    const about = document.getElementById('about').value.trim();
+    const termsEl = document.getElementById('terms');
+    const terms = termsEl ? !!termsEl.checked : true;
+
+    if (password !== confirmPassword) return showAlert('Passwords do not match');
+    const phoneKey = normalizePhone(phoneRaw);
+    if (!phoneKey) return showAlert('Enter a valid PH phone number (e.g., 09123456789)', 'warning');
+    const phoneDisplay = phoneKey;
+
+    const ts = firebase.firestore.FieldValue.serverTimestamp();
+    const PLACEHOLDER = 'assets/img/health/doctor-placeholder.webp';
+
+    try {
+      showAlert('Creating account…', 'info');
+
+      // Create Auth user (now signed in → can write to their docs)
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      const uid = cred.user.uid;
+      const displayName = withDrPrefix(fullName);
+      await cred.user.updateProfile({ displayName });
+
+      // Enforce phone uniqueness with phone_index + write all docs atomically
+      const batch = db.batch();
+
+      // phone_index/{phoneKey}: allow create only if not exists (see rules)
+      batch.set(db.collection('phone_index').doc(phoneKey), {
+        uid,
+        email,
+        phone: phoneDisplay,
+        phoneKey,
+        createdAt: ts
+      });
+
+      // users/{uid}
+      batch.set(db.collection('users').doc(uid), {
+        uid,
+        email,
+        phone: phoneDisplay,
+        phoneKey,
+        role: 'doctor',
+        createdAt: ts, updatedAt: ts
+      }, { merge: true });
+
+      // doctors/{uid} (private)
+      batch.set(db.collection('doctors').doc(uid), {
+        uid,
+        email,
+        fullName,
+        role: 'doctor',
+        specialty,
+        yearsExperience,
+        phone: phoneDisplay,
+        phoneKey,
+        about,
+        clinic: { name: clinicName, address: clinicAddress, country },
+        license: { number: licenseNumber, authority: licenseAuthority, expiry: licenseExpiry },
+        avatarUrl: '',
+        schedule: [],
+        status: 'pending_verification',
+        createdAt: ts,
+        updatedAt: ts
+      }, { merge: true });
+
+      // public_doctors/{uid} (patient-facing, hidden until approval)
+      batch.set(db.collection('public_doctors').doc(uid), {
+        name: displayName,
+        specialty: specialty || '',
+        image: PLACEHOLDER,
+        bio: about || '',
+        schedule: [],
+        reviewsCount: 0,
+        isListed: false,
+        verified: false,
+        createdAt: ts,
+        updatedAt: ts
+      }, { merge: true });
+
+      await batch.commit();
+
+      showAlert('Registration successful. Please log in.', 'success');
+      await auth.signOut();
+      window.location.href = './doclogin.html';
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'permission-denied') return showAlert('This phone number is already registered!', 'warning');
+      if (err.code === 'auth/email-already-in-use') return showAlert('Email is already in use.');
+      if (err.code === 'auth/weak-password') return showAlert('Password is too weak (min 6+ chars).');
+      showAlert(err.message || 'Registration failed');
+    }
+  });
+</script>
+</body>
+</html>

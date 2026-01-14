@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>TECHMED — Doctor</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2c3e50" />
+
+  <!-- Favicons -->
+  <link href="logo512.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;500;700&family=Ubuntu:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+  <link href="docpov.css" rel="stylesheet">
+  <link href="docpov-styles.css" rel="stylesheet">
+  
+  <style>
+    /* Notification Item Styles */
+    .notification-item {
+      border-left: 4px solid transparent;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.5rem;
+      background: #f8f9fa;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .notification-item:hover {
+      background: #e9ecef;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .notification-item.unread {
+      border-left-color: #099aa7;
+      background: #e8f8f9;
+    }
+    .notification-item.unread:hover {
+      background: #d4f1f4;
+    }
+    .notification-type-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #099aa7;
+      color: white;
+      font-size: 1.2rem;
+    }
+    .notification-unread-badge {
+      width: 8px;
+      height: 8px;
+      background: #dc3545;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .notification-time {
+      font-size: 0.75rem;
+      color: #6c757d;
+    }
+    .notification-reason {
+      background: #fff;
+      border-left: 3px solid #099aa7;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 0.25rem;
+      font-style: italic;
+      color: #495057;
+    }
+
+    /* Appointment Reminder Banner */
+    #reminderBanner {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1050;
+      max-width: 700px;
+      width: 90%;
+      animation: slideDown 0.4s ease-out;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .reminder-banner {
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      border-left: 5px solid;
+      background: white;
+      padding: 1.25rem;
+      transition: all 0.3s ease;
+    }
+    .reminder-banner:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .reminder-banner.reminder-30days {
+      border-left-color: #099aa7;
+      background: linear-gradient(to right, #e8f8f9 0%, #ffffff 100%);
+    }
+    .reminder-banner.reminder-10mins {
+      border-left-color: #dc3545;
+      background: linear-gradient(to right, #ffe8e8 0%, #ffffff 100%);
+    }
+    .reminder-icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    .reminder-30days .reminder-icon-circle {
+      background: #099aa7;
+      color: white;
+    }
+    .reminder-10mins .reminder-icon-circle {
+      background: #dc3545;
+      color: white;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .reminder-banner h6 {
+      color: #212529;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .reminder-banner p {
+      color: #6c757d;
+      margin-bottom: 0;
+    }
+    
+    /* Appointment table styling */
+    .appt-row:hover {
+      background-color: #f8f9fa;
+    }
+    .appt-row td {
+      vertical-align: middle;
+      padding: 0.75rem 0.5rem;
+    }
+    .patient-name {
+      font-weight: 500;
+      color: #2c5aa0;
+    }
+    .badge-confirmed { background-color: #28a745; }
+    .badge-pending { background-color: #ffc107; color: #212529; }
+    .badge-cancelled { background-color: #dc3545; }
+    .badge-rescheduled { background-color: #17a2b8; }
+    .badge-not { background-color: #6c757d; }
+    .actions-cell {
+      white-space: nowrap;
+    }
+    .reminder-banner .btn-close {
+      opacity: 0.5;
+    }
+    .reminder-banner .btn-close:hover {
+      opacity: 1;
+    }
+    
+    /* Custom badge styles to match secretary colors */
+    .badge-pending { 
+      background-color: #ecd37e !important; 
+      color: #7d6608 !important; 
+      border: 1px solid #ffd966 !important; 
+      padding: 0.35rem 0.55rem !important;
+      border-radius: 999px !important;
+      font-size: .75rem !important;
+      font-weight: 600 !important;
+    }
+    
+    .badge-confirmed { 
+      background-color: #b8e6c9 !important; 
+      color: #0d4a2d !important; 
+      border: 1px solid #8dd4a7 !important; 
+      padding: 0.35rem 0.55rem !important;
+      border-radius: 999px !important;
+      font-size: .75rem !important;
+      font-weight: 600 !important;
+    }
+    
+    .badge-rescheduled { 
+      background-color: #81def3 !important; 
+      color: #044d5f !important; 
+      border: 1px solid #7dd9f3 !important; 
+      padding: 0.35rem 0.55rem !important;
+      border-radius: 999px !important;
+      font-size: .75rem !important;
+      font-weight: 600 !important;
+    }
+    
+    .badge-cancelled { 
+      background-color: #eb616e !important; 
+      color: #6b1a24 !important; 
+      border: 1px solid #ee8791 !important; 
+      padding: 0.35rem 0.55rem !important;
+      border-radius: 999px !important;
+      font-size: .75rem !important;
+      font-weight: 600 !important;
+    }
+    
+    .badge-not { 
+      background-color: #ec9288 !important; 
+      color: #6b1f16 !important; 
+      border: 1px solid #fa8c7d !important; 
+      padding: 0.35rem 0.55rem !important;
+      border-radius: 999px !important;
+      font-size: .75rem !important;
+      font-weight: 600 !important;
+    }
+  </style>
+</head>
+
+<body class="index-page">
+  <!-- ======= Header ======= -->
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid d-flex align-items-center px-3">
+      
+      <!-- Left Side: Mobile toggle + Logo -->
+      <div class="d-flex align-items-center me-auto">
+        <!-- Mobile menu toggle -->
+        <button id="sidebarToggle" class="btn btn-outline-secondary d-lg-none me-2" aria-label="Toggle menu">
+          <i class="bi bi-list"></i>
+        </button>
+
+        <!-- Logo -->
+        <a class="logo d-flex align-items-center">
+          <h1 class="sitename">TECH<span>MED</span></h1>
+        </a>
+      </div>
+
+      <!-- Center: Page Title (hidden on mobile) -->
+      <h5 class="mb-0 fw-semibold d-none d-md-block position-absolute start-50 translate-middle-x">Doctor Dashboard</h5>
+
+      <!-- Right Side: Buttons (always on right) -->
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <!-- Notification -->
+        <button class="btn btn-outline-primary position-relative" id="notificationBtn" aria-label="Notifications">
+          <i class="bi bi-bell"></i>
+          <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+        </button>
+
+        <!-- Profile Dropdown -->
+        <div class="dropdown">
+          <button class="btn btn-light border dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle fs-5 me-2"></i>
+            <span id="headerUserName" class="fw-semibold">Doctor</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button class="dropdown-item text-danger" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Appointment Reminder Banner -->
+  <div id="reminderBanner" class="d-none"></div>
+
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar shadow-sm">
+    <div class="d-flex flex-column h-100 p-3">
+      <!-- Navigation -->
+      <ul class="nav nav-pills flex-column gap-1" id="sidebarNav">
+        <li class="nav-item">
+          <a href="docpov.html" class="nav-link active d-flex align-items-center">
+            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="patient.html" class="nav-link d-flex align-items-center">
+            <i class="bi bi-people me-2"></i> Patients & Records
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link d-flex align-items-center">
+            <i class="bi bi-person-badge me-2"></i> Profile
+          </a>
+        </li>
+      </ul>
+      <!-- Spacer -->
+      <div class="flex-grow-1"></div>
+    </div>
+  </aside>
+
+  <!-- ======= Main ======= -->
+  <div class="main">
+    <div class="container">
+      <div class="row">
+        <section class="col-12">
+          <div id="section-appointments" class="card p-4 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between">
+              <h4 class="m-0">Appointments</h4>
+            </div>
+            <ul class="nav nav-tabs mt-2" id="apptTabs" role="tablist">
+              <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#upcoming">Upcoming</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#past">Past</button></li>
+            </ul>
+            <div class="tab-content mt-3">
+              <div class="tab-pane fade show active" id="upcoming">
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="appointments-upcoming">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="past">
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="appointments-past">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="section-patients" class="card p-4 shadow-sm mt-3" style="display:none">
+            <div class="d-flex align-items-center justify-content-between">
+              <h4 class="m-0">Patients</h4>
+              <div class="input-group" style="max-width:300px">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="patient-search" class="form-control" placeholder="Search patients..." />
+              </div>
+            </div>
+            <div id="patients-list" class="list-group mt-2"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Info Modal -->
+  <div class="modal fade" id="patientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="patientModalTitle">Patient</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="patientModalBody">
+          <div id="patient-details"><div class="text-muted small">Loading…</div></div>
+          
+          <h6 class="mt-3">Patient Info</h6>
+          <div class="border rounded p-3">
+            <div class="row g-2">
+              <div class="col-sm-4">
+                <label class="form-label" for="p-sex">Sex</label>
+                <select id="p-sex" class="form-select">
+                  <option value="">—</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label" for="p-weight">Weight (kg)</label>
+                <input id="p-weight" type="number" step="0.1" class="form-control" />
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label" for="p-dob">DOB</label>
+                <input id="p-dob" type="date" class="form-control" />
+              </div>
+            </div>
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" id="p-pregnant">
+              <label class="form-check-label" for="p-pregnant">Pregnant</label>
+            </div>
+            <div class="mt-2">
+              <label class="form-label" for="p-allergies">Allergies (comma-separated)</label>
+              <input id="p-allergies" type="text" class="form-control" placeholder="e.g. Penicillin allergy" />
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+              <button class="btn btn-primary" id="save-patientinfo-btn">Save Patient Info</button>
+            </div>
+          </div>
+          
+          <hr/>
+          <div>
+            <ul class="nav nav-tabs mb-2" id="diagTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-latest" type="button" role="tab">Diagnosis</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-past" type="button" role="tab">Past Diagnosis</button>
+              </li>
+            </ul>
+            <div id="diagnosis-latest">
+              <div class="mb-2 small text-muted">No diagnoses yet</div>
+              <textarea id="diagnosis-input" class="form-control mt-3" rows="5" placeholder="Add diagnosis..." style="resize: vertical;"></textarea>
+            </div>
+            <div id="diagnosis-past" class="mb-2 small text-muted" style="display:none">No diagnoses yet</div>
+          </div>
+          <hr/>
+          <h6 class="mt-2">Prescriptions</h6>
+          <div id="prescriptions-list" class="small text-muted">No prescriptions yet</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-diagnosis-btn"><span class="btn-label">Save diagnosis</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal for Done Button -->
+  <div class="modal fade" id="confirmDoneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Completion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to mark this appointment as done?</p>
+          <p class="text-muted small mb-0">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" id="confirmDoneBtn">Mark as Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Modal -->
+  <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-bell-fill me-2"></i>Notifications
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="notificationList">
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-bell fs-1"></i>
+            <p class="mt-2">No notifications yet</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="markAllReadBtn">Mark All as Read</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-top py-3 text-center small text-muted mt-5">© TECHMED</footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"></script>
+  <script src="./notification-manager.js"></script>
+  
+  <!-- Use same Firebase app instance as login.html -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCwCjmcUTTz8S34svqAxmhHmhO8QNnz5t8",
+      authDomain: "t-echmed.firebaseapp.com",
+      databaseURL: "https://t-echmed-default-rtdb.firebaseio.com",
+      projectId: "t-echmed",
+      storageBucket: "t-echmed.appspot.com",
+      messagingSenderId: "290352510024",
+      appId: "1:290352510024:web:c9e2fbdec8d36f35ca547d"
+    };
+
+    // Initialize as default app to maintain auth persistence
+    const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+
+    // Use the default app instance
+    const auth = app.auth();
+    const db = app.firestore();
+    
+    console.log('Doctor dashboard Firebase initialized with default app instance');
+  </script>
+  <!-- Connect meeting inline via fullscreen modal -->
+  <script src="./meeting-modal.js"></script>
+  <script>
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+      try { await auth.signOut(); } finally { window.location.replace('index.html'); }
+    });
+  </script>
+
+  <!-- Inline dashboard logic with working Done button -->
+  <script>
+  (function(){
+    const state = { user: null, profile: null, unsubscribeAppointments: null };
+
+    function qs(id){ return document.getElementById(id); }
+    function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+    function fmt(ts){ if (!ts) return ''; const d = ts?.toDate ? ts.toDate() : new Date(ts); return d.toLocaleString(); }
+    function toDateObj(ts){ return ts && ts.toDate ? ts.toDate() : (ts ? new Date(ts) : null); }
+    function statusBadge(status){
+      const s = (status || 'pending').toLowerCase();
+      const cls = (s === 'confirmed' || s === 'done') ? 'bg-success'
+        : (s === 'cancelled' || s === 'rejected') ? 'bg-danger'
+        : s === 'rescheduled' ? 'bg-warning text-dark'
+        : 'bg-secondary';
+      return `<span class="badge rounded-pill ${cls}">${s}</span>`;
+    }
+
+    function toast(msg){
+      const t = el(`<div class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true" style="position:fixed;bottom:20px;right:20px;z-index:1080"><div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div></div>`);
+      document.body.appendChild(t);
+      const bsToast = new bootstrap.Toast(t, { delay: 1600 });
+      bsToast.show();
+      t.addEventListener('hidden.bs.toast', ()=> t.remove());
+    }
+
+    // Helper function to load patient diagnosis and prescription data for appointments
+    async function loadPatientDataForAppointment(patientUid, appointmentId, doctorId, appointmentDate) {
+      let diagnosis = '';
+      let prescription = '';
+      
+      try {
+        // First, try to get diagnosis from the appointment document itself
+        const appointmentDoc = await db.collection('appointments').doc(appointmentId).get();
+        if (appointmentDoc.exists) {
+          const appointmentData = appointmentDoc.data();
+          if (appointmentData.diagnosis && appointmentData.diagnosis.text) {
+            diagnosis = appointmentData.diagnosis.text;
+          }
+        }
+        
+        // If no diagnosis in appointment, try to get from patient's diagnoses
+        if (!diagnosis && patientUid) {
+          try {
+            const patientDoc = await db.collection('users').doc('patients').collection('patients').doc(patientUid).get();
+            if (patientDoc.exists) {
+              const patientData = patientDoc.data();
+              if (Array.isArray(patientData.diagnoses) && patientData.diagnoses.length > 0) {
+                // Find diagnosis closest to appointment date by the same doctor
+                const appointmentTime = appointmentDate ? appointmentDate.getTime() : 0;
+                const relevantDiagnoses = patientData.diagnoses.filter(d => 
+                  d.doctorId === doctorId && 
+                  d.createdAt && 
+                  Math.abs((d.createdAt.toDate ? d.createdAt.toDate().getTime() : new Date(d.createdAt).getTime()) - appointmentTime) < (7 * 24 * 60 * 60 * 1000) // Within 7 days
+                );
+                
+                if (relevantDiagnoses.length > 0) {
+                  // Sort by creation date and get the closest one
+                  relevantDiagnoses.sort((a, b) => {
+                    const aTime = a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
+                    const bTime = b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
+                    return Math.abs(aTime - appointmentTime) - Math.abs(bTime - appointmentTime);
+                  });
+                  diagnosis = relevantDiagnoses[0].text;
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Failed to load patient diagnoses:', err);
+          }
+        }
+        
+        // Try to get prescription data
+        if (patientUid) {
+          try {
+            const prescriptionsSnapshot = await db.collection('users').doc('patients').collection('patients').doc(patientUid)
+              .collection('prescriptions')
+              .orderBy('createdAt', 'desc')
+              .limit(10)
+              .get();
+            
+            if (!prescriptionsSnapshot.empty) {
+              const appointmentTime = appointmentDate ? appointmentDate.getTime() : 0;
+              const prescriptions = [];
+              prescriptionsSnapshot.forEach(doc => {
+                prescriptions.push({ id: doc.id, ...doc.data() });
+              });
+              
+              // Find prescription closest to appointment date
+              const relevantPrescriptions = prescriptions.filter(p => {
+                const prescriptionTime = p.createdAt && p.createdAt.toDate ? p.createdAt.toDate().getTime() : 0;
+                return Math.abs(prescriptionTime - appointmentTime) < (7 * 24 * 60 * 60 * 1000); // Within 7 days
+              });
+              
+              if (relevantPrescriptions.length > 0) {
+                const closestPrescription = relevantPrescriptions[0];
+                
+                // Format prescription text
+                if (Array.isArray(closestPrescription.items) && closestPrescription.items.length > 0) {
+                  const items = closestPrescription.items.map(item => {
+                    let itemText = item.drug || '';
+                    if (item.dose) itemText += ` - ${item.dose}`;
+                    if (item.frequency) itemText += ` (${item.frequency})`;
+                    return itemText;
+                  }).filter(Boolean);
+                  prescription = items.join(', ');
+                } else if (closestPrescription.text) {
+                  prescription = closestPrescription.text;
+                } else if (closestPrescription.instructions) {
+                  prescription = closestPrescription.instructions;
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Failed to load patient prescriptions:', err);
+          }
+        }
+        
+      } catch (err) {
+        console.error('Error loading patient data for appointment:', err);
+      }
+      
+      return { diagnosis, prescription };
+    }
+
+    function guardAuth(){
+      auth.onAuthStateChanged(async (user)=>{
+        if (typeof state.unsubscribeAppointments === 'function') {
+          try { state.unsubscribeAppointments(); } catch(_) {}
+          state.unsubscribeAppointments = null;
+        }
+        if (!user) { window.location.href = './index.html'; return; }
+
+        // Doctor-only guard
+        try {
+          const [userDoc, doctorDoc, newDoctorDoc] = await Promise.all([
+            db.collection('users').doc(user.uid).get(),
+            db.collection('doctors').doc(user.uid).get(),
+            db.collection('users').doc('doctors').collection('doctors').doc(user.uid).get()
+          ]);
+          const role = userDoc.exists ? userDoc.data().role : null;
+          const isDoctor = role === 'doctor' || doctorDoc.exists || newDoctorDoc.exists;
+          if (!isDoctor) {
+            await auth.signOut().catch(()=>{});
+            window.location.href = './index.html';
+            return;
+          }
+        } catch {
+          await auth.signOut().catch(()=>{});
+          window.location.href = './index.html';
+          return;
+        }
+
+        state.user = user;
+        console.log('✅ User authenticated:', user.uid);
+        
+        // Enable push notifications for doctor (with timeout to prevent blocking)
+        if (window.NotificationManager) {
+          console.log('🔔 Enabling push notifications for doctor...');
+          Promise.race([
+            window.NotificationManager.enableNotifications(user.uid, 'doctor'),
+            new Promise((resolve) => setTimeout(() => {
+              console.warn('⚠️ Push notification initialization timed out (continuing anyway)');
+              resolve();
+            }, 3000))
+          ]).then(() => {
+            console.log('✅ Push notifications setup complete');
+          }).catch((notifError) => {
+            console.warn('⚠️ Could not enable push notifications:', notifError);
+          });
+        }
+        
+        console.log('📋 Loading doctor profile...');
+        try {
+          await loadProfile(user.uid);
+          console.log('✅ Profile loaded');
+        } catch (profileError) {
+          console.error('❌ Profile loading failed:', profileError);
+          // Continue anyway
+        }
+        
+        console.log('🔧 Wiring navigation...');
+        wireNav();
+        console.log('📅 Starting loadAppointments...');
+        loadAppointments();
+        console.log('👥 Starting loadPatients...');
+        loadPatients();
+        console.log('🔔 Starting loadNotifications...');
+        loadNotifications();
+        console.log('✅ All initialization complete');
+      });
+    }
+
+    async function loadProfile(uid){
+      const snap = await db.collection('doctors').doc(uid).get();
+      const p = snap.exists ? snap.data() : {};
+      const displayName = p.fullName ? (p.fullName.toLowerCase().startsWith('dr.') ? p.fullName : `Dr. ${p.fullName}`) : (auth.currentUser?.displayName || 'Doctor');
+      qs('doc-name') && (qs('doc-name').textContent = displayName);
+      qs('doc-specialty') && (qs('doc-specialty').textContent = p.specialty || 'Specialty');
+      qs('headerUserName') && (qs('headerUserName').textContent = displayName);
+      if (qs('avatar')) {
+        const initials = (p.fullName || 'Dr').split(' ').map(s=>s[0]).join('').substring(0,2).toUpperCase();
+        qs('avatar').textContent = initials;
+      }
+    }
+
+    function wireNav(){
+      document.querySelectorAll('[data-section]').forEach(btn => {
+        btn.addEventListener('click', ()=> showSection(btn.getAttribute('data-section')));
+      });
+    }
+
+    function showSection(id){
+      ['appointments','patients','profile'].forEach(sec=>{
+        const elx = qs('section-' + sec);
+        if (elx) elx.style.display = (sec===id) ? '' : 'none';
+      });
+      document.querySelectorAll('[data-section]').forEach(b=> b.classList.toggle('active', b.getAttribute('data-section')===id));
+    }
+
+    // Toast function moved after el function is defined
+
+    async function loadAppointments(){
+      const uid = auth.currentUser.uid;
+      console.log('📅 loadAppointments called for doctor UID:', uid);
+      const listUpcoming = qs('appointments-upcoming');
+      const listPast = qs('appointments-past');
+      console.log('📅 List elements found:', { listUpcoming: !!listUpcoming, listPast: !!listPast });
+
+      if (listUpcoming) listUpcoming.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Loading appointments...</td></tr>';
+      if (listPast) listPast.innerHTML = '';
+
+      if (typeof state.unsubscribeAppointments === 'function') {
+        try { state.unsubscribeAppointments(); } catch(_) {}
+        state.unsubscribeAppointments = null;
+      }
+
+      try {
+        const q = db.collection('appointments').where('doctorId','==',uid);
+        console.log('📅 Setting up appointments listener with query: doctorId ==', uid);
+
+        state.unsubscribeAppointments = q.onSnapshot(
+          (snap) => {
+            console.log('📅 Appointments snapshot received:', { empty: snap.empty, size: snap.size });
+            if (listUpcoming) listUpcoming.innerHTML = '';
+            if (listPast) listPast.innerHTML = '';
+
+            // Helper function to calculate age from date of birth
+            function calculateAge(dob) {
+              if (!dob) return '—';
+              try {
+                let birthDate;
+                // Handle Firestore Timestamp
+                if (dob.toDate && typeof dob.toDate === 'function') {
+                  birthDate = dob.toDate();
+                } else if (dob.seconds) {
+                  birthDate = new Date(dob.seconds * 1000);
+                } else if (typeof dob === 'string') {
+                  birthDate = new Date(dob);
+                } else if (dob instanceof Date) {
+                  birthDate = dob;
+                } else {
+                  return '—';
+                }
+                
+                if (isNaN(birthDate.getTime())) return '—';
+                
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                  age--;
+                }
+                return age >= 0 ? age.toString() : '—';
+              } catch (e) {
+                console.error('Error calculating age:', e);
+                return '—';
+              }
+            }
+
+            // Helper function to get patient data for age and gender
+            async function getPatientData(patientId) {
+              if (!patientId) return { age: '—', gender: '—' };
+              
+              try {
+                // Try new structure first: users/patients/patients/{uid}
+                let patientDoc = await db.collection('users').doc('patients').collection('patients').doc(patientId).get();
+                
+                // Fallback to old structure if needed
+                if (!patientDoc.exists) {
+                  patientDoc = await db.collection('users').doc(patientId).get();
+                }
+                
+                if (patientDoc.exists) {
+                  const data = patientDoc.data();
+                  const dob = data.birthDate || data.dateOfBirth || data.dob || null;
+                  const age = calculateAge(dob);
+                  const genderRaw = (data.sex || data.gender || '').toString().toLowerCase();
+                  const gender = genderRaw === 'male' ? 'Male' : genderRaw === 'female' ? 'Female' : (data.sex || data.gender || '—');
+                  return { age, gender };
+                }
+              } catch (e) {
+                console.error('Failed to fetch patient data for ID:', patientId, e);
+              }
+              
+              return { age: '—', gender: '—' };
+            }
+
+            if (!snap || snap.empty) {
+              console.log('📅 No appointments found for this doctor');
+              if (listUpcoming) listUpcoming.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No upcoming appointments</td></tr>';
+              if (listPast) listPast.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No past appointments</td></tr>';
+              return;
+            }
+
+            const nowMs = Date.now();
+            const items = [];
+            // Use collision-safe key for doc id
+            snap.forEach(doc => items.push({ ...doc.data(), docId: doc.id }));
+            console.log('📅 Found', items.length, 'appointment(s)');
+
+            items.sort((a,b) => {
+              const at = (a.startAt?.toDate?.() ?? new Date(a.startAt ?? 0)).getTime();
+              const bt = (b.startAt?.toDate?.() ?? new Date(b.startAt ?? 0)).getTime();
+              return at - bt;
+            });
+
+            let upcomingCount = 0;
+            let pastCount = 0;
+            
+            for (const a of items) {
+              const when = a.startAt?.toDate?.() ? a.startAt.toDate() : (a.startAt ? new Date(a.startAt) : null);
+              const rawStatus = (a.status || a.appointmentStatus || a.app_status || a.state || '').toString();
+              const statusLower = rawStatus.toLowerCase();
+              const isDone = statusLower === 'done';
+              const isCancelled = statusLower.includes('cancel')
+                || a.canceled === true
+                || a.cancelled === true
+                || a.isCancelled === true
+                || a.isCanceled === true
+                || a.is_cancelled === true
+                || a.is_canceled === true;
+              const isRejected = statusLower.includes('reject');
+              const isNoShow = statusLower.includes('no show') || statusLower.includes('noshow') || statusLower.includes('no-show');
+              const isPast = isDone || isCancelled || isRejected || isNoShow || (when ? when.getTime() < nowMs : false);
+              // Build meeting link for doctors using their Firebase uid as the room (doctor is host)
+              const doctorRoom = `doc_${uid}`;
+              const apptLink = `./VidMeet.html?room=${encodeURIComponent(doctorRoom)}&as=doctor&hostUid=${encodeURIComponent(uid)}`;
+
+              let status = (rawStatus || 'pending').toLowerCase();
+              if (isPast && status !== 'done' && status !== 'cancelled' && status !== 'rejected') {
+                status = 'not completed';
+                // Persist to Firestore so reporting matches UI status
+                if (statusLower !== 'not completed') {
+                  db.collection('appointments').doc(a.docId).update({
+                    status: 'not completed',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                  }).catch(()=>{});
+                }
+              }
+              const badgeClass = (status === 'confirmed' || status === 'done') ? 'badge-confirmed'
+                                : (status === 'cancelled' || status === 'rejected') ? 'badge-cancelled'
+                                : status === 'rescheduled' ? 'badge-rescheduled'
+                                : status === 'not completed' ? 'badge-not'
+                                : 'badge-pending';
+
+              // Check if appointment time has arrived
+              const meetingTime = when ? when.getTime() : 0;
+              const isMeetingTimeActive = nowMs >= meetingTime;
+              const meetingBtnDisabled = !isMeetingTimeActive ? 'disabled' : '';
+              const meetingBtnClass = isMeetingTimeActive ? 'btn-primary' : 'btn-secondary';
+              
+              // Calculate time remaining if button is disabled
+              let meetingBtnTitle = 'Join the meeting';
+              let timeRemainingText = '';
+              if (!isMeetingTimeActive && when) {
+                const minutesUntil = Math.ceil((meetingTime - nowMs) / (60 * 1000));
+                const hoursUntil = Math.floor(minutesUntil / 60);
+                const daysUntil = Math.floor(hoursUntil / 24);
+                
+                if (daysUntil > 0) {
+                  timeRemainingText = `Available in ${daysUntil}d ${hoursUntil % 24}h`;
+                } else if (hoursUntil > 0) {
+                  timeRemainingText = `Available in ${hoursUntil}h ${minutesUntil % 60}m`;
+                } else if (minutesUntil > 0) {
+                  timeRemainingText = `Available in ${minutesUntil}m`;
+                } else {
+                  timeRemainingText = 'Available soon';
+                }
+                meetingBtnTitle = `Meeting available at appointment time (${fmt(a.startAt)})`;
+              }
+
+              const actions = isPast
+                ? ``
+                : `<div class="d-flex gap-2 flex-column align-items-end">
+                     <div class="d-flex gap-2">
+                       <a href="${apptLink}" class="btn btn-sm ${meetingBtnClass}" ${meetingBtnDisabled} title="${meetingBtnTitle}" style="pointer-events: ${isMeetingTimeActive ? 'auto' : 'none'}; opacity: ${isMeetingTimeActive ? '1' : '0.6'}">
+                         <i class="bi bi-camera-video"></i> ${a.roomId ? 'Join call' : 'Open meeting'}
+                       </a>
+                       <button class="btn btn-sm btn-outline-success mark-done-btn" data-id="${a.docId}" ${status === 'done' ? 'disabled' : ''}>
+                         <i class="bi bi-check-lg"></i> Done
+                       </button>
+                     </div>
+                     ${!isMeetingTimeActive && timeRemainingText ? `<small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock"></i> ${timeRemainingText}</small>` : ''}
+                   </div>`;
+
+              const displayEmail = a.patientEmail || a.email || '';
+              const displayPhone = a.patientPhone || a.phone || a.patient_number || a.mobile || '';
+              // Try to get the correct patient ID - prioritize patientId field
+              const userUidForItem = a.patientId || a.patientUid || a.userUid || a.userId || '';
+              
+              // Format date and time for table display
+              const appointmentDate = when ? when.toLocaleDateString() : '—';
+              const appointmentTime = when ? when.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '—';
+              
+              // Status badge with proper styling
+              const statusBadge = `<span class="badge ${badgeClass}">${status.toUpperCase()}</span>`;
+              
+              // Actions for table
+              const tableActions = isPast
+                ? `<button class="btn btn-sm btn-outline-primary view-record-btn">View Records</button>`
+                : `<div class="d-flex gap-1">
+                     <button class="btn btn-sm btn-outline-primary view-record-btn">View Records</button>
+                     <a href="${apptLink}" class="btn btn-sm ${meetingBtnClass}" ${meetingBtnDisabled} title="${meetingBtnTitle}" style="pointer-events: ${isMeetingTimeActive ? 'auto' : 'none'}; opacity: ${isMeetingTimeActive ? '1' : '0.6'}">
+                       Join Meeting
+                     </a>
+                     <button class="btn btn-sm btn-outline-success mark-done-btn" data-id="${a.docId}" ${status === 'done' ? 'disabled' : ''}>
+                       Done
+                     </button>
+                   </div>`;
+
+              // Create table row with placeholder data (will be updated with patient data)
+              const item = document.createElement('tr');
+              item.className = 'appt-row';
+              item.style.cursor = 'pointer';
+              item.setAttribute('data-user-uid', userUidForItem);
+              item.setAttribute('data-patient-id', a.patientId || '');
+              item.setAttribute('data-patient-email', displayEmail);
+              item.setAttribute('data-patient-phone', displayPhone);
+              item.setAttribute('data-patient-name', (a.patientName || a.name || 'Patient').replace(/"/g,'&quot;'));
+              item.setAttribute('data-appt-ms', when ? when.getTime() : '');
+              item.setAttribute('data-appt-id', a.docId);
+              
+              item.innerHTML = `
+                <td class="patient-name">${a.patientName || a.name || 'Patient'}</td>
+                <td class="patient-age">—</td>
+                <td class="patient-gender">—</td>
+                <td>${statusBadge}</td>
+                <td>${appointmentDate}</td>
+                <td>${appointmentTime}</td>
+                <td class="actions-cell">${tableActions}</td>
+              `;
+
+              if (!isPast) {
+                const doneBtn = item.querySelector('.mark-done-btn');
+                if (doneBtn) {
+                  doneBtn.addEventListener('click', () => {
+                    if (doneBtn.disabled) return;
+                    
+                    // Show confirmation modal
+                    const confirmModal = new bootstrap.Modal(document.getElementById('confirmDoneModal'));
+                    const confirmBtn = document.getElementById('confirmDoneBtn');
+                    
+                    // Store the appointment data for the confirm handler
+                    confirmBtn.onclick = async () => {
+                      confirmModal.hide();
+                      doneBtn.disabled = true;
+                      const original = doneBtn.innerHTML;
+                      doneBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                      try {
+                        const docId = doneBtn.getAttribute('data-id');
+                      
+                      // Update appointment status first
+                      await db.collection('appointments').doc(docId).update({
+                        status: 'done',
+                        completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                      });
+                      
+                      // Try to add patient to patients collection (don't fail if this errors)
+                      console.log('🔄 Starting patient record creation process...');
+                      console.log('Doctor UID:', uid);
+                      try {
+                        const patientName = a.patientName || a.name || 'Patient';
+                        const patientEmail = a.patientEmail || a.email || '';
+                        const patientPhone = a.patientPhone || a.phone || a.patient_number || a.mobile || '';
+                        const patientUid = a.patientUid || a.userUid || a.userId || a.patientId || null;
+                        
+                        console.log('Appointment data:', { patientName, patientEmail, patientPhone, patientUid });
+                        
+                        // Use patientUid as doc ID if available
+                        let patientDocId = patientUid;
+                        
+                        // If no patientUid, try to find existing patient by email
+                        if (!patientDocId && patientEmail) {
+                          try {
+                            const existingPatient = await db.collection('patients')
+                              .where('email', '==', patientEmail)
+                              .where('doctorIds', 'array-contains', uid)
+                              .limit(1)
+                              .get();
+                            if (!existingPatient.empty) {
+                              patientDocId = existingPatient.docs[0].id;
+                            }
+                          } catch (e) {
+                            console.warn('Error finding existing patient:', e);
+                          }
+                        }
+                        
+                        // If still no patientDocId and we have a userUid, use it
+                        if (!patientDocId && patientUid) {
+                          patientDocId = patientUid;
+                        }
+                        
+                        // Last resort: generate new ID if we still don't have one
+                        if (!patientDocId) {
+                          patientDocId = db.collection('patients').doc().id;
+                        }
+                        
+                        // Create patient record (we now always have a valid ID)
+                        if (patientDocId) {
+                          // Use correct subcollection path: users/patients/patients/{uid}
+                          const patientRef = db.collection('users').doc('patients').collection('patients').doc(patientDocId);
+                          
+                          console.log('📝 Will create/update patient with ID:', patientDocId);
+                          
+                          const patientData = {
+                            id: patientDocId,
+                            fullName: patientName,
+                            doctorIds: firebase.firestore.FieldValue.arrayUnion(uid),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                          };
+                          
+                          if (patientEmail) patientData.email = patientEmail;
+                          if (patientPhone) patientData.phone = patientPhone;
+                          if (patientUid) patientData.userUid = patientUid;
+                          
+                          console.log('📄 Patient data to save:', { 
+                            ...patientData, 
+                            doctorIds: `[arrayUnion: ${uid}]` 
+                          });
+                          
+                          // Try to get existing doc to see if we need createdAt
+                          try {
+                            const existingDoc = await patientRef.get();
+                            if (!existingDoc.exists) {
+                              patientData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                            }
+                          } catch (e) {
+                            // If we can't read, assume it's new
+                            patientData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                          }
+                          
+                          await patientRef.set(patientData, { merge: true });
+                          console.log('✅ Patient record saved to Firestore');
+                          
+                          // Verify what was actually saved
+                          const verifyDoc = await patientRef.get();
+                          if (verifyDoc.exists) {
+                            const savedData = verifyDoc.data();
+                            console.log('✅ VERIFIED patient in Firestore:', {
+                              id: verifyDoc.id,
+                              fullName: savedData.fullName,
+                              email: savedData.email,
+                              doctorIds: savedData.doctorIds,
+                              path: `users/patients/patients/${verifyDoc.id}`
+                            });
+                            console.log('🔍 Doctor UID should be in doctorIds array:', uid);
+                            console.log('🔍 Is doctor in array?', savedData.doctorIds?.includes(uid));
+                          } else {
+                            console.error('❌ Patient document not found after save!');
+                          }
+                        } else {
+                          console.warn('No valid patient ID available, skipping patient record creation');
+                        }
+                      } catch (patientErr) {
+                        console.error('Failed to create patient record (non-critical):', patientErr);
+                        // Don't throw - appointment was still marked as done
+                      }
+                      
+                      toast('Appointment marked as done');
+                      } catch (err) {
+                        console.error('mark done failed', err);
+                        doneBtn.disabled = false;
+                        doneBtn.innerHTML = original;
+                        toast('Failed to mark as done: ' + (err?.message || ''));
+                      }
+                    };
+                    
+                    confirmModal.show();
+                  });
+                }
+              }
+
+              // Click to view patient info (ignore clicks on action buttons/links)
+              item.addEventListener('click', (ev) => {
+                if (ev.target.closest('a,button')) return;
+                const userUid = item.getAttribute('data-user-uid') || null;
+                const pid = item.getAttribute('data-patient-id') || null;
+                const pemail = item.getAttribute('data-patient-email') || null;
+                const pphone = item.getAttribute('data-patient-phone') || null;
+                const pname = item.getAttribute('data-patient-name') || null;
+                const apptMsStr = item.getAttribute('data-appt-ms');
+                const apptMs = apptMsStr ? parseInt(apptMsStr, 10) : null;
+                const apptDocId = item.getAttribute('data-appt-id') || null;
+                const doctorName = (document.getElementById('doc-name')?.textContent || '').trim();
+                showPatientInfo({ userUid, patientId: pid, patientEmail: pemail, fallbackName: pname, fallbackPhone: pphone, apptMs, doctorName, apptDocId });
+              });
+
+              // Add View Record button event handlers
+              const viewRecordBtns = item.querySelectorAll('.view-record-btn');
+              viewRecordBtns.forEach(viewBtn => {
+                viewBtn.addEventListener('click', (ev)=>{
+                  ev.stopPropagation();
+                  const userUid = item.getAttribute('data-user-uid') || null;
+                  const pid = item.getAttribute('data-patient-id') || null;
+                  const pemail = item.getAttribute('data-patient-email') || null;
+                  const pphone = item.getAttribute('data-patient-phone') || null;
+                  const pname = item.getAttribute('data-patient-name') || null;
+                  const apptMsStr = item.getAttribute('data-appt-ms');
+                  const apptMs = apptMsStr ? parseInt(apptMsStr, 10) : null;
+                  const apptDocId = item.getAttribute('data-appt-id') || null;
+                  const doctorName = (document.getElementById('doc-name')?.textContent || '').trim();
+                  showPatientInfo({ userUid, patientId: pid, patientEmail: pemail, fallbackName: pname, fallbackPhone: pphone, apptMs, doctorName, apptDocId });
+                });
+              });
+
+              (isPast ? listPast : listUpcoming).appendChild(item);
+              if (isPast) {
+                pastCount++;
+              } else {
+                upcomingCount++;
+              }
+
+              // Fetch patient data to populate age and gender columns
+              if (userUidForItem) {
+                console.log('🔍 Fetching patient data for ID:', userUidForItem);
+                getPatientData(userUidForItem).then(patientData => {
+                  console.log('✅ Patient data fetched:', { patientId: userUidForItem, age: patientData.age, gender: patientData.gender });
+                  const ageCell = item.querySelector('.patient-age');
+                  const genderCell = item.querySelector('.patient-gender');
+                  
+                  if (ageCell) ageCell.textContent = patientData.age;
+                  if (genderCell) genderCell.textContent = patientData.gender;
+                }).catch(err => {
+                  console.error('❌ Failed to fetch patient data for ID:', userUidForItem, err);
+                });
+                
+                // Also fetch from users collection to ensure latest email/phone
+                db.collection('users').doc(userUidForItem).get().then(userDoc => {
+                  if (userDoc && userDoc.exists) {
+                    const u = userDoc.data();
+                    const uEmail = u.email || '';
+                    const uPhone = u.phone || u.phoneNumber || '';
+                    
+                    // Update data attributes for modal
+                    if (uEmail) item.setAttribute('data-patient-email', uEmail);
+                    if (uPhone) item.setAttribute('data-patient-phone', uPhone);
+                  }
+                }).catch(err => {
+                  console.warn('Failed to fetch user data for appointment:', err);
+                });
+              } else {
+                console.warn('⚠️ No patient ID available for appointment:', a.docId);
+              }
+            }
+
+            console.log('📅 Appointments categorized:', { upcoming: upcomingCount, past: pastCount });
+            
+            if (listPast && !listPast.children.length) {
+              listPast.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No past appointments</td></tr>';
+            }
+
+            // Check for appointment reminders
+            checkAppointmentReminders(items, uid);
+          },
+          (err) => {
+            console.error('appointments listener error', err);
+            if (listUpcoming) listUpcoming.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load appointments</td></tr>';
+          }
+        );
+      } catch (err) {
+        console.error('loadAppointments failed', err);
+        if (listUpcoming) listUpcoming.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load appointments</td></tr>';
+      }
+    }
+
+    // Prescription matching functionality for past appointments
+    let patientRxList = [];
+    let patientDiagnoses = [];
+
+    function normalizeText(s){ return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+    
+    function formatItemsText(items){
+      try {
+        if (!Array.isArray(items) || !items.length) return '';
+        return items.map(it => {
+          const parts = [it.drug, it.dose, it.route, it.frequency, it.duration_days ? `${it.duration_days} days` : '', it.notes]
+            .filter(Boolean).join(' — ');
+          return parts || '';
+        }).filter(Boolean).join('\n');
+      } catch (_) { return ''; }
+    }
+
+    function pickRxFor(doctorUid, diagnosisText, when, appointmentId){
+      console.log(`🔍 [docpov.html] pickRxFor called - Doctor: ${doctorUid}, Diagnosis: "${diagnosisText}", Date: ${when}, Appointment: ${appointmentId}`);
+      
+      // First, try to find prescription that matches this specific appointment's diagnosis
+      const dxn = normalizeText(diagnosisText);
+      const byDoc = (patientRxList || []).filter(r => (r.doctorId || r.doctorUID || r.doctorUid || '') === doctorUid);
+      
+      console.log(`📋 [docpov.html] Found ${byDoc.length} prescriptions from doctor ${doctorUid}`);
+      
+      // If we have a specific diagnosis text, try to match it exactly
+      if (dxn) {
+        const exact = byDoc.filter(r => normalizeText(r.diagnosis || '') === dxn);
+        console.log(`📋 [docpov.html] Found ${exact.length} prescriptions matching diagnosis "${dxn}"`);
+        
+        if (exact.length) {
+          // If we have appointment time, find the prescription closest to that time
+          if (when) {
+            const wms = when.getTime ? when.getTime() : (new Date(when).getTime() || 0);
+            const getMs = (r) => {
+              try {
+                const t = r.createdAt;
+                return t && t.toDate ? t.toDate().getTime() : (t ? new Date(t).getTime() : 0);
+              } catch (_) { return 0; }
+            };
+            // Find prescription created closest to appointment time (within 24 hours after)
+            const afterAppt = exact.filter(r => {
+              const rxTime = getMs(r);
+              return rxTime >= wms && rxTime <= (wms + 24 * 60 * 60 * 1000); // Within 24 hours after appointment
+            }).sort((a,b) => getMs(a) - getMs(b)); // Earliest first
+            
+            if (afterAppt.length) {
+              console.log(`✅ [docpov.html] Found prescription created after appointment: ${afterAppt[0].id}`);
+              return afterAppt[0];
+            }
+            
+            // If no prescription after appointment, get the most recent one before
+            const beforeAppt = exact.filter(r => getMs(r) <= wms).sort((a,b) => getMs(b) - getMs(a));
+            if (beforeAppt.length) {
+              console.log(`✅ [docpov.html] Found prescription created before appointment: ${beforeAppt[0].id}`);
+              return beforeAppt[0];
+            }
+          }
+          // Return most recent exact match
+          const sorted = exact.sort((a,b) => {
+            const getMs = (r) => {
+              try {
+                const t = r.createdAt;
+                return t && t.toDate ? t.toDate().getTime() : (t ? new Date(t).getTime() : 0);
+              } catch (_) { return 0; }
+            };
+            return getMs(b) - getMs(a);
+          });
+          console.log(`✅ [docpov.html] Returning most recent exact match: ${sorted[0].id}`);
+          return sorted[0];
+        }
+      }
+      
+      // Fallback: return most recent prescription from this doctor
+      if (byDoc.length) {
+        const sorted = byDoc.sort((a,b) => {
+          const getMs = (r) => {
+            try {
+              const t = r.createdAt;
+              return t && t.toDate ? t.toDate().getTime() : (t ? new Date(t).getTime() : 0);
+            } catch (_) { return 0; }
+          };
+          return getMs(b) - getMs(a);
+        });
+        console.log(`✅ [docpov.html] Returning most recent prescription from doctor: ${sorted[0].id}`);
+        return sorted[0];
+      }
+      
+      console.log(`❌ [docpov.html] No prescription found for doctor ${doctorUid}`);
+      return null;
+    }
+
+    async function loadPatientPrescriptions(patientId) {
+      try {
+        // Try new structure: users/patients/patients/{uid}/prescriptions
+        let rxSnap = await db.collection('users').doc('patients').collection('patients').doc(patientId).collection('prescriptions').orderBy('createdAt','desc').limit(30).get();
+        if (rxSnap.empty) {
+          // Fallback to old structure: patients/{uid}/prescriptions
+          console.log('⚠️ [docpov.html] Trying old structure for prescriptions');
+          rxSnap = await db.collection('patients').doc(patientId).collection('prescriptions').orderBy('createdAt','desc').limit(30).get();
+        }
+        const arr = [];
+        rxSnap && rxSnap.forEach(d => arr.push(Object.assign({ id: d.id }, d.data())));
+        patientRxList = arr;
+        console.log(`✅ [docpov.html] Loaded ${arr.length} prescriptions for patient ${patientId}`);
+        return arr;
+      } catch (e) { 
+        console.warn('[docpov.html] Failed to load prescriptions:', e);
+        patientRxList = []; 
+        return [];
+      }
+    }
+
+    async function loadPatientDiagnoses(patientId) {
+      try {
+        // Try new structure: users/patients/patients/{uid}
+        let pDoc = await db.collection('users').doc('patients').collection('patients').doc(patientId).get();
+        if (!pDoc.exists) {
+          // Fallback to old structure: patients/{uid}
+          console.log('⚠️ [docpov.html] Trying old structure for patient data');
+          pDoc = await db.collection('patients').doc(patientId).get();
+        }
+        if (pDoc && pDoc.exists) {
+          const p = pDoc.data() || {};
+          const arr = Array.isArray(p.diagnoses) ? p.diagnoses : [];
+          patientDiagnoses = arr;
+          console.log(`✅ [docpov.html] Loaded ${arr.length} diagnoses for patient ${patientId}`);
+          return arr;
+        }
+      } catch(e) {
+        console.warn('[docpov.html] Failed to load patient diagnoses:', e);
+      }
+      patientDiagnoses = [];
+      return [];
+    }
+
+    function getAppointmentDiagnosis(appointment, patientDiagnoses, doctorId) {
+      // First check if appointment has its own diagnosis stored
+      if (appointment.diagnosis && (appointment.diagnosis.text || appointment.diagnosis.description)) {
+        return {
+          title: appointment.diagnosis.title || appointment.diagnosis.name || 'Diagnosis',
+          text: appointment.diagnosis.text || appointment.diagnosis.description || ''
+        };
+      }
+      
+      // Check for direct diagnosis fields
+      if (appointment.diagnosis || appointment.diagnosisDescription || appointment.icd10 || appointment.icdCode) {
+        return {
+          title: appointment.diagnosisTitle || 'Diagnosis',
+          text: appointment.diagnosis || appointment.diagnosisDescription || appointment.icd10 || appointment.icdCode || ''
+        };
+      }
+      
+      // Find diagnosis that matches this appointment's timeframe
+      try {
+        const startDate = appointment.startAt?.toDate?.() ? appointment.startAt.toDate() : (appointment.startAt ? new Date(appointment.startAt) : null);
+        if (!startDate) return { title: 'Diagnosis', text: '' };
+        
+        const rel = patientDiagnoses.filter(d => (d.doctorId || d.doctorUID || d.doctorUid || '') === doctorId);
+        if (rel.length) {
+          const apptTime = startDate.getTime();
+          const getMs = (x)=>{ try{ const t=x?.createdAt; if(!t) return 0; return t.toDate? t.toDate().getTime(): new Date(t).getTime(); } catch { return 0; } };
+          
+          // Find diagnosis created closest to appointment time (within 24 hours before/after)
+          const nearAppt = rel.filter(d => {
+            const diagTime = getMs(d);
+            return Math.abs(diagTime - apptTime) <= (24 * 60 * 60 * 1000); // Within 24 hours
+          }).sort((a,b) => Math.abs(getMs(a) - apptTime) - Math.abs(getMs(b) - apptTime));
+          
+          if (nearAppt.length) {
+            const matched = nearAppt[0];
+            console.log(`📋 [docpov.html] Matched diagnosis for appointment ${appointment.docId}:`, matched.text || matched.description);
+            return {
+              title: matched?.title || matched?.name || 'Diagnosis',
+              text: matched?.text || matched?.description || matched?.icd10 || matched?.icdCode || ''
+            };
+          } else {
+            // Fallback to most recent diagnosis from this doctor
+            const latest = [...rel].sort((a,b)=> getMs(b)-getMs(a))[0];
+            return {
+              title: latest?.title || latest?.name || 'Diagnosis',
+              text: latest?.text || latest?.description || latest?.icd10 || latest?.icdCode || ''
+            };
+          }
+        }
+      } catch {}
+      
+      return { title: 'Diagnosis', text: '' };
+    }
+
+    // Appointment Reminder System for Doctor
+    function checkAppointmentReminders(appointments, doctorId) {
+      const now = Date.now();
+      const reminderBanner = document.getElementById('reminderBanner');
+      if (!reminderBanner) return;
+      
+      const shownReminders = JSON.parse(localStorage.getItem('doctorShownReminders') || '{}');
+      
+      for (const apt of appointments) {
+        const when = apt.startAt?.toDate?.() ? apt.startAt.toDate() : (apt.startAt ? new Date(apt.startAt) : null);
+        if (!when || isNaN(when.getTime())) continue;
+        
+        const aptTime = when.getTime();
+        const timeDiff = aptTime - now;
+        
+        // Skip past or completed appointments
+        const rawStatus = (apt.status || apt.appointmentStatus || '').toString().toLowerCase();
+        const isDone = rawStatus === 'done' || rawStatus.includes('cancel') || rawStatus.includes('reject');
+        if (isDone || timeDiff < 0) continue;
+        
+        // 3 days = 3 * 24 * 60 * 60 * 1000 = 259,200,000 ms
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        const oneHour = 60 * 60 * 1000;
+        
+        // 10 minutes = 10 * 60 * 1000 = 600,000 ms
+        const tenMinutes = 10 * 60 * 1000;
+        const twoMinutes = 2 * 60 * 1000;
+        
+        const reminderKey3 = `${apt.docId}-3days`;
+        const reminderKey10 = `${apt.docId}-10mins`;
+        
+        let reminderType = null;
+        let reminderKey = null;
+        
+        // Check 3-day reminder
+        if (timeDiff > 0 && timeDiff <= threeDays && timeDiff >= (threeDays - oneHour) && !shownReminders[reminderKey3]) {
+          reminderType = '3days';
+          reminderKey = reminderKey3;
+        }
+        // Check 10-minute reminder
+        else if (timeDiff > 0 && timeDiff <= tenMinutes && timeDiff >= (tenMinutes - twoMinutes) && !shownReminders[reminderKey10]) {
+          reminderType = '10mins';
+          reminderKey = reminderKey10;
+        }
+        
+        if (reminderType && reminderKey) {
+          showAppointmentReminder(apt, reminderType);
+          
+          shownReminders[reminderKey] = Date.now();
+          localStorage.setItem('doctorShownReminders', JSON.stringify(shownReminders));
+          
+          break; // Only show one reminder at a time
+        }
+      }
+      
+      // Clean up old reminder records (older than 60 days)
+      const sixtyDays = 60 * 24 * 60 * 60 * 1000;
+      let cleaned = false;
+      for (const key in shownReminders) {
+        if (now - shownReminders[key] > sixtyDays) {
+          delete shownReminders[key];
+          cleaned = true;
+        }
+      }
+      if (cleaned) {
+        localStorage.setItem('doctorShownReminders', JSON.stringify(shownReminders));
+      }
+    }
+    
+    function showAppointmentReminder(appointment, type) {
+      const reminderBanner = document.getElementById('reminderBanner');
+      if (!reminderBanner) return;
+      
+      const when = appointment.startAt?.toDate?.() ? appointment.startAt.toDate() : (appointment.startAt ? new Date(appointment.startAt) : null);
+      const patientName = appointment.patientName || appointment.name || 'Patient';
+      const dateStr = when ? when.toLocaleDateString('en-US', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      }) : 'scheduled date';
+      const timeStr = when ? when.toLocaleTimeString('en-US', {
+        hour: '2-digit', minute: '2-digit'
+      }) : 'scheduled time';
+      
+      let title = '';
+      let message = '';
+      let icon = '';
+      let cssClass = '';
+      
+      if (type === '3days') {
+        title = 'Appointment Reminder';
+        message = `Appointment with <strong>${patientName}</strong> is coming up in <strong>3 days</strong> on <strong>${dateStr}</strong> at <strong>${timeStr}</strong>.`;
+        icon = 'bi-calendar-check';
+        cssClass = 'reminder-30days';
+      } else if (type === '10mins') {
+        title = 'Appointment Starting Soon!';
+        message = `Your appointment with <strong>${patientName}</strong> starts in <strong>10 minutes</strong> at <strong>${timeStr}</strong>. Please prepare to join.`;
+        icon = 'bi-alarm';
+        cssClass = 'reminder-10mins';
+      }
+      
+      reminderBanner.innerHTML = `
+        <div class="reminder-banner ${cssClass} d-flex align-items-start" role="alert">
+          <div class="reminder-icon-circle me-3">
+            <i class="bi ${icon}"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h6>${title}</h6>
+            <p>${message}</p>
+          </div>
+          <button type="button" class="btn-close" aria-label="Close" onclick="this.closest('#reminderBanner').classList.add('d-none')"></button>
+        </div>
+      `;
+      
+      reminderBanner.classList.remove('d-none');
+      
+      // Auto-hide after 15 seconds for 3-day reminder, 30 seconds for 10-minute reminder
+      const autoHideDelay = type === '3days' ? 15000 : 30000;
+      setTimeout(() => {
+        reminderBanner.classList.add('d-none');
+      }, autoHideDelay);
+      
+      console.log(`🔔 Doctor reminder shown: ${type} for appointment ${appointment.docId}`);
+    }
+
+    function renderPatientFieldsLimited(p, opts){
+      const { apptMs, doctorName } = opts || {};
+      function escapeHtml(s){
+        return String(s)
+          .replace(/&/g,'&amp;')
+          .replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;')
+          .replace(/\"/g,'&quot;')
+          .replace(/'/g,'&#39;');
+      }
+      function formatDateTime(ms){
+        if (!ms) return '';
+        try { return new Date(ms).toLocaleString(); } catch { return ''; }
+      }
+      const rows = [];
+      function addRow(label, value){ if (value) rows.push(`<div class="mb-2"><div class="text-muted small">${escapeHtml(label)}</div><div>${escapeHtml(value)}</div></div>`); }
+      addRow('Full name', p.fullName || p.name || '');
+      addRow('Email', p.email || '');
+      addRow('Phone', p.phone || p.phoneNumber || '');
+      if (apptMs) {
+        const withDoc = doctorName ? ` with ${escapeHtml(doctorName)}` : '';
+        addRow('Appointment', `${formatDateTime(apptMs)}${withDoc}`);
+      }
+
+      // Appointment-specific diagnosis and prescription data is handled 
+      // in the "Prescriptions" section below, not in patient details
+
+      return rows.join('') || '<div class="text-muted">No details available.</div>';
+    }
+    
+
+    async function showPatientInfo({ userUid, patientId, patientEmail, fallbackName, fallbackPhone, apptMs, doctorName, apptDocId }){
+      const modalEl = document.getElementById('patientModal');
+      const titleEl = document.getElementById('patientModalTitle');
+      const bodyEl = document.getElementById('patientModalBody');
+      const detailsEl = document.getElementById('patient-details');
+      titleEl.textContent = fallbackName || 'Patient';
+      if (detailsEl) detailsEl.innerHTML = '<div class="text-muted small">Loading…</div>';
+      const bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+
+      let snap = null;
+      let fromCollection = null;
+      // Try 0: fetch user profile from users collection first using UID
+      if (userUid) {
+        try {
+          const userDoc = await db.collection('users').doc(userUid).get();
+          if (userDoc && userDoc.exists) {
+            const u = userDoc.data();
+            const p = {
+              fullName: u.fullName || u.name || fallbackName || 'Patient',
+              email: u.email || patientEmail || '',
+              phone: u.phone || u.phoneNumber || fallbackPhone || ''
+            };
+            titleEl.textContent = p.fullName;
+            const content = renderPatientFieldsLimited(p, { apptMs, doctorName });
+            if (detailsEl) detailsEl.innerHTML = content || '<div class="text-muted">No additional details available.</div>';
+            // Prefer patients/{userUid} as the canonical patient doc for diagnoses
+            if (!patientId) patientId = userUid;
+            if (!patientEmail && u.email) patientEmail = u.email;
+          }
+        } catch (e) {
+          console.warn('user fetch by uid failed', e);
+        }
+      }
+      // If no explicit userUid, try patientId as users uid
+      if (!userUid && patientId) {
+        try {
+          const userDoc2 = await db.collection('users').doc(patientId).get();
+          if (userDoc2 && userDoc2.exists) {
+            const u = userDoc2.data();
+            const p = {
+              fullName: (u.firstName && u.lastName) ? `${u.firstName} ${u.lastName}` : (u.fullName || u.name || fallbackName || 'Patient'),
+              email: u.email || patientEmail || '',
+              phone: u.phone || u.phoneNumber || fallbackPhone || ''
+            };
+            titleEl.textContent = p.fullName;
+            const content = renderPatientFieldsLimited(p, { apptMs, doctorName });
+            bodyEl.innerHTML = content || '<div class="text-muted">No additional details available.</div>';
+            return;
+          }
+        } catch (e) {
+          console.warn('user fetch by patientId as uid failed', e);
+        }
+      }
+      // Try 1: direct document by id
+      try {
+        if (patientId) {
+          snap = await db.collection('patients').doc(patientId).get();
+        }
+      } catch (e) {
+        console.warn('patient by id failed', e);
+      }
+
+      // Try 2: by email scoped to doctor
+      if ((!snap || !snap.exists) && patientEmail) {
+        try {
+          const q = await db.collection('patients')
+            .where('doctorId','==', auth.currentUser.uid)
+            .where('email','==', patientEmail)
+            .limit(1)
+            .get();
+          if (q && !q.empty) snap = q.docs[0];
+        } catch (e) {
+          console.warn('patient by email+doctor failed', e);
+        }
+      }
+
+      // Try 3: by email alone as a fallback (schema variations)
+      if ((!snap || !snap.exists) && patientEmail) {
+        try {
+          const q2 = await db.collection('patients')
+            .where('email','==', patientEmail)
+            .limit(1)
+            .get();
+          if (q2 && !q2.empty) snap = q2.docs[0];
+        } catch (e) {
+          console.warn('patient by email only failed', e);
+        }
+      }
+
+      let resolvedPatientDocId = null;
+      if (snap && snap.exists) {
+        const p = snap.data();
+        resolvedPatientDocId = snap.id;
+        if (!p.phone && !p.phoneNumber && fallbackPhone) p.phone = fallbackPhone;
+        titleEl.textContent = p.fullName || fallbackName || 'Patient';
+        const content = renderPatientFieldsLimited(p, { apptMs, doctorName });
+        if (detailsEl) detailsEl.innerHTML = content || '<div class="text-muted">No additional details available.</div>';
+      } else {
+        const p = { fullName: fallbackName || 'Patient', email: patientEmail || '', phone: fallbackPhone || '' };
+        titleEl.textContent = p.fullName;
+        const content = renderPatientFieldsLimited(p, { apptMs, doctorName });
+        if (detailsEl) detailsEl.innerHTML = content;
+      }
+
+      // Load diagnoses into tabs: latest-only and full history
+      const latestEl = document.getElementById('diagnosis-latest');
+      const pastEl = document.getElementById('diagnosis-past');
+      const saveBtn = document.getElementById('save-diagnosis-btn');
+      const inputEl = document.getElementById('diagnosis-input');
+      const rxListEl = document.getElementById('prescriptions-list');
+      // Recent prescriptions to match with diagnoses by text
+      let recentRx = [];
+      function renderDiagnosisItems(target, arr, opts){
+        const isPast = !!(opts && opts.past);
+        if (!target) return;
+        const diagListHTML = !Array.isArray(arr) || arr.length === 0 
+          ? '<div class="mb-2 small text-muted">No diagnoses yet</div>' 
+          : arr.map(d => {
+              const who = d.doctorName || 'Doctor';
+              const whenTxt = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleString() : (d.createdAt ? new Date(d.createdAt).toLocaleString() : '');
+              const dxText = String(d.text || '').trim();
+              const safeText = dxText
+                .replace(/&/g,'&amp;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;')
+                .replace(/\n/g,'<br>');
+              const match = (function(){
+                const dl = dxText.toLowerCase();
+                const cands = (recentRx||[]).filter(r => String(r.diagnosis||'').trim().toLowerCase() === dl);
+                return cands.length ? cands[0] : null;
+              })();
+              const rxBtns = match ? (
+                `<div class="mt-2">`
+                + `${match.pdfUrl ? `<button class="btn btn-sm ${isPast ? 'btn-outline-primary' : 'btn-primary'}" data-view-rx="${match.id}" ${isPast ? 'data-view-only="1"' : ''}>View Prescription</button>` : ''}`
+                + `${match.pdfUrl ? ` <a class="btn btn-sm btn-outline-secondary" href="${match.pdfUrl}" target="_blank" download>Download</a>` : ''}`
+                + `</div>`
+              ) : '';
+              const header = `<div class="small text-muted"><strong>${who}</strong>${whenTxt ? ` • ${whenTxt}` : ''}${!opts.past ? ' • <span class="badge bg-secondary">Past Diagnosis</span>' : ''}</div>`;
+              return `<div class="border rounded p-2 mb-2">${header}<div>${safeText}</div>${rxBtns}</div>`;
+            }).join('');
+        
+        // For latest tab, include the textarea for adding new diagnosis
+        if (!isPast) {
+          target.innerHTML = diagListHTML + '<textarea id="diagnosis-input" class="form-control mt-3" rows="5" placeholder="Add diagnosis..." style="resize: vertical;"></textarea>';
+        } else {
+          // For past tab, only show the diagnosis list
+          target.innerHTML = diagListHTML;
+        }
+      }
+      function sortDiagDesc(arr){
+        const getMs = (x)=>{ try{ const t=x?.createdAt; if (!t) return 0; return t.toDate? t.toDate().getTime(): new Date(t).getTime(); } catch{ return 0; } };
+        return (Array.isArray(arr)? [...arr]: []).sort((a,b)=> getMs(b)-getMs(a));
+      }
+      // Tabs wiring
+      const tabLatestBtn = document.getElementById('tab-latest');
+      const tabPastBtn = document.getElementById('tab-past');
+      function showLatestTab(){ if (latestEl) latestEl.style.display=''; if (pastEl) pastEl.style.display='none'; tabLatestBtn?.classList.add('active'); tabPastBtn?.classList.remove('active'); }
+      function showPastTab(){ if (latestEl) latestEl.style.display='none'; if (pastEl) pastEl.style.display=''; tabPastBtn?.classList.add('active'); tabLatestBtn?.classList.remove('active'); }
+      tabLatestBtn?.addEventListener('click', showLatestTab);
+      tabPastBtn?.addEventListener('click', showPastTab);
+      showLatestTab();
+      // Helpers: pick only the latest diagnosis created before now
+      function getCreatedMs(x){
+        try {
+          if (!x) return 0;
+          const t = x.createdAt;
+          if (!t) return 0;
+          if (t.toDate) return t.toDate().getTime();
+          return new Date(t).getTime();
+        } catch { return 0; }
+      }
+      function pickLatestPastDiagnosis(list){
+        const now = Date.now();
+        const candidates = (Array.isArray(list) ? list : []).filter(d => getCreatedMs(d) > 0 && getCreatedMs(d) <= now);
+        if (!candidates.length) return null;
+        candidates.sort((a,b)=> getCreatedMs(b) - getCreatedMs(a));
+        return candidates[0] || null;
+      }
+      function renderPrescriptions(target, arr){
+        console.log('📋 [docpov] Rendering prescriptions:', arr.length, 'items');
+        if (!target) { console.warn('⚠️ [docpov] target not found!'); return; }
+        if (!Array.isArray(arr) || !arr.length) { target.textContent = 'No prescriptions yet'; return; }
+        target.innerHTML = arr.map(p => {
+          const ts = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString() : (p.createdAt ? new Date(p.createdAt).toLocaleString() : '');
+          const items = Array.isArray(p.items) ? p.items : [];
+          const first = items[0];
+          const summary = first ? `${first.drug}${first.dose ? ' — ' + first.dose : ''}${items.length>1 ? ` (+${items.length-1} more)` : ''}` : '(no items)';
+          const url = p.pdfUrl || '';
+          const btns = url ? (`<button class="btn btn-sm btn-primary" data-view-rx="${p.id}">View Prescription</button> <a class="btn btn-sm btn-outline-secondary" href="${url}" target="_blank" download>Download</a>`) : '';
+          return `<div class="border rounded p-2 mb-2"><div class="d-flex justify-content-between align-items-center"><div><div class="small text-muted">${ts || ''}</div><div>${summary}</div></div><div>${btns}</div></div>`;
+        }).join('');
+      }
+      let initialRendered = false;
+      let latestDiagArr = [];
+      let allDiagArr = [];
+      let unsubscribeRx = null;
+      if (resolvedPatientDocId) {
+        try {
+          // Use correct subcollection path: users/patients/patients/{id}
+          const pd = await db.collection('users').doc('patients').collection('patients').doc(resolvedPatientDocId).get();
+          if (pd && pd.exists) {
+            const pdata = pd.data();
+            const all = sortDiagDesc(pdata.diagnoses);
+            const latest = all.length ? [all[0]] : [];
+            latestDiagArr = latest;
+            allDiagArr = all;
+            renderDiagnosisItems(latestEl, latest, { past: false });
+            renderDiagnosisItems(pastEl, all, { past: true });
+            initialRendered = true;
+          }
+        } catch {}
+        // Always load prescriptions and use appointment-specific matching if appointment info is available
+        try {
+          if (unsubscribeRx) { try { unsubscribeRx(); } catch(_){} }
+          // Use correct subcollection path for prescriptions
+          const rxPath = `users/patients/patients/${resolvedPatientDocId}/prescriptions`;
+          console.log('🔍 [docpov] Loading prescriptions for patient:', rxPath, 'Appointment:', apptDocId, 'Time:', apptMs);
+          
+          // Load all recent prescriptions
+          db.collection('users').doc('patients').collection('patients').doc(resolvedPatientDocId)
+            .collection('prescriptions')
+            .orderBy('createdAt','desc')
+            .limit(30)
+            .get()
+            .then(async snap => {
+              const allPrescriptions = [];
+              snap && snap.forEach(d=> allPrescriptions.push({ id: d.id, ...d.data() }));
+              console.log('📋 [docpov] Loaded', allPrescriptions.length, 'total prescriptions');
+              
+              let appointmentPrescriptions = [];
+              
+              // If we have appointment info, try to find appointment-specific prescriptions
+              if (apptMs && apptDocId) {
+                console.log('🔍 [docpov] Looking for appointment-specific prescriptions...');
+                
+                // Load appointment data to get diagnosis
+                try {
+                  const apptDoc = await db.collection('appointments').doc(apptDocId).get();
+                  if (apptDoc && apptDoc.exists) {
+                    const apptData = apptDoc.data();
+                    const doctorId = apptData.doctorId || apptData.doctorUID || apptData.doctorUid || auth.currentUser.uid;
+                    console.log('🔍 [docpov] Appointment doctor:', doctorId, 'Current user:', auth.currentUser.uid);
+                    
+                    // Load patient diagnoses for appointment-specific matching
+                    await loadPatientPrescriptions(resolvedPatientDocId);
+                    await loadPatientDiagnoses(resolvedPatientDocId);
+                    
+                    // Get appointment diagnosis
+                    const diagnosis = getAppointmentDiagnosis(apptData, patientDiagnoses, doctorId);
+                    console.log('🔍 [docpov] Appointment diagnosis:', diagnosis);
+                    
+                    if (diagnosis.text) {
+                      // Use pickRxFor to find the best matching prescription
+                      const appointmentDate = new Date(apptMs);
+                      const matchedRx = pickRxFor(doctorId, diagnosis.text, appointmentDate, apptDocId);
+                      
+                      if (matchedRx) {
+                        console.log('✅ [docpov] Found appointment-specific prescription:', matchedRx);
+                        appointmentPrescriptions = [matchedRx];
+                      } else {
+                        console.log('❌ [docpov] No appointment-specific prescription found, trying time-based filter...');
+                        // Fallback: filter by time (within 24 hours)
+                        const appointmentTime = apptMs || 0;
+                        appointmentPrescriptions = allPrescriptions.filter(p => {
+                          const prescriptionTime = p.createdAt && p.createdAt.toDate ? p.createdAt.toDate().getTime() : 0;
+                          const timeDiff = Math.abs(prescriptionTime - appointmentTime);
+                          return timeDiff < 86400000; // Within 24 hours
+                        });
+                        console.log('🔍 [docpov] Time-based filter found:', appointmentPrescriptions.length, 'prescriptions');
+                      }
+                    } else {
+                      console.log('⚠️ [docpov] No diagnosis found for appointment, using time-based filter...');
+                      // Fallback: filter by time only
+                      const appointmentTime = apptMs || 0;
+                      appointmentPrescriptions = allPrescriptions.filter(p => {
+                        const prescriptionTime = p.createdAt && p.createdAt.toDate ? p.createdAt.toDate().getTime() : 0;
+                        const timeDiff = Math.abs(prescriptionTime - appointmentTime);
+                        return timeDiff < 86400000; // Within 24 hours
+                      });
+                      console.log('🔍 [docpov] Time-based filter found:', appointmentPrescriptions.length, 'prescriptions');
+                    }
+                  }
+                } catch (e) {
+                  console.warn('Failed to load appointment data:', e);
+                }
+              }
+              
+              // Show appointment-specific prescriptions or all recent prescriptions
+              const prescriptionsToShow = appointmentPrescriptions.length > 0 ? appointmentPrescriptions : 
+                                         (apptMs ? [] : allPrescriptions.slice(0, 5)); // Show recent if no appointment context
+              
+              console.log('📋 [docpov] Showing', prescriptionsToShow.length, 'prescriptions in main section');
+              renderPrescriptions(rxListEl, prescriptionsToShow);
+              
+              // Store all recent prescriptions for past diagnosis buttons
+              recentRx = allPrescriptions;
+              
+              // Re-render diagnosis tabs so buttons reflect mapping
+              renderDiagnosisItems(latestEl, latestDiagArr, { past: false });
+              renderDiagnosisItems(pastEl, allDiagArr, { past: true });
+            })
+            .catch((err) => {
+              console.warn('Failed to load prescriptions:', err);
+              renderPrescriptions(rxListEl, []);
+            });
+        } catch(err) {
+          console.warn('Error setting up prescriptions:', err);
+          renderPrescriptions(rxListEl, []);
+        }
+      }
+      if (!initialRendered) {
+        // Fallback: show appointment-level diagnosis if present
+        if (apptDocId) {
+          try {
+            const ad = await db.collection('appointments').doc(apptDocId).get();
+            const aData = ad.exists ? ad.data() : null;
+            const diag = aData && aData.diagnosis ? [aData.diagnosis] : [];
+            if (diag.length) {
+              latestDiagArr = [diag[0]];
+              allDiagArr = diag;
+              renderDiagnosisItems(latestEl, latestDiagArr, { past: false });
+              renderDiagnosisItems(pastEl, allDiagArr, { past: true });
+              initialRendered = true;
+            }
+          } catch {}
+        }
+      }
+      if (!initialRendered) {
+        renderDiagnosisItems(latestEl, [], { past: false });
+        renderDiagnosisItems(pastEl, [], { past: true });
+      }
+
+      if (saveBtn) {
+        saveBtn.onclick = async () => {
+          // Get fresh reference to textarea since it's dynamically recreated
+          const currentInputEl = document.getElementById('diagnosis-input');
+          const text = (currentInputEl?.value || '').trim();
+          if (!text) return;
+          saveBtn.disabled = true;
+          const oldLabel = saveBtn.querySelector('.btn-label');
+          if (oldLabel) oldLabel.textContent = 'Saving...';
+          try {
+            const targetId = resolvedPatientDocId || userUid || patientId;
+            if (!targetId) throw new Error('Missing patient id');
+            // Use correct subcollection path: users/patients/patients/{id}
+            const ref = db.collection('users').doc('patients').collection('patients').doc(targetId);
+            const existing = await ref.get().catch(()=>null);
+            const serverTS = firebase.firestore.FieldValue.serverTimestamp();
+
+            // Ensure current doctor is assigned (doctorIds contains uid) before adding diagnoses
+            const pdata = existing && existing.exists ? existing.data() : {};
+            const hasDoctorIds = Array.isArray(pdata?.doctorIds) && pdata.doctorIds.includes(auth.currentUser.uid);
+            const hasDoctorId = pdata?.doctorId && pdata.doctorId === auth.currentUser.uid;
+            if (!hasDoctorIds && !hasDoctorId) {
+              await ref.set({
+                doctorIds: firebase.firestore.FieldValue.arrayUnion(auth.currentUser.uid),
+                updatedAt: serverTS
+              }, { merge: true });
+            }
+
+            // Now append diagnosis
+            await ref.set({
+              diagnoses: firebase.firestore.FieldValue.arrayUnion({
+                text,
+                doctorId: auth.currentUser.uid,
+                doctorName: doctorName || (document.getElementById('doc-name')?.textContent || 'Doctor'),
+                createdAt: firebase.firestore.Timestamp.now()
+              }),
+              updatedAt: serverTS
+            }, { merge: true });
+            if (apptDocId) {
+              try {
+                await db.collection('appointments').doc(apptDocId).set({
+                  diagnosis: {
+                    text,
+                    doctorId: auth.currentUser.uid,
+                    doctorName: doctorName || (document.getElementById('doc-name')?.textContent || 'Doctor'),
+                    createdAt: serverTS
+                  },
+                  updatedAt: serverTS
+                }, { merge: true });
+              } catch (e2) {
+                console.warn('appointment diagnosis write failed', e2);
+              }
+            }
+            if (currentInputEl) currentInputEl.value = '';
+            const fresh = await ref.get();
+            const all = sortDiagDesc(fresh.data()?.diagnoses || []);
+            const latest = all.length ? [all[0]] : [];
+            renderDiagnosisItems(latestEl, latest, { past: false });
+            renderDiagnosisItems(pastEl, all, { past: true });
+            // Also mirror to appointment fallback view
+            if (apptDocId) {
+              try {
+                const ad = await db.collection('appointments').doc(apptDocId).get();
+                // no-op; primarily ensures write propagated for verification purposes
+              } catch {}
+            }
+            toast('Diagnosis saved. Generating e-prescription...');
+            if (oldLabel) {
+              oldLabel.textContent = 'Saved';
+            }
+            
+            // Only load prescriptions for upcoming appointments (past appointments already have them loaded)
+            const isPastAppointment = apptMs && apptMs < Date.now();
+            if (!isPastAppointment) {
+              // Now load prescriptions since diagnosis has been saved for upcoming appointment
+              try {
+                if (unsubscribeRx) { try { unsubscribeRx(); } catch(_){} }
+                // Use correct subcollection path for prescriptions
+                const rxPath = `users/patients/patients/${targetId}/prescriptions`;
+                console.log('🔍 [docpov] Setting up prescription listener after diagnosis save for upcoming appointment:', rxPath);
+                unsubscribeRx = db.collection('users').doc('patients').collection('patients').doc(targetId)
+                  .collection('prescriptions')
+                  .orderBy('createdAt','desc')
+                  .limit(1)
+                  .onSnapshot((snap)=>{
+                    const arr = [];
+                    snap && snap.forEach(d=> arr.push({ id: d.id, ...d.data() }));
+                    console.log('✅ [docpov] Prescriptions snapshot received after diagnosis save for upcoming appointment:', arr);
+                    renderPrescriptions(rxListEl, arr);
+                    // Separately load recent prescriptions (up to 10) for mapping to past diagnoses
+                    db.collection('users').doc('patients').collection('patients').doc(targetId)
+                      .collection('prescriptions')
+                      .orderBy('createdAt','desc')
+                      .limit(10)
+                      .get()
+                      .then(s2 => {
+                        const arr2 = [];
+                        s2 && s2.forEach(d=> arr2.push({ id: d.id, ...d.data() }));
+                        recentRx = arr2;
+                        // Re-render diagnosis tabs so buttons reflect mapping
+                        renderDiagnosisItems(latestEl, latest, { past: false });
+                        renderDiagnosisItems(pastEl, all, { past: true });
+                      })
+                      .catch(()=>{});
+                  }, ()=>{ renderPrescriptions(rxListEl, []); });
+              } catch(_) {
+                renderPrescriptions(rxListEl, []);
+              }
+            }
+          } catch (e) {
+            console.error('save diagnosis', e);
+            toast('Failed to save diagnosis: ' + (e?.message || ''));
+          } finally {
+            setTimeout(()=>{ if (oldLabel) oldLabel.textContent = 'Save diagnosis'; saveBtn.disabled = false; }, 1000);
+          }
+        };
+      }
+
+      // Populate patient info fields
+      const populatePatientInfo = (patientData) => {
+        const sexSelect = document.getElementById('p-sex');
+        const weightInput = document.getElementById('p-weight');
+        const dobInput = document.getElementById('p-dob');
+        const pregnantCheck = document.getElementById('p-pregnant');
+        const allergiesInput = document.getElementById('p-allergies');
+
+        if (sexSelect && patientData.sex) {
+          sexSelect.value = String(patientData.sex).toLowerCase();
+        }
+        if (weightInput && patientData.weightKg) {
+          weightInput.value = patientData.weightKg;
+        }
+        if (dobInput && patientData.dob) {
+          const dobStr = patientData.dob && patientData.dob.toDate 
+            ? patientData.dob.toDate().toISOString().slice(0,10) 
+            : (patientData.dob ? String(patientData.dob).slice(0,10) : '');
+          dobInput.value = dobStr;
+        }
+        if (pregnantCheck) {
+          pregnantCheck.checked = !!patientData.pregnant;
+        }
+        if (allergiesInput && Array.isArray(patientData.allergies)) {
+          allergiesInput.value = patientData.allergies.join(', ');
+        }
+      };
+
+      // Populate fields if we have patient data
+      if (snap && snap.exists) {
+        populatePatientInfo(snap.data());
+      }
+
+      // Save patient info handler
+      const savePatientInfoBtn = document.getElementById('save-patientinfo-btn');
+      if (savePatientInfoBtn) {
+        savePatientInfoBtn.addEventListener('click', async () => {
+          try {
+            const targetId = resolvedPatientDocId || userUid || patientId;
+            if (!targetId) {
+              toast('Unable to save: Patient ID not found');
+              return;
+            }
+
+            const sex = (document.getElementById('p-sex')?.value || '').trim().toLowerCase();
+            const pregnant = !!document.getElementById('p-pregnant')?.checked;
+            const weightVal = document.getElementById('p-weight')?.value;
+            const weightKg = weightVal === '' ? null : Number(weightVal);
+            let dobStr = (document.getElementById('p-dob')?.value || '').trim();
+            if (dobStr && !/^\d{4}-\d{2}-\d{2}$/.test(dobStr)) dobStr = '';
+            const allergiesStr = (document.getElementById('p-allergies')?.value || '').trim();
+            const allergies = allergiesStr ? allergiesStr.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+            const payload = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+            if (sex) payload.sex = sex; 
+            payload.pregnant = pregnant;
+            if (weightKg != null && !Number.isNaN(weightKg)) payload.weightKg = weightKg;
+            if (dobStr) payload.dob = dobStr;
+            payload.allergies = allergies;
+
+            // Ensure current doctor is assigned
+            payload.doctorIds = firebase.firestore.FieldValue.arrayUnion(auth.currentUser.uid);
+
+            // Use correct subcollection path: users/patients/patients/{id}
+            await db.collection('users').doc('patients').collection('patients').doc(targetId).set(payload, { merge: true });
+            toast('Patient info saved successfully');
+          } catch (e) {
+            console.error('Save patient info error:', e);
+            toast('Failed to save patient info: ' + (e?.message || ''));
+          }
+        });
+      }
+
+      // Helper function to find prescription by ID from recentRx
+      const findRxById = (rid) => (recentRx || []).find(x => x.id === rid) || null;
+
+      // Prescription Viewer Modal Helper Functions
+      function ensureRxViewerModal() {
+        let el = document.getElementById('rxViewerModal');
+        if (el) return el;
+        el = document.createElement('div');
+        el.id = 'rxViewerModal';
+        el.className = 'modal fade';
+        el.tabIndex = -1;
+        el.innerHTML = `
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Prescription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div id="rx-viewer-editor"></div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="rx-viewer-save">Save Changes</button>
+              </div>
+            </div>
+          </div>`;
+        document.body.appendChild(el);
+        return el;
+      }
+
+      function renderEditorContent(rx) {
+        const items = Array.isArray(rx.items) ? rx.items : [];
+        const rows = items.map((it, i) => `
+          <tr data-row-index="${i}">
+            <td><input class="form-control form-control-sm" value="${it.drug || ''}" /></td>
+            <td><input class="form-control form-control-sm" value="${it.dose || ''}" /></td>
+            <td><input class="form-control form-control-sm" value="${it.route || ''}" /></td>
+            <td><input class="form-control form-control-sm" value="${it.frequency || ''}" /></td>
+            <td style="width:120px"><input class="form-control form-control-sm" type="number" value="${it.duration_days || ''}" /></td>
+            <td><input class="form-control form-control-sm" value="${it.notes || ''}" /></td>
+            <td><button class="btn btn-sm btn-outline-danger" data-remove-row>×</button></td>
+          </tr>`).join('');
+        return `
+          <div class="mb-2"><strong>Diagnosis:</strong> ${rx.diagnosis || ''}</div>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead><tr><th>Drug</th><th>Dose</th><th>Route</th><th>Frequency</th><th>Days</th><th>Notes</th><th></th></tr></thead>
+              <tbody id="rx-edit-rows">${rows}</tbody>
+            </table>
+          </div>
+          <button class="btn btn-sm btn-outline-primary" id="rx-add-row">Add Item</button>`;
+      }
+
+      function openRxViewer(rx, opts = {}) {
+        const modalEl = ensureRxViewerModal();
+        const editorHost = modalEl.querySelector('#rx-viewer-editor');
+        editorHost.innerHTML = renderEditorContent(rx);
+        
+        // Add row button
+        const addBtn = modalEl.querySelector('#rx-add-row');
+        addBtn.onclick = () => {
+          const tbody = modalEl.querySelector('#rx-edit-rows');
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td><input class="form-control form-control-sm"/></td><td><input class="form-control form-control-sm"/></td><td><input class="form-control form-control-sm"/></td><td><input class="form-control form-control-sm"/></td><td style="width:120px"><input class="form-control form-control-sm" type="number"/></td><td><input class="form-control form-control-sm"/></td><td><button class="btn btn-sm btn-outline-danger" data-remove-row>×</button></td>`;
+          tbody.appendChild(tr);
+        };
+        
+        // Remove row delegation
+        editorHost.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-remove-row]');
+          if (btn) btn.closest('tr')?.remove();
+        });
+
+        const saveBtn = modalEl.querySelector('#rx-viewer-save');
+        if (opts.viewOnly) {
+          editorHost.querySelectorAll('input').forEach(i => i.setAttribute('disabled', 'disabled'));
+          saveBtn.style.display = 'none';
+        } else {
+          saveBtn.style.display = '';
+          saveBtn.onclick = async () => {
+            try {
+              const targetId = resolvedPatientDocId || userUid || patientId;
+              if (!targetId) throw new Error('Missing patient ID');
+              const rows = Array.from(editorHost.querySelectorAll('#rx-edit-rows tr'));
+              const items = rows.map(rw => {
+                const [drug, dose, route, frequency, days, notes] = Array.from(rw.querySelectorAll('input')).map(i => i.value.trim());
+                const dnum = days === '' ? '' : Number(days);
+                return { drug, dose, route, frequency, duration_days: dnum, notes };
+              }).filter(x => x.drug);
+              const refRx = db.collection('users').doc('patients').collection('patients').doc(targetId).collection('prescriptions').doc(rx.id);
+              await refRx.set({ items, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+              toast('Prescription saved. Regenerating PDF...');
+              bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            } catch (e) {
+              console.error(e);
+              toast('Failed to save prescription');
+            }
+          };
+        }
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
+
+      // Delegate click handlers for View Prescription buttons
+      // For prescriptions list
+      rxListEl?.addEventListener('click', (e) => {
+        const viewBtn = e.target.closest('[data-view-rx]');
+        if (viewBtn) {
+          const rid = viewBtn.getAttribute('data-view-rx');
+          const rx = findRxById(rid);
+          if (rx) {
+            console.log('📋 [docpov] Opening prescription viewer for:', rid, rx);
+            openRxViewer(rx, { viewOnly: false });
+          } else {
+            console.warn('⚠️ [docpov] Prescription not found:', rid);
+          }
+        }
+      });
+
+      // For diagnosis tabs
+      latestEl?.addEventListener('click', (e) => {
+        const viewBtn = e.target.closest('[data-view-rx]');
+        if (viewBtn) {
+          const rid = viewBtn.getAttribute('data-view-rx');
+          const rx = findRxById(rid);
+          const viewOnly = !!viewBtn.getAttribute('data-view-only');
+          if (rx) openRxViewer(rx, { viewOnly });
+        }
+      });
+
+      pastEl?.addEventListener('click', (e) => {
+        const viewBtn = e.target.closest('[data-view-rx]');
+        if (viewBtn) {
+          const rid = viewBtn.getAttribute('data-view-rx');
+          const rx = findRxById(rid);
+          const viewOnly = !!viewBtn.getAttribute('data-view-only');
+          if (rx) openRxViewer(rx, { viewOnly });
+        }
+      });
+    }
+
+    async function loadPatients(){
+      const uid = auth.currentUser.uid;
+      const list = qs('patients-list');
+      if (list) list.innerHTML = '<div class="text-muted small px-2">Loading…</div>';
+      const snap = await db.collection('patients').where('doctorId','==',uid).limit(25).get().catch(()=>null);
+      if (!list) return;
+      list.innerHTML = '';
+      if (!snap || snap.empty) { list.innerHTML = '<div class="list-group-item">No patients yet</div>'; return; }
+      snap.forEach(doc => {
+        const p = doc.data();
+        list.appendChild(el(`<div class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-semibold">${p.fullName || 'Patient'}</div>
+            <div class="text-muted small">${p.email || ''}</div>
+          </div>
+          <a class="btn btn-sm btn-outline-primary" href="#">View</a>
+        </div>`));
+      });
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (typeof state.unsubscribeAppointments === 'function') {
+        try { state.unsubscribeAppointments(); } catch(_) {}
+      }
+    });
+
+    // ==============================
+    // Notification System
+    // ==============================
+    let notificationListener = null;
+
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000);
+      
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+      if (diff < 604800) return Math.floor(diff / 86400) + ' days ago';
+      return date.toLocaleDateString();
+    }
+
+    function loadNotifications() {
+      const uid = auth.currentUser?.uid;
+      console.log('🔔 loadNotifications called, uid:', uid);
+      if (!uid) {
+        console.warn('⚠️ No user ID, skipping notification load');
+        return;
+      }
+
+      const notificationListEl = document.getElementById('notificationList');
+      const badgeEl = document.getElementById('notificationBadge');
+      console.log('🔔 Notification elements:', { notificationListEl: !!notificationListEl, badgeEl: !!badgeEl });
+
+      // Listen to notifications for this doctor
+      if (notificationListener) {
+        try { notificationListener(); } catch(_) {}
+      }
+
+      console.log('🔔 Setting up Firestore listener for notifications...');
+      
+      // DEBUG: Check all notifications in database
+      db.collection('notifications').get().then(snap => {
+        console.log('🔍 DEBUG: Total notifications in database:', snap.size);
+        const forThisDoctor = snap.docs.filter(doc => doc.data().doctorId === uid);
+        console.log('🔍 DEBUG: Notifications for this doctor:', forThisDoctor.length);
+        forThisDoctor.forEach(doc => {
+          const data = doc.data();
+          console.log('  - Type:', data.type, '| Message:', data.message?.substring(0, 50));
+        });
+      }).catch(err => console.error('DEBUG query failed:', err));
+      
+      // Query without orderBy to avoid index requirement - sort on client side instead
+      notificationListener = db.collection('notifications')
+        .where('doctorId', '==', uid)
+        .where('type', 'in', ['appointment_booked', 'appointment_rescheduled', 'reschedule'])
+        .limit(50)
+        .onSnapshot((snapshot) => {
+          console.log('🔔 Notification snapshot received:', { empty: snapshot.empty, size: snapshot.size });
+          if (!snapshot || snapshot.empty) {
+            console.log('🔔 No notifications found for doctor:', uid);
+            if (notificationListEl) {
+              notificationListEl.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                  <i class="bi bi-bell fs-1"></i>
+                  <p class="mt-3">No notifications yet</p>
+                </div>
+              `;
+            }
+            if (badgeEl) badgeEl.classList.add('d-none');
+            return;
+          }
+
+          const notifications = [];
+          snapshot.forEach(doc => {
+            notifications.push({ id: doc.id, ...doc.data() });
+          });
+          
+          // Sort by createdAt descending (newest first) on client side
+          notifications.sort((a, b) => {
+            const aTime = a.createdAt?.toDate?.() || new Date(0);
+            const bTime = b.createdAt?.toDate?.() || new Date(0);
+            return bTime - aTime;
+          });
+          
+          console.log('🔔 Found', notifications.length, 'notifications');
+
+          // Count unread
+          const unreadCount = notifications.filter(n => !n.read).length;
+          
+          // Update badge
+          if (badgeEl) {
+            if (unreadCount > 0) {
+              badgeEl.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+              badgeEl.classList.remove('d-none');
+            } else {
+              badgeEl.classList.add('d-none');
+            }
+          }
+
+          // Render notifications
+          if (notificationListEl) {
+            notificationListEl.innerHTML = notifications.map(notif => {
+              const isBooking = notif.type === 'appointment_booked';
+              const isReschedule = notif.type === 'appointment_rescheduled' || notif.type === 'reschedule';
+              
+              const icon = isBooking
+                ? 'calendar-plus-fill'
+                : isReschedule
+                ? 'calendar-x-fill'
+                : 'bell-fill';
+              const title = isBooking
+                ? 'New Appointment Booked'
+                : isReschedule
+                ? 'Appointment Rescheduled'
+                : 'Notification';
+              
+              const timeAgo = getTimeAgo(notif.createdAt?.toDate ? notif.createdAt.toDate() : new Date());
+              const unreadClass = !notif.read ? 'unread' : '';
+              
+              return `
+                <div class="notification-item ${unreadClass}" data-notif-id="${notif.id}">
+                  <div class="d-flex">
+                    <div class="notification-type-icon me-3">
+                      <i class="bi bi-${icon}"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="mb-0 fw-semibold">${title}</h6>
+                        ${!notif.read ? '<span class="notification-unread-badge"></span>' : ''}
+                      </div>
+                      <p class="mb-2 text-secondary">${notif.message || ''}</p>
+                      ${notif.patientName ? `<div class="small"><strong>Patient:</strong> ${notif.patientName}</div>` : ''}
+                      ${notif.oldDate ? `<div class="small"><strong>Old Date:</strong> ${notif.oldDate} at ${notif.oldTime || 'N/A'}</div>` : ''}
+                      ${notif.newDate ? `<div class="small"><strong>New Date:</strong> ${notif.newDate} at ${notif.newTime || 'N/A'}</div>` : ''}
+                      ${notif.reason ? `<div class="notification-reason mt-2"><i class="bi bi-chat-quote me-2"></i><strong>Reason:</strong> ${notif.reason}</div>` : ''}
+                      <div class="notification-time mt-2">${timeAgo}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+
+            // Mark as read when notification item is clicked
+            notificationListEl.querySelectorAll('[data-notif-id]').forEach(item => {
+              item.addEventListener('click', async () => {
+                const notifId = item.getAttribute('data-notif-id');
+                try {
+                  await db.collection('notifications').doc(notifId).update({
+                    read: true,
+                    readAt: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+                  item.classList.remove('border-primary', 'bg-white');
+                  item.classList.add('bg-light');
+                  item.querySelector('.badge')?.remove();
+                } catch(e) {
+                  console.warn('Failed to mark notification as read', e);
+                }
+              });
+            });
+          }
+        }, (error) => {
+          console.error('❌ Notification listener error:', error);
+          console.error('Error code:', error.code);
+          console.error('Error message:', error.message);
+          
+          // Show user-friendly message if it's an index error
+          if (error.code === 'failed-precondition' || error.message.includes('index')) {
+            console.error('⚠️ FIRESTORE INDEX REQUIRED! Check console for index creation link.');
+            console.error('The query requires a composite index. Firebase should have logged a link to create it.');
+          }
+          
+          // Show empty state with error
+          if (notificationListEl) {
+            notificationListEl.innerHTML = `
+              <div class="text-center py-5 text-danger">
+                <i class="bi bi-exclamation-triangle fs-1"></i>
+                <p class="mt-3">Failed to load notifications</p>
+                <small>${error.message || 'Unknown error'}</small>
+              </div>
+            `;
+          }
+        });
+    }
+
+    // Notification button click
+    document.getElementById('notificationBtn')?.addEventListener('click', () => {
+      const modal = new bootstrap.Modal(document.getElementById('notificationModal'));
+      modal.show();
+      loadNotifications();
+    });
+
+    // Mark all as read button
+    document.getElementById('markAllReadBtn')?.addEventListener('click', async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      try {
+        const snapshot = await db.collection('notifications')
+          .where('doctorId', '==', uid)
+          .where('read', '==', false)
+          .get();
+
+        const batch = db.batch();
+        snapshot.forEach(doc => {
+          batch.update(doc.ref, {
+            read: true,
+            readAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+
+        await batch.commit();
+        toast('All notifications marked as read');
+      } catch(e) {
+        console.error('Failed to mark all as read', e);
+        toast('Failed to mark notifications as read');
+      }
+    });
+
+    guardAuth();
+    
+    // Set up periodic check (every 60 seconds) for reminders and meeting button states
+    setInterval(() => {
+      // Re-check reminders periodically for any appointments that were loaded
+      // The onSnapshot will also trigger checks when data changes
+      console.log('🔔 Periodic reminder check triggered');
+      
+      // Update meeting button states and time remaining based on current time
+      const nowMs = Date.now();
+      document.querySelectorAll('.appt-card').forEach(card => {
+        const apptMsStr = card.getAttribute('data-appt-ms');
+        if (!apptMsStr) return;
+        
+        const apptMs = parseInt(apptMsStr, 10);
+        const isMeetingTimeActive = nowMs >= apptMs;
+        
+        const meetingBtn = card.querySelector('a[href*="VidMeet.html"]');
+        const timeRemainingEl = card.querySelector('small.text-muted');
+        
+        if (meetingBtn) {
+          if (isMeetingTimeActive && meetingBtn.hasAttribute('disabled')) {
+            // Enable the button
+            meetingBtn.removeAttribute('disabled');
+            meetingBtn.classList.remove('btn-secondary');
+            meetingBtn.classList.add('btn-primary');
+            meetingBtn.style.pointerEvents = 'auto';
+            meetingBtn.style.opacity = '1';
+            meetingBtn.title = 'Join the meeting';
+            
+            // Remove time remaining text
+            if (timeRemainingEl) {
+              timeRemainingEl.remove();
+            }
+            
+            console.log('✅ Meeting button enabled for appointment at', new Date(apptMs).toLocaleString());
+          } else if (!isMeetingTimeActive && timeRemainingEl) {
+            // Update time remaining text
+            const minutesUntil = Math.ceil((apptMs - nowMs) / (60 * 1000));
+            const hoursUntil = Math.floor(minutesUntil / 60);
+            const daysUntil = Math.floor(hoursUntil / 24);
+            
+            let timeText = '';
+            if (daysUntil > 0) {
+              timeText = `Available in ${daysUntil}d ${hoursUntil % 24}h`;
+            } else if (hoursUntil > 0) {
+              timeText = `Available in ${hoursUntil}h ${minutesUntil % 60}m`;
+            } else if (minutesUntil > 0) {
+              timeText = `Available in ${minutesUntil}m`;
+            } else {
+              timeText = 'Available soon';
+            }
+            
+            timeRemainingEl.innerHTML = `<i class="bi bi-clock"></i> ${timeText}`;
+          }
+        }
+      });
+    }, 60000);
+  })();
+  </script>
+  <script>
+  (function(){
+    function toggleScrolled(){
+      var body=document.body; var header=document.getElementById('header');
+      if(!header) return;
+      if(!(header.classList.contains('scroll-up-sticky')||header.classList.contains('sticky-top')||header.classList.contains('fixed-top'))) return;
+      if(window.scrollY>100){ body.classList.add('scrolled'); } else { body.classList.remove('scrolled'); }
+    }
+    window.addEventListener('load', toggleScrolled);
+    document.addEventListener('scroll', toggleScrolled);
+  })();
+
+  // Sidebar toggle for mobile
+  (function(){
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('show');
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

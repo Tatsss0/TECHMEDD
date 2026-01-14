@@ -1,0 +1,21 @@
+{
+  "projects": {
+    "default": "t-echmed"
+  },
+  "targets": {
+    "t-echmed": {
+      "hosting": {
+        "main": [
+          "t-echmed"
+        ],
+        "doctor": [
+          "techmed-doctor"
+        ],
+        "secretary": [
+          "techmed-secretary"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

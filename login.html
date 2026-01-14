@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TECHMED - Login</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2c3e50" />
+  <link rel="stylesheet" href="login.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Favicons -->
+  <link href="logo512.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  
+  <style>
+    .password-wrapper { position: relative; }
+    .password-wrapper input { width: 100%; padding-right: 40px; }
+    .toggle-password { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #000000; font-size: 16px; }
+    /* Top-left text logo */
+    .brand { position: fixed; top: 16px; left: 16px; z-index: 50; font-weight: 800; letter-spacing: 1px; }
+    .brand .tech { color: #ffffff; }
+    .brand .med { color: var(--accent, #38bdf8); }
+    .brand a { text-decoration: none; font-size: 28px; }
+  </style>
+
+  <!-- ✅ CSP Compliant for Firebase ES Modules 
+  <meta http-equiv="Content-Security-Policy"
+        content="
+          default-src 'self';
+          script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googleapis.com;
+          script-src-elem 'self' 'unsafe-inline' https://www.gstatic.com/firebasejs/;
+          style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+          img-src 'self' data: https://firebasestorage.googleapis.com;
+          font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
+          connect-src 'self'
+                      https://www.gstatic.com
+                      https://www.googleapis.com
+                      https://firestore.googleapis.com
+                      https://securetoken.googleapis.com
+                      https://identitytoolkit.googleapis.com
+                      https://*.firebaseio.com
+                      https://firebasestorage.googleapis.com;
+        ">-->
+</head>
+
+<body>
+
+  <div class="brand"><a ><span class="tech">TECH</span><span class="med">MED</span></a></div>
+
+  
+
+  <div class="login">
+    <h1 class="log">LOGIN</h1>
+    <p id="message" style="color: white; text-align: center; font-weight: bold;"></p>
+    <!-- Optional: switch button removed to avoid cross-app interference -->
+
+    <form id="loginForm">
+      <div class="user">
+        <label for="identifier">Email or Phone Number</label>
+        <input class="input" type="text" id="identifier" inputmode="email" autocomplete="username" placeholder="e.g. user@email.com or 0912..." required />
+      </div>
+      <div class="pass password-wrapper">
+        <label for="password">Password</label>
+        <input class="input" type="password" id="password" required />
+        <span class="toggle-password" onclick="togglePassword('password')"><i class="fa-solid fa-eye"></i></span>
+        <a class="forgot" href="reset-password.html" style="display:inline-block; margin-top:8px; text-decoration:underline; color:#ffffff;">Forgot Password?</a>
+      </div>
+      <div>
+        <button class="inside" type="submit">Login</button>
+      </div>
+      <h2 class="second" style="font-size: 0.9rem;">Don't have an Account? <a class="conti" href="register.html" style="font-size: 0.85rem;">Sign In</a></h2>
+    </form>
+
+    
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail,
+  signOut, setPersistence, browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCwCjmcUTTz8S34svqAxmhHmhO8QNnz5t8",
+  authDomain: "t-echmed.firebaseapp.com",
+  projectId: "t-echmed",
+  storageBucket: "t-echmed.appspot.com",
+  messagingSenderId: "290352510024",
+  appId: "1:290352510024:web:c9e2fbdec8d36f35ca547d"
+};
+
+// Initialize as default app for proper auth persistence
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const fs = getFirestore(app);
+
+console.log('User login Firebase initialized with default app instance');
+
+const messageEl = document.getElementById("message");
+const formEl = document.getElementById("loginForm");
+const identifierEl = document.getElementById("identifier");
+
+function msg(t){ messageEl.textContent = t || ""; }
+function isEmail(value){ return /.+@.+\..+/.test(value); }
+function normalizePhoneKey(input){
+  if (!input) return null;
+  const digits = input.replace(/\D/g,'');
+  if (digits.length === 11 && digits.startsWith("09")) return digits;
+  if (digits.length === 12 && digits.startsWith("63")) return "0" + digits.slice(2);
+  if (digits.length === 10 && digits.startsWith("9")) return "0" + digits;
+  return null;
+}
+
+async function resolveEmailFromIdentifier(identifier){
+  if (!identifier) return null;
+  if (isEmail(identifier)) return identifier.toLowerCase();
+
+  const phoneKey = normalizePhoneKey(identifier);
+  if (!phoneKey) {
+    msg("Enter a valid PH phone number (e.g., 09123456789).");
+    return null;
+  }
+  try {
+    const phoneDoc = await getDoc(doc(fs, "phone_index", phoneKey));
+    if (!phoneDoc.exists()) {
+      msg("Phone number not found. Please register first.");
+      return null;
+    }
+    const data = phoneDoc.data() || {};
+    if (!data.email) {
+      msg("Phone number is missing an associated email. Contact support.");
+      return null;
+    }
+    return data.email;
+  } catch (err) {
+    console.error(err);
+    msg("Failed to look up phone number. Please try again.");
+    return null;
+  }
+}
+// Role-based redirect functions (Switch-case logic)
+function redirectBasedOnRole(role) {
+  switch(role) {
+    case 'patient':
+      window.location.href = "techmed.html";
+      break;
+    case 'doctor':
+      window.location.href = "docpov.html";
+      break;
+    case 'secretary':
+      window.location.href = "secretary.html";
+      break;
+    case 'admin':
+      // Admin users should not be redirected from this login page
+      console.log('Admin role detected, redirecting to admin login');
+      window.location.href = "adminlogin.html";
+      break;
+    default:
+      console.error('Unknown role:', role);
+      msg("Unknown user role. Please contact admin.", 'error');
+  }
+}
+
+// Legacy functions for backward compatibility
+function redirectPatient(){ redirectBasedOnRole('patient'); }
+function redirectDoctor(){ redirectBasedOnRole('doctor'); }
+function redirectSecretary(){ redirectBasedOnRole('secretary'); }
+
+async function getUserData(uid, role) {
+  try {
+    console.log('Getting user data for UID:', uid, 'Role:', role);
+    
+    if (role === 'doctor') {
+      const docPath = `users/doctors/doctors/${uid}`;
+      console.log('Checking doctor path:', docPath);
+      const docRef = doc(fs, "users", "doctors", "doctors", uid);
+      const docSnap = await getDoc(docRef);
+      console.log('Doctor document exists:', docSnap.exists());
+      if (docSnap.exists()) {
+        console.log('Doctor data:', docSnap.data());
+      }
+      return docSnap.exists() ? docSnap.data() : null;
+    } else if (role === 'secretary') {
+      const docPath = `users/secretaries/secretaries/${uid}`;
+      console.log('Checking secretary path:', docPath);
+      const docRef = doc(fs, "users", "secretaries", "secretaries", uid);
+      const docSnap = await getDoc(docRef);
+      console.log('Secretary document exists:', docSnap.exists());
+      if (docSnap.exists()) {
+        console.log('Secretary data:', docSnap.data());
+      }
+      return docSnap.exists() ? docSnap.data() : null;
+    } else if (role === 'patient') {
+      // First check main users collection (where register.html actually stores patient data)
+      console.log('Checking main users collection for patient:', uid);
+      const userRef = doc(fs, "users", uid);
+      const userSnap = await getDoc(userRef);
+      console.log('Main users document exists:', userSnap.exists());
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        console.log('User data from main collection:', userData);
+        if (userData.role === 'patient') {
+          console.log('Found patient data in main users collection');
+          return userData;
+        }
+      }
+      
+      // Fallback to subcollection structure (if ever implemented)
+      const docPath = `users/patients/patients/${uid}`;
+      console.log('Checking patient subcollection path:', docPath);
+      const docRef = doc(fs, "users", "patients", "patients", uid);
+      const docSnap = await getDoc(docRef);
+      console.log('Patient subcollection document exists:', docSnap.exists());
+      
+      if (docSnap.exists()) {
+        console.log('Patient data from subcollection:', docSnap.data());
+        return docSnap.data();
+      }
+      
+      // Fallback to old structure for patients (legacy support)
+      console.log('Checking fallback patient path: patients/' + uid);
+      const fallbackRef = doc(fs, "patients", uid);
+      const fallbackSnap = await getDoc(fallbackRef);
+      console.log('Fallback patient document exists:', fallbackSnap.exists());
+      
+      if (fallbackSnap.exists()) {
+        console.log('Patient data from fallback:', fallbackSnap.data());
+        return fallbackSnap.data();
+      }
+      
+      console.log('PATIENT DATA NOT FOUND - Patient may not have completed registration or verification');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error getting user data:', error);
+    console.error('Error details:', error.message);
+  }
+  return null;
+}
+
+async function handleFirstTimeLogin(user, role, userData) {
+  console.log('=== FIRST TIME LOGIN DEBUG ===');
+  console.log('LOGIN: User UID:', user.uid);
+  console.log('LOGIN: User role:', role);
+  console.log('LOGIN: userData.firstLogin:', userData.firstLogin);
+  console.log('LOGIN: userData.emailVerified:', userData.emailVerified);
+  console.log('LOGIN: userData.registrationComplete:', userData.registrationComplete);
+  console.log('LOGIN: userData.status:', userData.status);
+  console.log('LOGIN: Firebase user.emailVerified:', user.emailVerified);
+  console.log('=== END DEBUG ===');
+  
+  // Check if email verification is needed
+  if (userData.firstLogin && !userData.emailVerified) {
+    if (!user.emailVerified) {
+      console.log('LOGIN: Email not verified, sending verification email');
+      await user.sendEmailVerification();
+      msg("Please check your email and click the verification link to continue.");
+      return false;
+    } else {
+      console.log('LOGIN: Email verified in Firebase, updating Firestore');
+      // Update email verification status in Firestore
+      const collectionPath = role === 'doctor' ? 'users/doctors/doctors' : 'users/secretaries/secretaries';
+      await updateDoc(doc(fs, collectionPath, user.uid), {
+        emailVerified: true,
+        updatedAt: new Date()
+      });
+    }
+  }
+  
+  // Check if registration completion is needed - FORCE redirect for debugging
+  if (userData.firstLogin === true || userData.registrationComplete === false || userData.registrationComplete === undefined) {
+    console.log('LOGIN: FORCING redirect to complete-registration.html');
+    console.log('LOGIN: Reason - firstLogin:', userData.firstLogin, 'registrationComplete:', userData.registrationComplete);
+    msg("Redirecting to complete your registration...", 'info');
+    setTimeout(() => {
+      window.location.replace(`complete-registration.html?uid=${user.uid}&role=${role}`);
+    }, 1000);
+    return false;
+  }
+  
+  console.log('LOGIN: First-time login checks passed - allowing dashboard access');
+  return true;
+}
+
+async function getRole(uid){
+  try {
+    const u = await getDoc(doc(fs, "users", uid));
+    if (u.exists() && u.data()?.role) return u.data().role;
+    
+    // Check new subcollection structure
+    const d = await getDoc(doc(fs, "users", "doctors", "doctors", uid));
+    if (d.exists()) return "doctor";
+    
+    const s = await getDoc(doc(fs, "users", "secretaries", "secretaries", uid));
+    if (s.exists()) return "secretary";
+    
+    const p = await getDoc(doc(fs, "users", "patients", "patients", uid));
+    if (p.exists()) return "patient";
+    
+    // Fallback to old structure
+    const pOld = await getDoc(doc(fs, "patients", uid));
+    if (pOld.exists()) return "patient";
+    const dOld = await getDoc(doc(fs, "doctors", uid));
+    if (dOld.exists()) return "doctor";
+  } catch {}
+  return null; // no fallback
+}
+
+// Clean URL if user just logged out (regardless of auth state)
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('t')) {
+  console.log('User just logged out, cleaning URL after delay');
+  setTimeout(() => {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, 1000);
+}
+
+// TEMPORARILY DISABLED AUTO-REDIRECT TO FIX LOGIN LOOP
+// If already signed in: redirect based on role (exclude admins)
+onAuthStateChanged(auth, async (user) => {
+  console.log('LOGIN: Auth state changed, user:', user ? user.uid : 'null');
+  
+  if (!user) {
+    console.log('LOGIN: No user detected');
+    return;
+  }
+  
+  // Check if user just logged out (cache busting parameter)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('t')) {
+    console.log('LOGIN: User just logged out, not auto-redirecting');
+    return;
+  }
+  
+  // DISABLED AUTO-REDIRECT - Only manual login will redirect
+  console.log('LOGIN: Auto-redirect disabled to prevent loops');
+});
+
+formEl.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  console.log('=== FORM SUBMISSION TRIGGERED ===');
+  msg("");
+
+  const identifier = identifierEl.value.trim();
+  const password = document.getElementById("password").value.trim();
+  console.log('LOGIN: Form values - identifier:', identifier, 'password length:', password.length);
+  if (!identifier || !password) { 
+    console.log('LOGIN: Missing required fields');
+    msg("All fields are required."); 
+    return; 
+  }
+
+  try {
+    console.log('=== LOGIN PROCESS START ===');
+    console.log('LOGIN: Starting login process for:', identifier);
+    const email = await resolveEmailFromIdentifier(identifier);
+    if (!email) {
+      console.log('LOGIN: Email resolution failed');
+      return;
+    }
+    console.log('LOGIN: Email resolved to:', email);
+    
+    console.log('LOGIN: Setting persistence and signing in with email:', email);
+    await setPersistence(auth, browserLocalPersistence);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    console.log('LOGIN: Sign in successful, UID:', cred.user.uid);
+    
+    const role = await getRole(cred.user.uid);
+    console.log('LOGIN: Role detected:', role);
+
+    if (!role) {
+      console.log('LOGIN: No role found, signing out');
+      console.log('=== LOGOUT TRIGGERED: No role found ===');
+      console.log('LOGIN: User UID for debugging:', cred.user.uid);
+      await signOut(auth);
+      msg("Account not found. Please contact admin.");
+      return;
+    }
+
+    // Get user data from appropriate collection
+    const userData = await getUserData(cred.user.uid, role);
+    console.log('LOGIN: User data:', userData ? 'found' : 'not found');
+    console.log('LOGIN: User data details:', userData);
+    if (!userData) {
+      console.log('LOGIN: No user data found, signing out');
+      console.log('=== LOGOUT TRIGGERED: No user data found ===');
+      await signOut(auth);
+      msg("User data not found. Please contact admin.");
+      return;
+    }
+
+    // Handle login based on user role (Switch-case logic)
+    switch(role) {
+      case "patient":
+        console.log('LOGIN: Processing patient login, status:', userData.status);
+        console.log('LOGIN: Patient verification status - emailVerified:', userData.emailVerified, 'phoneVerified:', userData.phoneVerified);
+        
+        // Allow login if patient has verified email OR phone number
+        const emailVerified = !!userData.emailVerified;
+        const phoneVerified = !!userData.phoneVerified;
+        const isVerified = emailVerified || phoneVerified;
+        
+        // Check if account is active OR verified (patients can login after verification)
+        const isActive = userData.status === "active";
+        const canLogin = isActive || isVerified;
+        
+        if (!canLogin) {
+          console.log('=== LOGOUT TRIGGERED: Patient not verified ===');
+          console.log('LOGIN: Patient verification details - emailVerified:', emailVerified, 'phoneVerified:', phoneVerified, 'status:', userData.status);
+          await signOut(auth);
+          msg("Your account is not verified. Please complete email or phone verification from the registration step. If you lost the verification code, please register again.");
+          return;
+        }
+        
+        console.log('LOGIN: Patient verification passed - canLogin:', canLogin, 'isActive:', isActive, 'isVerified:', isVerified);
+        break;
+
+      case "doctor":
+      case "secretary":
+        console.log('LOGIN: Processing doctor/secretary login, status:', userData.status);
+        
+        // Handle first-time login and verification for doctors/secretaries
+        const canProceed = await handleFirstTimeLogin(cred.user, role, userData);
+        console.log('LOGIN: First time login check result:', canProceed);
+        if (!canProceed) {
+          console.log('LOGIN: Redirecting to complete registration, skipping status checks');
+          return; // This will redirect to complete-registration.html
+        }
+        
+        // Only check status if registration is complete
+        console.log('LOGIN: Registration complete, checking account status');
+        
+        if (userData.status === "active") {
+          console.log('LOGIN: Account is active, allowing access');
+        } else if (userData.status === "pending_verification") {
+          console.log('LOGIN: Registration complete but pending admin approval');
+          console.log('=== LOGOUT TRIGGERED: Pending admin approval ===');
+          await signOut(auth);
+          msg("Your registration is complete and pending admin approval. Please wait for activation.");
+          return;
+        } else {
+          console.log('LOGIN: Account not active, status:', userData.status);
+          console.log('=== LOGOUT TRIGGERED: Account not active ===');
+          await signOut(auth);
+          msg("Your account is not active. Please contact admin.");
+          return;
+        }
+        
+        console.log('LOGIN: Doctor/Secretary validation passed');
+        break;
+
+      case "admin":
+        // Admin users should use adminlogin.html instead
+        console.log('LOGIN: Admin detected, redirecting to admin login page');
+        await signOut(auth);
+        msg("Admin users must login through the admin portal.", 'info');
+        setTimeout(() => {
+          window.location.href = "adminlogin.html";
+        }, 2000);
+        return;
+
+      default:
+        await signOut(auth);
+        msg("Unknown user role. Please contact admin.");
+        return;
+    }
+
+    // Store user session and redirect based on role
+    console.log('LOGIN: Storing user session and redirecting, role:', role);
+    localStorage.setItem("user", JSON.stringify({ email: cred.user.email, uid: cred.user.uid }));
+    localStorage.setItem("role", role);
+    
+    // For secretaries, also store the assigned doctor info
+    if (role === 'secretary' && userData.assignedDoctor) {
+      console.log('LOGIN: Storing assigned doctor UID for secretary:', userData.assignedDoctor);
+      localStorage.setItem("assignedDoctorUID", userData.assignedDoctor);
+      
+      // If assignedDoctorName is missing, try to get it from the doctor document
+      if (!userData.assignedDoctorName) {
+        console.log('LOGIN: Doctor name missing, will look up during secretary page load');
+        // Store a flag to indicate we need to look up the doctor name
+        localStorage.setItem("needsDoctorNameLookup", "true");
+      } else {
+        localStorage.setItem("assignedDoctorName", userData.assignedDoctorName);
+      }
+    }
+    
+    // Universal redirect based on role
+    console.log('LOGIN: About to redirect based on role:', role);
+    
+    // Small delay to ensure auth state is fully established
+    setTimeout(() => {
+      console.log('LOGIN: Executing redirect after delay');
+      redirectBasedOnRole(role);
+    }, 100);
+
+  } catch (error) {
+    console.log('=== LOGIN ERROR CAUGHT ===');
+    console.error('LOGIN: Error details:', error);
+    console.log('LOGIN: Error code:', error.code);
+    console.log('LOGIN: Error message:', error.message);
+    
+    if (error.code === "auth/user-not-found") msg("Account not found for the provided email/phone.");
+    else if (error.code === "auth/wrong-password") msg("Incorrect password.");
+    else if (error.code === "auth/user-disabled") msg("User account is disabled.");
+    else msg("Login failed: " + (error.message || "Unknown error"));
+  }
+});
+
+
+window.togglePassword = function(id){
+  const input = document.getElementById(id);
+  if (!input) return;
+  const icon = input.parentElement.querySelector('.toggle-password i');
+  input.type = input.type === 'password' ? 'text' : 'password';
+  if (icon) { icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); }
+};
+
+// Match MED color to button accent
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.querySelector('.signn, .inside');
+  const med = document.querySelector('.brand .med');
+  if (btn && med) {
+    const cs = getComputedStyle(btn);
+    const bg = cs.backgroundColor || cs.borderColor || cs.color;
+    if (bg) med.style.color = bg;
+  }
+});
+</script>
+</body>
+</html>

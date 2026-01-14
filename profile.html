@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>TECHMED — Doctor POV</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2c3e50" />
+
+  <!-- Favicons -->
+  <link href="logo512.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+  <link href="docpov.css" rel="stylesheet">
+  <link href="profile-styles.css" rel="stylesheet">
+  
+  <style>
+    /* Notification Item Styles */
+    .notification-item {
+      border-left: 4px solid transparent;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.5rem;
+      background: #f8f9fa;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .notification-item:hover {
+      background: #e9ecef;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .notification-item.unread {
+      border-left-color: #099aa7;
+      background: #e8f8f9;
+    }
+    .notification-item.unread:hover {
+      background: #d4f1f4;
+    }
+    .notification-type-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #099aa7;
+      color: white;
+      font-size: 1.2rem;
+    }
+    .notification-unread-badge {
+      width: 8px;
+      height: 8px;
+      background: #dc3545;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .notification-time {
+      font-size: 0.75rem;
+      color: #6c757d;
+    }
+    .notification-reason {
+      background: #fff;
+      border-left: 3px solid #099aa7;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 0.25rem;
+      font-style: italic;
+      color: #495057;
+    }
+    
+    /* Badge styling for weekday tabs (matching UI theme) */
+    .nav-link .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      font-weight: 600;
+      vertical-align: middle;
+      background-color: #099aa7 !important;
+      color: white !important;
+      border-radius: 12px;
+    }
+    
+    /* Active tab badge styling */
+    .nav-link.active .badge {
+      background-color: #fff !important;
+      color: #099aa7 !important;
+      border: 1px solid #099aa7;
+    }
+  </style>
+</head>
+
+<body class="index-page">
+  <!-- ======= Header ======= -->
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid d-flex align-items-center px-3">
+      
+      <!-- Left Side: Mobile toggle + Logo -->
+      <div class="d-flex align-items-center me-auto">
+        <!-- Mobile menu toggle -->
+        <button id="sidebarToggle" class="btn btn-outline-secondary d-lg-none me-2" aria-label="Toggle menu">
+          <i class="bi bi-list"></i>
+        </button>
+
+        <!-- Logo -->
+        <a class="logo d-flex align-items-center">
+          <h1 class="sitename">TECH<span>MED</span></h1>
+        </a>
+      </div>
+
+      <!-- Center: Page Title (hidden on mobile) -->
+      <h5 class="mb-0 fw-semibold d-none d-md-block position-absolute start-50 translate-middle-x">Doctor Profile</h5>
+
+      <!-- Right Side: Buttons (always on right) -->
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <!-- Notification -->
+        <button class="btn btn-outline-primary position-relative" id="notificationBtn" aria-label="Notifications">
+          <i class="bi bi-bell"></i>
+          <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+        </button>
+
+        <!-- Profile Dropdown -->
+        <div class="dropdown">
+          <button class="btn btn-light border dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle fs-5 me-2"></i>
+            <span id="headerUserName" class="fw-semibold">Doctor</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person me-2"></i>Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item text-danger" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar shadow-sm">
+    <div class="d-flex flex-column h-100 p-3">
+      <!-- Navigation -->
+      <ul class="nav nav-pills flex-column gap-1" id="sidebarNav">
+        <li class="nav-item">
+          <a href="docpov.html" class="nav-link d-flex align-items-center">
+            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="patient.html" class="nav-link d-flex align-items-center">
+            <i class="bi bi-people me-2"></i> Patients & Records
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link active d-flex align-items-center">
+            <i class="bi bi-person-badge me-2"></i> Profile
+          </a>
+        </li>
+      </ul>
+      <!-- Spacer -->
+      <div class="flex-grow-1"></div>
+    </div>
+  </aside>
+
+  <!-- ======= Main ======= -->
+  <div class="main">
+    <div class="container">
+      <div class="card p-3 shadow-sm">
+        <h4>Profile & Licenses</h4>
+        <p class="text-muted">Update personal details and certifications</p>
+        <div class="row align-items-center g-3 mb-2">
+          <div class="col-auto">
+            <img id="avatar-preview" src="logo.png" alt="avatar" class="avatar-preview">
+          </div>
+          <div class="col-auto d-flex gap-2">
+            <input type="file" id="profile-avatar" accept="image/*" class="d-none">
+            <button type="button" class="btn btn-outline-primary" id="btn-avatar-change"><i class="bi bi-image"></i> Change Photo</button>
+            <button type="button" class="btn btn-outline-danger" id="btn-avatar-remove"><i class="bi bi-x-circle"></i> Remove</button>
+          </div>
+        </div>
+        <form id="profile-form">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="profile-name" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" id="profile-email" class="form-control" disabled />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Contact Number</label>
+              <input type="text" id="profile-contact" class="form-control" placeholder="e.g., 09123456789" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Specialty</label>
+              <input type="text" id="profile-specialty" class="form-control" placeholder="e.g., Endocrinologist" disabled />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Years of Experience</label>
+              <input type="number" id="profile-experience" class="form-control" min="0" step="1" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">License Number</label>
+              <input type="text" id="profile-license-number" class="form-control" placeholder="Medical license number" disabled />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">License Expiry</label>
+              <input type="date" id="profile-license-expiry" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Clinic/Hospital</label>
+              <input type="text" id="profile-clinic-name" class="form-control" placeholder="Clinic or hospital name" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Clinic Address</label>
+              <input type="text" id="profile-clinic-address" class="form-control" placeholder="Full clinic address" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Country</label>
+              <input type="text" id="profile-country" class="form-control" placeholder="e.g., Philippines" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">About / Bio</label>
+              <textarea id="profile-about" class="form-control" rows="3" placeholder="Short bio about yourself and your practice"></textarea>
+            </div>
+          </div>
+          <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-outline-secondary" id="profile-reset">Reset</button>
+          </div>
+          <hr class="my-4" />
+          <h6>Licenses & Certifications</h6>
+          <div class="row g-2 align-items-center">
+            <div class="col-md-8"><input type="file" id="profile-license" class="form-control" multiple></div>
+            <div class="col-md-4 d-grid"><button type="button" class="btn btn-outline-primary" id="license-upload">Upload</button></div>
+          </div>
+          <ul class="list-group mt-3" id="license-list"></ul>
+
+          <br>
+
+          <h6>Weekly Availability</h6>
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+              <label class="form-label">Date(s)</label>
+              <input id="schedule-dates" class="form-control form-control-sm schedule-dates-input" type="text" />
+              <small class="text-muted d-block mt-1">Pick one or more dates from the calendar</small>
+              <div id="schedule-weekday-group" class="btn-group btn-group-sm flex-wrap mt-2" role="group" aria-label="Select weekday column">
+                <button type="button" class="btn btn-outline-secondary" data-weekday="0">Sun</button>
+                <button type="button" class="btn btn-outline-secondary" data-weekday="1">Mon</button>
+                <button type="button" class="btn btn-outline-secondary" data-weekday="2">Tue</button>
+                <button type="button" class="btn btn-outline-secondary" data-weekday="3">Wed</button>
+                <button type="button" class="btn btn-outline-secondary" data-weekday="4">Thu</button>
+                <button type="button" class="btn btn-outline-secondary" data-weekday="5">Fri</button>
+                <button type="button" class="btn btn-outline-secondary" data-weekday="6">Sat</button>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Start</label>
+              <input type="time" id="schedule-start" class="form-control" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">End</label>
+              <input type="time" id="schedule-end" class="form-control" />
+            </div>
+            <div class="col-md-2 d-grid">
+              <button type="button" class="btn btn-outline-primary" id="schedule-add">
+                <i class="bi bi-plus-lg"></i> Add Slot
+              </button>
+            </div>
+          </div>
+          
+          <!-- Day of Week Tabs -->
+          <ul class="nav nav-tabs mt-3" id="scheduleDayTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="tab-sunday" data-bs-toggle="tab" data-bs-target="#day-sunday" type="button" role="tab">Sunday</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-monday" data-bs-toggle="tab" data-bs-target="#day-monday" type="button" role="tab">Monday</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-tuesday" data-bs-toggle="tab" data-bs-target="#day-tuesday" type="button" role="tab">Tuesday</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-wednesday" data-bs-toggle="tab" data-bs-target="#day-wednesday" type="button" role="tab">Wednesday</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-thursday" data-bs-toggle="tab" data-bs-target="#day-thursday" type="button" role="tab">Thursday</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-friday" data-bs-toggle="tab" data-bs-target="#day-friday" type="button" role="tab">Friday</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-saturday" data-bs-toggle="tab" data-bs-target="#day-saturday" type="button" role="tab">Saturday</button>
+            </li>
+          </ul>
+          
+          <!-- Tab Content -->
+          <div class="tab-content mt-2" id="scheduleDayTabContent">
+            <div class="tab-pane fade show active" id="day-sunday" role="tabpanel">
+              <ul class="list-group" id="schedule-list-sunday"></ul>
+            </div>
+            <div class="tab-pane fade" id="day-monday" role="tabpanel">
+              <ul class="list-group" id="schedule-list-monday"></ul>
+            </div>
+            <div class="tab-pane fade" id="day-tuesday" role="tabpanel">
+              <ul class="list-group" id="schedule-list-tuesday"></ul>
+            </div>
+            <div class="tab-pane fade" id="day-wednesday" role="tabpanel">
+              <ul class="list-group" id="schedule-list-wednesday"></ul>
+            </div>
+            <div class="tab-pane fade" id="day-thursday" role="tabpanel">
+              <ul class="list-group" id="schedule-list-thursday"></ul>
+            </div>
+            <div class="tab-pane fade" id="day-friday" role="tabpanel">
+              <ul class="list-group" id="schedule-list-friday"></ul>
+            </div>
+            <div class="tab-pane fade" id="day-saturday" role="tabpanel">
+              <ul class="list-group" id="schedule-list-saturday"></ul>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Modal -->
+  <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Notifications</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="notificationList">
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-bell fs-1"></i>
+            <p class="mt-3">No notifications yet</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="markAllReadBtn">Mark All Read</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed top-0 end-0 p-3 toast-container-custom"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  
+  <!-- Use same Firebase app instance as login.html -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCwCjmcUTTz8S34svqAxmhHmhO8QNnz5t8",
+      authDomain: "t-echmed.firebaseapp.com",
+      databaseURL: "https://t-echmed-default-rtdb.firebaseio.com",
+      projectId: "t-echmed",
+      storageBucket: "t-echmed.firebasestorage.app",
+      messagingSenderId: "290352510024",
+      appId: "1:290352510024:web:c9e2fbdec8d36f35ca547d"
+    };
+
+    // Initialize as default app to maintain auth persistence
+    const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+
+    // Use the default app instance
+    const auth = app.auth();
+    const db = app.firestore();
+    const storage = app.storage();
+    
+    // Make Firebase instances globally available for profile.js
+    window.auth = auth;
+    window.db = db;
+    window.storage = storage;
+    
+    console.log('Profile page Firebase initialized with default app instance');
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
+  <!-- Footer -->
+  <footer class="border-top py-3 text-center small text-muted mt-5">© TECHMED</footer>
+
+  <script>
+  document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    try { await auth.signOut(); } finally { window.location.replace('index.html'); }
+  });
+  </script>
+ 
+  <script src="./profile.js"></script>
+  <script>
+  (function(){
+    function toggleScrolled(){
+      var body=document.body; var header=document.getElementById('header');
+      if(!header) return;
+      if(!(header.classList.contains('scroll-up-sticky')||header.classList.contains('sticky-top')||header.classList.contains('fixed-top'))) return;
+      if(window.scrollY>100){ body.classList.add('scrolled'); } else { body.classList.remove('scrolled'); }
+    }
+    window.addEventListener('load', toggleScrolled);
+    document.addEventListener('scroll', toggleScrolled);
+  })();
+
+  // Sidebar toggle for mobile
+  (function(){
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('show');
+      });
+    }
+  })();
+
+  // Notification System
+  let notificationListener = null;
+  let notificationModal = null;
+
+  // Initialize notification modal
+  const notificationModalEl = document.getElementById('notificationModal');
+  if (notificationModalEl && window.bootstrap && window.bootstrap.Modal) {
+    notificationModal = new window.bootstrap.Modal(notificationModalEl);
+  }
+
+  // Notification button click handler
+  document.getElementById('notificationBtn')?.addEventListener('click', () => {
+    if (notificationModal) notificationModal.show();
+  });
+
+  // Mark all as read button
+  document.getElementById('markAllReadBtn')?.addEventListener('click', async () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid || !db) return;
+    
+    try {
+      const snapshot = await db.collection('notifications')
+        .where('doctorId', '==', uid)
+        .where('read', '==', false)
+        .get();
+      
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => {
+        batch.update(doc.ref, {
+          read: true,
+          readAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      await batch.commit();
+    } catch (e) {
+      console.error('Failed to mark all as read:', e);
+    }
+  });
+
+  // Helper function to get time ago
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + ' days ago';
+    return date.toLocaleDateString();
+  }
+
+  // Load notifications function
+  function loadNotifications() {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    const notificationListEl = document.getElementById('notificationList');
+    const badgeEl = document.getElementById('notificationBadge');
+
+    if (notificationListener) {
+      try { notificationListener(); } catch(_) {}
+    }
+
+    notificationListener = db.collection('notifications')
+      .where('doctorId', '==', uid)
+      .where('type', 'in', ['appointment_booked', 'appointment_rescheduled', 'reschedule'])
+      .limit(50)
+      .onSnapshot((snapshot) => {
+        if (!snapshot || snapshot.empty) {
+          if (notificationListEl) {
+            notificationListEl.innerHTML = `
+              <div class="text-center py-5 text-muted">
+                <i class="bi bi-bell fs-1"></i>
+                <p class="mt-3">No notifications yet</p>
+              </div>
+            `;
+          }
+          if (badgeEl) badgeEl.classList.add('d-none');
+          return;
+        }
+
+        const notifications = [];
+        snapshot.forEach(doc => {
+          notifications.push({ id: doc.id, ...doc.data() });
+        });
+        
+        notifications.sort((a, b) => {
+          const aTime = a.createdAt?.toDate?.() || new Date(0);
+          const bTime = b.createdAt?.toDate?.() || new Date(0);
+          return bTime - aTime;
+        });
+
+        const unreadCount = notifications.filter(n => !n.read).length;
+        
+        if (badgeEl) {
+          if (unreadCount > 0) {
+            badgeEl.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+            badgeEl.classList.remove('d-none');
+          } else {
+            badgeEl.classList.add('d-none');
+          }
+        }
+
+        if (notificationListEl) {
+          notificationListEl.innerHTML = notifications.map(notif => {
+            const isBooking = notif.type === 'appointment_booked';
+            const isReschedule = notif.type === 'appointment_rescheduled' || notif.type === 'reschedule';
+            
+            const icon = isBooking
+              ? 'calendar-plus-fill'
+              : isReschedule
+              ? 'calendar-x-fill'
+              : 'bell-fill';
+            const title = isBooking
+              ? 'New Appointment Booked'
+              : isReschedule
+              ? 'Appointment Rescheduled'
+              : 'Notification';
+            
+            const timeAgo = getTimeAgo(notif.createdAt?.toDate ? notif.createdAt.toDate() : new Date());
+            const unreadClass = !notif.read ? 'unread' : '';
+            
+            return `
+              <div class="notification-item ${unreadClass}" data-notif-id="${notif.id}">
+                <div class="d-flex">
+                  <div class="notification-type-icon me-3">
+                    <i class="bi bi-${icon}"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <h6 class="mb-0 fw-semibold">${title}</h6>
+                      ${!notif.read ? '<span class="notification-unread-badge"></span>' : ''}
+                    </div>
+                    <p class="mb-2 text-secondary">${notif.message || ''}</p>
+                    ${notif.patientName ? `<div class="small"><strong>Patient:</strong> ${notif.patientName}</div>` : ''}
+                    ${notif.oldDate ? `<div class="small"><strong>Old Date:</strong> ${notif.oldDate} at ${notif.oldTime || 'N/A'}</div>` : ''}
+                    ${notif.newDate ? `<div class="small"><strong>New Date:</strong> ${notif.newDate} at ${notif.newTime || 'N/A'}</div>` : ''}
+                    ${notif.reason ? `<div class="notification-reason mt-2"><i class="bi bi-chat-quote me-2"></i><strong>Reason:</strong> ${notif.reason}</div>` : ''}
+                    <div class="notification-time mt-2">${timeAgo}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          notificationListEl.querySelectorAll('[data-notif-id]').forEach(item => {
+            item.addEventListener('click', async () => {
+              const notifId = item.getAttribute('data-notif-id');
+              try {
+                await db.collection('notifications').doc(notifId).update({
+                  read: true,
+                  readAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                item.classList.remove('border-primary', 'bg-white');
+                item.classList.add('bg-light');
+                item.querySelector('.badge')?.remove();
+              } catch(e) {
+                console.warn('Failed to mark notification as read', e);
+              }
+            });
+          });
+        }
+      }, (error) => {
+        console.error('Notification listener error:', error);
+        if (notificationListEl) {
+          notificationListEl.innerHTML = `
+            <div class="text-center py-5 text-danger">
+              <i class="bi bi-exclamation-triangle fs-1"></i>
+              <p class="mt-3">Failed to load notifications</p>
+              <small>${error.message || 'Unknown error'}</small>
+            </div>
+          `;
+        }
+      });
+  }
+
+  // Call loadNotifications after auth state is confirmed
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      loadNotifications();
+    }
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TECHMED - Email Verification</title>
+  <link rel="stylesheet" href="login.css" />
+  <style>
+    .brand { position: fixed; top: 16px; left: 16px; z-index: 50; font-weight: 800; letter-spacing: 1px; }
+    .brand .tech { color: #ffffff; }
+    .brand .med { color: var(--accent, #38bdf8); }
+    .brand a { text-decoration: none; font-size: 28px; }
+    .success-message { color: #28a745; text-align: center; font-weight: bold; }
+    .error-message { color: #dc3545; text-align: center; font-weight: bold; }
+    .info-message { color: #17a2b8; text-align: center; font-weight: bold; }
+  </style>
+</head>
+
+<body>
+  <div class="brand"><a><span class="tech">TECH</span><span class="med">MED</span></a></div>
+
+  <div class="login">
+    <h1 class="log">Email Verification</h1>
+    <p id="message" class="info-message">Verifying your email...</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import {
+      getAuth, applyActionCode
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCwCjmcUTTz8S34svqAxmhHmhO8QNnz5t8",
+      authDomain: "t-echmed.firebaseapp.com",
+      projectId: "t-echmed",
+      storageBucket: "t-echmed.appspot.com",
+      messagingSenderId: "290352510024",
+      appId: "1:290352510024:web:c9e2fbdec8d36f35ca547d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const messageEl = document.getElementById("message");
+
+    function msg(text, type = 'info') {
+      messageEl.textContent = text || "";
+      messageEl.className = type === 'error' ? 'error-message' : 
+                           type === 'success' ? 'success-message' : 'info-message';
+    }
+
+    // Get the action code from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    const actionCode = urlParams.get('oobCode');
+
+    if (!mode || !actionCode) {
+      msg("Invalid verification link.", 'error');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 3000);
+    } else if (mode === 'verifyEmail') {
+      // Verify email
+      applyActionCode(auth, actionCode)
+        .then(() => {
+          msg("Email verified successfully! Redirecting to login...", 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+        })
+        .catch((error) => {
+          console.error('Verification error:', error);
+          msg("Verification failed: " + error.message, 'error');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 3000);
+        });
+    } else if (mode === 'resetPassword') {
+      // Redirect password reset to the appropriate handler
+      window.location.href = 'reset-password.html?' + window.location.search.slice(1);
+    } else {
+      msg("Unknown action. Redirecting...", 'error');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

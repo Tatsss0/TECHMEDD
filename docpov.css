@@ -1,0 +1,200 @@
+/* ---------- Base / Theme ---------- */
+:root {
+    --bg: #f6f9fc;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --accent: #099aa7;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --radius: 0.75rem;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    background: var(--bg);
+    color: #111827;
+    line-height: 1.5;
+  }
+  
+  /* ---------- Main Layout ---------- */
+  .main {
+    margin-top: 80px; /* offset for fixed Bootstrap header */
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  /* ---------- Dashboard Header ---------- */
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--card);
+    padding: 1.25rem;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+  
+  .card h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* ---------- Patients Section ---------- */
+  .patients ul {
+    list-style: none;
+  }
+  
+  .patients li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .patients li:last-child {
+    border-bottom: none;
+  }
+  
+  .patients li span {
+    font-weight: 500;
+  }
+  
+  .patients li button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+  
+  .patients li button:hover {
+    background: #1e40af;
+  }
+  
+  /* ---------- Profile & Settings ---------- */
+  .profile p,
+  .settings p {
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+  }
+  
+  .profile p strong,
+  .settings p strong {
+    color: #111827;
+  }
+  
+  /* ---------- Tab Styling ---------- */
+  .nav-tabs {
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  .nav-tabs .nav-link {
+    border: none;
+    border-radius: 0;
+    color: var(--muted);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    position: relative;
+    transition: all 0.2s ease;
+    background: transparent;
+  }
+  
+  .nav-tabs .nav-link:hover {
+    color: var(--accent);
+    background: rgba(9, 154, 167, 0.05);
+    border: none;
+  }
+  
+  .nav-tabs .nav-link.active {
+    color: var(--accent);
+    background: rgba(9, 154, 167, 0.1);
+    border: none;
+    font-weight: 600;
+  }
+  
+  .nav-tabs .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+  }
+  
+  /* ---------- Button Styling ---------- */
+  .btn-primary {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+  
+  .btn-primary:hover,
+  .btn-primary:focus {
+    background-color: #087a85;
+    border-color: #087a85;
+    color: #ffffff;
+  }
+  
+  .btn-primary:active,
+  .btn-primary.active {
+    background-color: #076b75;
+    border-color: #076b75;
+    color: #ffffff;
+  }
+  
+  .btn-outline-primary {
+    color: var(--accent);
+    border-color: var(--accent);
+    background-color: transparent;
+  }
+  
+  .btn-outline-primary:hover,
+  .btn-outline-primary:focus {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+  
+  .btn-outline-primary:active,
+  .btn-outline-primary.active {
+    background-color: #087a85;
+    border-color: #087a85;
+    color: #ffffff;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 768px) {
+    .main {
+      padding: 1rem;
+      margin-top: 70px;
+    }
+  
+    h1 {
+      font-size: 1.25rem;
+    }
+    
+    .nav-tabs .nav-link {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+  }

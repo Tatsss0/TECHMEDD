@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Setup Guide - TechMed</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; border-radius: 10px; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.1em; opacity: 0.9; }
+        .card { background: white; border-radius: 10px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .step { margin-bottom: 30px; padding-left: 50px; position: relative; }
+        .step-number { position: absolute; left: 0; top: 0; width: 35px; height: 35px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; }
+        .step h3 { color: #667eea; margin-bottom: 15px; font-size: 1.3em; }
+        .step ul { margin-left: 20px; margin-top: 10px; }
+        .step li { margin-bottom: 8px; }
+        .code-block { background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 5px; overflow-x: auto; margin: 15px 0; font-family: 'Courier New', monospace; font-size: 0.9em; }
+        .highlight { background: #fff3cd; padding: 2px 6px; border-radius: 3px; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .success { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .error { background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .btn { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 10px 10px 10px 0; transition: background 0.3s; }
+        .btn:hover { background: #5568d3; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .checklist { list-style: none; }
+        .checklist li { padding: 10px; margin: 5px 0; background: #f8f9fa; border-radius: 5px; }
+        .checklist li:before { content: '☐ '; font-size: 1.5em; margin-right: 10px; }
+        strong { color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Email Setup Guide</h1>
+            <p>Get your TechMed email notifications working in 5 minutes!</p>
+        </div>
+
+        <div class="card">
+            <h2>🚨 The Problem</h2>
+            <div class="error">
+                <strong>XAMPP's PHP mail() function doesn't work by default!</strong><br>
+                You need to configure SMTP (Simple Mail Transfer Protocol) to send emails.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>✅ The Solution: Gmail SMTP</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Get Gmail App Password</h3>
+                <ol>
+                    <li>Go to your Google Account: <a href="https://myaccount.google.com/" target="_blank">myaccount.google.com</a></li>
+                    <li><strong>Enable 2-Factor Authentication</strong> (if not already enabled):
+                        <ul>
+                            <li>Security → 2-Step Verification</li>
+                            <li>Follow the prompts</li>
+                        </ul>
+                    </li>
+                    <li><strong>Generate App Password</strong>:
+                        <ul>
+                            <li>Visit: <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a></li>
+                            <li>Select app: "Mail"</li>
+                            <li>Select device: "Windows Computer"</li>
+                            <li>Click "Generate"</li>
+                        </ul>
+                    </li>
+                    <li><strong>SAVE the 16-character password!</strong></li>
+                </ol>
+                <div class="success">
+                    Example App Password: <strong>abcd efgh ijkl mnop</strong><br>
+                    <small>(You'll need this in Step 2)</small>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Configure SMTP Settings</h3>
+                <ol>
+                    <li>Open this file: <span class="highlight">c:\xampp\htdocs\config\smtp-config.php</span></li>
+                    <li>Find these lines and replace with YOUR values:</li>
+                </ol>
+                <div class="code-block">define('SMTP_USER', '<span style="color:#f92672">ourtechmedcompany@gmail.com</span>'); <span style="color:#75715e">// Your Gmail</span>
+define('SMTP_PASS', '<span style="color:#f92672">your-app-password-here</span>');      <span style="color:#75715e">// App Password (NO SPACES!)</span>
+define('MAIL_FROM', '<span style="color:#f92672">ourtechmedcompany@gmail.com</span>'); <span style="color:#75715e">// Your Gmail</span></div>
+                
+                <div class="warning">
+                    <strong>⚠️ Remove all spaces from the App Password!</strong><br>
+                    Example: If password is "abcd efgh ijkl mnop"<br>
+                    Enter as: "abcdefghijklmnop"
+                </div>
+
+                <h4>Example Configuration:</h4>
+                <div class="code-block">define('SMTP_USER', '<span style="color:#a6e22e">john.doe@gmail.com</span>');
+define('SMTP_PASS', '<span style="color:#a6e22e">abcdefghijklmnop</span>');
+define('MAIL_FROM', '<span style="color:#a6e22e">john.doe@gmail.com</span>');</div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Test Your Configuration</h3>
+                <a href="test-email.php" class="btn" target="_blank">🧪 Open Test Page</a>
+                <ol>
+                    <li>The test page should now show:
+                        <div class="success" style="margin-top: 10px;">
+                            <strong>Configuration:</strong><br>
+                            • SMTP Host: smtp.gmail.com ✅<br>
+                            • SMTP User: your.email@gmail.com ✅<br>
+                            • SMTP Port: 587 ✅
+                        </div>
+                    </li>
+                    <li>Enter your email address</li>
+                    <li>Click "Send Test Email"</li>
+                    <li>Check your inbox (and spam folder!)</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Test Reschedule Notification</h3>
+                <ol>
+                    <li>Log into your TechMed patient account</li>
+                    <li>Reschedule any appointment</li>
+                    <li>Press <kbd>F12</kbd> to open browser console</li>
+                    <li>Look for: <span class="highlight">✅ Reschedule notification email sent successfully</span></li>
+                    <li>Check your email!</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>✅ Verification Checklist</h2>
+            <ul class="checklist">
+                <li>Test page shows "SMTP Host: smtp.gmail.com" (NOT "NOT CONFIGURED")</li>
+                <li>Test email arrives in your inbox</li>
+                <li>Reschedule notification arrives after rescheduling</li>
+                <li>Browser console shows "✅ Email sent successfully"</li>
+                <li>No errors in console (F12)</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>❌ Common Problems & Solutions</h2>
+            
+            <div class="error">
+                <strong>Error: "Could not instantiate mail function"</strong><br>
+                <strong>Solution:</strong> Configure SMTP (follow steps above). PHP mail() doesn't work on XAMPP without config.
+            </div>
+
+            <div class="error">
+                <strong>Error: "SMTP connect() failed"</strong><br>
+                <strong>Solution:</strong> Check your App Password. Make sure you're using the App Password, NOT your regular Gmail password. Remove all spaces from the password.
+            </div>
+
+            <div class="error">
+                <strong>Error: "Authentication failed"</strong><br>
+                <strong>Solution:</strong>
+                <ul>
+                    <li>Verify 2FA is enabled on Google account</li>
+                    <li>Generate a NEW App Password</li>
+                    <li>Copy it without spaces</li>
+                    <li>Update smtp-config.php</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <strong>Console shows "✅ Email sent" but no email received?</strong><br>
+                <strong>Solution:</strong>
+                <ul>
+                    <li>Check spam/junk folder</li>
+                    <li>Wait a few minutes (sometimes delayed)</li>
+                    <li>Check PHP error logs: C:\xampp\php\logs\php_error_log</li>
+                    <li>Verify patient account has correct email address in Firestore</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📚 Additional Resources</h2>
+            <a href="test-email.php" class="btn">🧪 Test Email System</a>
+            <a href="../QUICK-EMAIL-FIX.txt" class="btn btn-secondary">📄 Text Guide</a>
+            <a href="../EMAIL-SETUP-GUIDE.md" class="btn btn-secondary">📖 Full Documentation</a>
+        </div>
+
+        <div class="card" style="background: #f8f9fa;">
+            <h2>🎉 Once Configured...</h2>
+            <div class="success">
+                <strong>All email features will work automatically:</strong>
+                <ul>
+                    <li>✅ Appointment booking confirmations</li>
+                    <li>✅ Appointment reschedule notifications</li>
+                    <li>✅ Any future email features</li>
+                </ul>
+                <strong>No additional configuration needed!</strong>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

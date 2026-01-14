@@ -1,0 +1,154 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #fdfdfb;
+    margin-top: 130px;
+    padding: 0;
+  }
+
+  
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    padding: 2rem 5%;
+  }
+  
+  .profile,
+  .calendar,
+  .form-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile {
+    flex: 2;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  .profile img {
+    width: 150px;
+    border-radius: 8px;
+  }
+  
+  .calendar {
+    flex: 1;
+  }
+  
+  .calendar h2 {
+    color: #013246;
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  
+  .calendar-header button,
+  .calendar-header select,
+  .calendar-header input {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    gap: 0.3rem;
+  }
+  
+  .calendar-grid div {
+    padding: 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .calendar-grid .day-name {
+    font-weight: bold;
+    background: #eee;
+  }
+  
+  .calendar-grid .selected {
+    background: #00a892;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .calendar-grid .available {
+    background: #1e6357;
+    color: white;
+  }
+  
+  .calendar-grid div.unavailable {
+    color: #bbb;
+    background: #f0f0f0;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+  
+  .form-section {
+    width: 100%;
+  }
+  
+  .appointment-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .appointment-form input,
+  .appointment-form select {
+    flex: 1 1 300px;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .time-slot {
+    padding: 0.5rem 1rem;
+    background: #174c43;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .time-slot.active {
+    background: #00a892;
+  }
+  
+  button {
+    margin-top: 1rem;
+    background: #174c43;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .time-slot.booked {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    pointer-events: none;
+    border: 1px dashed #999;
+  }
+
+
+
+  

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fix Phone Index</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #099aa7; margin-bottom: 20px; }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
+    button {
+      background: #099aa7;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #077d88; }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .info { background: #d1ecf1; color: #0c5460; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Fix Phone Index for Login</h1>
+    <p>Use this tool to add your phone number to the phone_index collection if you can't login with your phone.</p>
+    
+    <input type="email" id="email" placeholder="Your email" />
+    <input type="tel" id="phone" placeholder="Your phone (09xxxxxxxxx)" maxlength="11" />
+    <button onclick="checkAndAddPhone()">Check & Add to Phone Index</button>
+    
+    <div id="result"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyCwCjmcUTTz8S34svqAxmhHmhO8QNnz5t8",
+      authDomain: "t-echmed.firebaseapp.com",
+      projectId: "t-echmed",
+      storageBucket: "t-echmed.appspot.com",
+      messagingSenderId: "290352510024",
+      appId: "1:290352510024:web:c9e2fbdec8d36f35ca547d"
+    });
+
+    const auth = getAuth(app);
+    const fs = getFirestore(app);
+
+    function showResult(message, type = 'info') {
+      const result = document.getElementById('result');
+      result.textContent = message;
+      result.className = type;
+    }
+
+    window.checkAndAddPhone = async function() {
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (!email || !phone) {
+        showResult('Please enter both email and phone number', 'error');
+        return;
+      }
+
+      if (!/^09[0-9]{9}$/.test(phone)) {
+        showResult('Phone must be in format: 09xxxxxxxxx', 'error');
+        return;
+      }
+
+      try {
+        showResult('Checking phone index...', 'info');
+        
+        const phoneKey = phone.replace(/\D/g, '');
+        const phoneDoc = await getDoc(doc(fs, "phone_index", phoneKey));
+        
+        if (phoneDoc.exists()) {
+          const data = phoneDoc.data();
+          showResult(`✓ Phone already in index! Associated with: ${data.email}`, 'success');
+          return;
+        }
+
+        // Phone not in index - need to authenticate to add it
+        showResult('Phone not found in index. Enter your password to add it...', 'info');
+        
+        const password = prompt('Enter your password to add phone to index:');
+        if (!password) {
+          showResult('Cancelled', 'error');
+          return;
+        }
+
+        // Sign in to get UID
+        showResult('Signing in...', 'info');
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+
+        // Add to phone_index
+        showResult('Adding phone to index...', 'info');
+        await setDoc(doc(fs, "phone_index", phoneKey), {
+          uid,
+          email,
+          phone,
+          phoneKey,
+          createdAt: serverTimestamp()
+        });
+
+        showResult(`✓ SUCCESS! Phone ${phone} added to index. You can now login with your phone number!`, 'success');
+        
+        // Sign out
+        await signOut(auth);
+        
+      } catch (error) {
+        console.error(error);
+        if (error.code === 'auth/wrong-password') {
+          showResult('Incorrect password', 'error');
+        } else if (error.code === 'permission-denied') {
+          showResult('Error: Please deploy the updated Firestore rules first!', 'error');
+        } else {
+          showResult('Error: ' + error.message, 'error');
+        }
+      }
+    };
+  </script>
+</body>
+</html>

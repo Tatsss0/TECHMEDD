@@ -1,0 +1,220 @@
+/* Doctor Page Responsive Styles */
+
+/* Doctor Avatar Responsive */
+.doctor-avatar-sm {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.doctor-avatar-md {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.doctor-avatar-lg {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.clinic-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Consultation Indicator */
+.consultation-indicator-sm {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #e6f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pre-wrap text */
+.text-prewrap {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Loading and error states */
+.loading-state {
+  display: none;
+}
+
+/* Skeleton Loaders */
+.skeleton-image {
+  height: 220px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 10px;
+}
+
+.skeleton-line {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive Modal Adjustments */
+@media (max-width: 991px) {
+  .modal-lg {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 767px) {
+  .modal-lg {
+    max-width: 100%;
+    margin: 0.5rem;
+  }
+  
+  .doctor-avatar-lg {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .doctor-avatar-md {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .doctor-avatar-sm {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .clinic-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .skeleton-image {
+    height: 180px;
+  }
+}
+
+@media (max-width: 575px) {
+  .modal-dialog {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .modal-content {
+    border-radius: 0;
+    min-height: 100vh;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .doctor-avatar-lg {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .doctor-avatar-md {
+    width: 42px;
+    height: 42px;
+  }
+  
+  .doctor-avatar-sm {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .clinic-logo {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .consultation-indicator-sm {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .skeleton-image {
+    height: 150px;
+  }
+  
+  .skeleton-line {
+    height: 16px;
+  }
+}
+
+/* Touch-friendly elements on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .btn, .nav-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Doctor card responsiveness */
+.doctor-card {
+  transition: transform 0.2s ease;
+}
+
+.doctor-card:hover {
+  transform: translateY(-4px);
+}
+
+@media (max-width: 767px) {
+  .doctor-card:hover {
+    transform: none;
+  }
+}
+
+/* Compact view cards */
+@media (max-width: 575px) {
+  .compact-view .minimal-card .avatar {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  
+  .compact-view .minimal-card {
+    padding: 10px !important;
+  }
+  
+  .compact-view .minimal-card .info h4 {
+    font-size: 0.9rem !important;
+  }
+}

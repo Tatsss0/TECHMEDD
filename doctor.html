@@ -1,0 +1,5027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>TECHMED</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="logo512.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+
+  <!-- Swiper CSS (single source) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+  <link href="doctor-styles.css" rel="stylesheet">
+
+  <!-- NAME JS FILE -->
+  <script type="module" src="assets/js/name.js"></script>
+
+  <style>
+  .flatpickr-calendar{ font-size:12px!important; transform:scale(0.89); transform-origin:top left; }
+  .flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay{ visibility:hidden; pointer-events:none; }
+
+  /* Appointment calendar color coding */
+  .flatpickr-day.available {
+    background:#e6ffed !important;  /* green */
+    color:#0f5132 !important;
+    border-radius:50% !important;
+  }
+  .flatpickr-day.booked {
+    background:#ffe0e0 !important;  /* red */
+    color:#842029 !important;
+    border-radius:50% !important;
+    pointer-events:none !important;
+    cursor:not-allowed !important;
+  }
+  .flatpickr-day.non-working {
+    background:#f1f3f5 !important;  /* grey */
+    color:#6c757d !important;
+    border-radius:50% !important;
+    pointer-events:none;
+  }
+  .flatpickr-day.selected {
+    background:#87cefa !important;
+    color:#000 !important;
+    border-radius:50%;
+  }
+
+  /* Optional: time dropdown */
+  #rescheduleTime option.slot-available { color:#198754; font-weight:500; }
+  #rescheduleTime option.slot-booked    { color:#dc3545; }
+
+  /* Minimal card slider look */
+  .compact-view .minimal-card{cursor:pointer; border:1px solid #e9ecef ; border-radius:12px; padding:14px; transition:box-shadow .2s,border-color .2s; background:#fff;}
+  .compact-view .minimal-card:hover, .compact-view .minimal-card.active{border-color:#0d6efd; box-shadow:0 0 0 3px rgba(13,110,253,.12);} .compact-view .minimal-card .avatar{width:120px; height:120px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 10px;}
+  .compact-view .minimal-card .info h4{font-size:1rem; margin:0;}
+  .compact-view .minimal-card .info small{color:#6c757d;}
+  .doctor-card .doctor-media img{width:100%; height:220px; object-fit:cover; border-radius:10px;}
+  .doctor-card .doctor-actions .btn{margin-right:6px;}
+  
+  /* Availability Slots Styling */
+  .availability-container .card { transition: all 0.2s ease; }
+  .availability-container .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .book-slot-btn, .book-recurring-btn { 
+    transition: all 0.2s ease; 
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  .book-slot-btn:hover { 
+    transform: scale(1.05); 
+    box-shadow: 0 2px 8px rgba(25, 135, 84, 0.3);
+  }
+  .book-recurring-btn:hover { 
+    transform: scale(1.05); 
+    box-shadow: 0 2px 8px rgba(13, 202, 240, 0.3);
+  }
+  .availability-container h6 { 
+    font-weight: 600; 
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Tabs badge tweak */
+  #appointmentTabs .badge { font-size: 0.7rem; }
+  
+  #notificationModal .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  #appointmentModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* Appointment modal styles */
+  .consultation-indicator { 
+    width: 42px; 
+    height: 42px; 
+    background: var(--accent-color, #0d6efd); 
+    color: var(--contrast-color, #fff); 
+  }
+  .consultation-indicator i { color: inherit; }
+  
+  .btn-accent { 
+    background: var(--accent-color, #0d6efd); 
+    border-color: var(--accent-color, #0d6efd); 
+    color: var(--contrast-color, #fff); 
+  }
+  .btn-accent:hover { 
+    background: color-mix(in srgb, var(--accent-color, #0d6efd), transparent 15%); 
+    border-color: color-mix(in srgb, var(--accent-color, #0d6efd), transparent 15%); 
+    color: var(--contrast-color, #fff); 
+  }
+
+  /* Skeleton loader styles */
+  .skeleton-loader {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .skeleton-image, .skeleton-line {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  .skeleton-image {
+    border-radius: 10px 10px 0 0;
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* Notification Item Styles */
+  .notification-item {
+    border-left: 4px solid transparent;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    background: #f8f9fa;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .notification-item:hover {
+    background: #e9ecef;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .notification-item.unread {
+    border-left-color: #099aa7;
+    background: #e8f8f9;
+  }
+  .notification-item.unread:hover {
+    background: #d4f1f4;
+  }
+  .notification-type-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #099aa7;
+    color: white;
+    font-size: 1.2rem;
+  }
+  .notification-unread-badge {
+    width: 8px;
+    height: 8px;
+    background: #dc3545;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .notification-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+  }
+  .notification-reason {
+    background: #fff;
+    border-left: 3px solid #099aa7;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 0.25rem;
+    font-style: italic;
+    color: #495057;
+  }
+
+  /* Appointment Reminder Banner */
+  #reminderBanner {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    max-width: 700px;
+    width: 90%;
+    animation: slideDown 0.4s ease-out;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  .reminder-banner {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border-left: 5px solid;
+    background: white;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+  }
+  .reminder-banner:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+  .reminder-banner.reminder-30days {
+    border-left-color: #099aa7;
+    background: linear-gradient(to right, #e8f8f9 0%, #ffffff 100%);
+  }
+  .reminder-banner.reminder-10mins {
+    border-left-color: #dc3545;
+    background: linear-gradient(to right, #ffe8e8 0%, #ffffff 100%);
+  }
+  .reminder-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  .reminder-30days .reminder-icon-circle {
+    background: #099aa7;
+    color: white;
+  }
+  .reminder-10mins .reminder-icon-circle {
+    background: #dc3545;
+    color: white;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .reminder-banner h6 {
+    color: #212529;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .reminder-banner p {
+    color: #6c757d;
+    margin-bottom: 0;
+  }
+  .reminder-banner .btn-close {
+    opacity: 0.5;
+  }
+  .reminder-banner .btn-close:hover {
+    opacity: 1;
+  }
+
+  /* ========================================
+     RESPONSIVE DESIGN - MOBILE & TABLET
+     ======================================== */
+  
+  /* Mobile Phones (max-width: 576px) */
+  @media (max-width: 576px) {
+    /* Header adjustments */
+    .header {
+      padding: 10px 0;
+    }
+    
+    .header .logo h1 {
+      font-size: 22px;
+    }
+    
+    /* Reorder header elements for mobile - appointment button on left */
+    .header .container {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    
+    .header .btn-getstarted {
+      order: 1;
+      font-size: 11px !important;
+      padding: 6px 10px !important;
+      margin-right: 0.5rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    
+    .header .logo {
+      order: 2;
+      margin-right: auto !important;
+      margin-left: 0 !important;
+    }
+    
+    .header-actions {
+      order: 3;
+      gap: 0.5rem !important;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+    
+    .header .navmenu {
+      order: 4;
+      margin-left: 0 !important;
+    }
+    
+    /* Make notification button more compact */
+    .header-actions .btn-outline-primary {
+      padding: 8px 10px;
+      font-size: 16px;
+    }
+    
+    .btn-outline-primary {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+    
+    /* Navigation */
+    #navmenu ul {
+      padding: 10px;
+    }
+    
+    #navmenu li a {
+      padding: 10px 15px;
+      font-size: 15px;
+    }
+    
+    /* Doctor Cards */
+    .doctor-card {
+      margin-bottom: 1rem;
+    }
+    
+    .doctor-card .doctor-media img {
+      height: 180px;
+    }
+    
+    .doctor-card .doctor-actions .btn {
+      margin-right: 4px;
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+    
+    /* Minimal cards in compact view */
+    .compact-view .minimal-card {
+      padding: 12px;
+    }
+    
+    .compact-view .minimal-card .avatar {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .compact-view .minimal-card .info h4 {
+      font-size: 0.9rem;
+    }
+    
+    /* Availability slots */
+    .availability-container .card {
+      margin-bottom: 1rem;
+    }
+    
+    .book-slot-btn,
+    .book-recurring-btn {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.4rem;
+    }
+    
+    /* Appointment Modal */
+    #appointmentModal .modal-dialog,
+    #notificationModal .modal-dialog {
+      margin: 0.5rem;
+    }
+    
+    #appointmentTabs .nav-link {
+      font-size: 14px;
+      padding: 8px 12px;
+    }
+    
+    /* Skeleton loader */
+    .skeleton-loader {
+      margin-bottom: 1rem;
+    }
+    
+    /* Buttons */
+    .btn {
+      font-size: 14px;
+      padding: 8px 16px;
+    }
+    
+    .btn-sm {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+    
+    /* Notification items */
+    .notification-item {
+      padding: 0.75rem;
+    }
+    
+    .notification-type-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+    }
+    
+    /* Reminder Banner */
+    #reminderBanner {
+      top: 60px;
+      width: 95%;
+    }
+    
+    .reminder-banner {
+      padding: 1rem;
+    }
+    
+    .reminder-icon-circle {
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+    }
+    
+    /* Modal content */
+    .modal-body {
+      padding: 1rem;
+    }
+    
+    .modal-header {
+      padding: 0.75rem 1rem;
+    }
+    
+    .modal-footer {
+      padding: 0.75rem 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .modal-footer .btn {
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    /* Form inputs */
+    .form-control,
+    .form-select {
+      font-size: 14px;
+    }
+    
+    /* Consultation indicator */
+    .consultation-indicator {
+      width: 36px !important;
+      height: 36px !important;
+      font-size: 14px;
+    }
+  }
+  
+  /* Tablets (577px - 768px) */
+  @media (min-width: 577px) and (max-width: 768px) {
+    .header .logo h1 {
+      font-size: 26px;
+    }
+    
+    /* Reorder header elements for tablets - appointment button on left */
+    .header .container {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    
+    .header .btn-getstarted {
+      order: 1;
+      font-size: 12px !important;
+      padding: 6px 14px !important;
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    .header .logo {
+      order: 2;
+      margin-right: auto !important;
+      margin-left: 0 !important;
+    }
+    
+    .header-actions {
+      order: 3;
+      gap: 0.75rem !important;
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    .header .navmenu {
+      order: 4;
+      margin-left: 0 !important;
+    }
+    
+    #appointmentTabs .nav-link {
+      font-size: 15px;
+      padding: 10px 16px;
+    }
+    
+    .doctor-card .doctor-media img {
+      height: 200px;
+    }
+    
+    .modal-dialog {
+      margin: 1rem;
+    }
+    
+    .compact-view .minimal-card .avatar {
+      width: 110px;
+      height: 110px;
+    }
+  }
+  
+  /* iPad and larger tablets (769px - 992px) */
+  @media (min-width: 769px) and (max-width: 992px) {
+    /* Reorder header elements for iPad - appointment button on left */
+    .header .container {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    
+    .header .btn-getstarted {
+      order: 1;
+      font-size: 13px !important;
+      padding: 7px 18px !important;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+    
+    .header .logo {
+      order: 2;
+      margin-right: auto !important;
+      margin-left: 0 !important;
+    }
+    
+    .header-actions {
+      order: 3;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+    
+    .header .navmenu {
+      order: 4;
+      margin-left: 0 !important;
+    }
+    
+    .doctor-card {
+      margin-bottom: 1.5rem;
+    }
+    
+    .col-md-6 {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+  }
+  
+  /* General responsive utilities */
+  @media (max-width: 768px) {
+    /* Hide desktop-only elements */
+    .d-md-none {
+      display: none !important;
+    }
+    
+    /* Stack elements vertically */
+    .d-flex.flex-md-row {
+      flex-direction: column !important;
+    }
+    
+    /* Full width containers */
+    .container {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+    
+    /* Adjust spacing */
+    .mb-3, .my-3 {
+      margin-bottom: 1rem !important;
+    }
+    
+    .mt-3, .my-3 {
+      margin-top: 1rem !important;
+    }
+    
+    /* Card adjustments */
+    .card {
+      margin-bottom: 1rem;
+    }
+    
+    .card-body {
+      padding: 1rem;
+    }
+    
+    /* Image responsiveness */
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    /* Text sizing */
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    h4 { font-size: 1.125rem; }
+    h5 { font-size: 1rem; }
+    h6 { font-size: 0.875rem; }
+    
+    /* Doctor directory grid */
+    .doctors-grid .col-lg-4,
+    .doctors-grid .col-md-6 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+  
+  /* Landscape mobile phones */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .header {
+      padding: 8px 0;
+    }
+    
+    .modal-body {
+      max-height: 50vh;
+    }
+    
+    #reminderBanner {
+      top: 50px;
+    }
+  }
+  
+  /* Touch device optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    .btn,
+    button,
+    a,
+    input[type="button"],
+    input[type="submit"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Better spacing for touch */
+    .nav-link {
+      padding: 12px 16px;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .btn:hover,
+    .card:hover,
+    .doctor-card:hover {
+      transform: none;
+    }
+    
+    .availability-container .card:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+  }
+
+  /* Automated Scheduling Suggestions Styling */
+  #automated-suggestions {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  #automated-suggestions h5 {
+    font-weight: 500;
+    color: #212529;
+    font-size: 1rem;
+  }
+
+  .suggestion-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 10px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+
+  .suggestion-card:hover {
+    border-color: #099aa7;
+    box-shadow: 0 2px 8px rgba(9,154,167,0.15);
+  }
+
+  .rank-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+  }
+
+  .suggestion-card.rank-1 .rank-badge {
+    background-color: #d1f2f5;
+    color: #055a64;
+    border-color: #b8e9ed;
+  }
+
+  .suggestion-card.rank-2 .rank-badge {
+    background-color: #e3f7f8;
+    color: #077882;
+    border-color: #c9eff2;
+  }
+
+  .suggestion-card.rank-3 .rank-badge {
+    background-color: #f0fafb;
+    color: #099aa7;
+    border-color: #ddf4f6;
+  }
+
+  .slot-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .slot-details {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .slot-date {
+    font-size: 13px;
+    font-weight: 400;
+    color: #6c757d;
+    margin-bottom: 4px;
+  }
+
+  .slot-time {
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 4px;
+  }
+
+  .slot-score {
+    font-size: 11px;
+    color: #868e96;
+  }
+
+  .slot-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .book-suggested-btn {
+    background-color: #099aa7;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .book-suggested-btn:hover {
+    background-color: #088591;
+  }
+
+  .book-suggested-btn i {
+    margin-right: 5px;
+    font-size: 12px;
+  }
+
+  #refreshSuggestionsBtn {
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+  }
+
+  #refreshSuggestionsBtn:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+  }
+
+  #refreshSuggestionsBtn i {
+    font-size: 14px;
+  }
+
+  #suggestions-loading .spinner-border {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .slot-info {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .slot-actions {
+      width: 100%;
+    }
+
+    .book-suggested-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .slot-time {
+      font-size: 18px;
+    }
+  }
+
+  /* Alternative Doctors & Times Styling */
+  .alternative-doctor-card {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  }
+  .alternative-doctor-card:hover {
+    border-color: #099aa7;
+    box-shadow: 0 6px 20px rgba(9, 154, 167, 0.15);
+    transform: translateY(-3px);
+  }
+  .alternative-doctor-card .doctor-avatar {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .alternative-doctor-card .doctor-info h6 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    color: #212529;
+    font-weight: 600;
+  }
+  .alternative-doctor-card .doctor-specialty {
+    color: #099aa7;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  .alternative-doctor-card .doctor-rating {
+    color: #ffc107;
+    font-size: 0.85rem;
+  }
+  .alternative-doctor-card .select-doctor-btn {
+    transition: all 0.2s ease;
+    font-weight: 600;
+  }
+  .alternative-doctor-card .select-doctor-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(9, 154, 167, 0.3);
+  }
+
+  .alternative-time-card {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .alternative-time-card:hover {
+    border-color: #ffc107;
+    box-shadow: 0 4px 16px rgba(255, 193, 7, 0.2);
+    transform: translateX(5px);
+    background: linear-gradient(135deg, #fffbf0 0%, #fff 100%);
+  }
+  .alternative-time-card .time-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .alternative-time-card .time-details {
+    flex: 1;
+    padding: 0 1rem;
+  }
+  .alternative-time-card .time-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+  }
+  .alternative-time-card .time-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .alternative-time-card .time-badge.badge-nearby {
+    background: #e3f2fd;
+    color: #1976d2;
+  }
+  .alternative-time-card .time-badge.badge-next-days {
+    background: #f3e5f5;
+    color: #7b1fa2;
+  }
+  .alternative-time-card .time-badge.badge-future-week {
+    background: #e8f5e9;
+    color: #388e3c;
+  }
+  .alternative-time-card .select-time-btn {
+    flex-shrink: 0;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .alternative-time-card .select-time-btn:hover {
+    transform: scale(1.05);
+  }
+
+  .empty-alternatives {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+  }
+  .empty-alternatives i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  /* Availability Checker Card */
+  .availability-checker-wrapper .card-header {
+    background: linear-gradient(135deg, #099aa7 0%, #0d6efd 100%) !important;
+    border: none;
+    padding: 1.25rem;
+  }
+  .availability-checker-wrapper .card-header h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .availability-checker-wrapper .card-header small {
+    font-size: 0.85rem;
+  }
+  .availability-checker-wrapper .card-body {
+    padding: 1.5rem;
+  }
+  .availability-checker-wrapper label {
+    color: #495057;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+  .availability-checker-wrapper .form-control,
+  .availability-checker-wrapper .form-select {
+    border: 2px solid #e9ecef;
+    transition: all 0.2s;
+  }
+  .availability-checker-wrapper .form-control:focus,
+  .availability-checker-wrapper .form-select:focus {
+    border-color: #099aa7;
+    box-shadow: 0 0 0 0.2rem rgba(9, 154, 167, 0.15);
+  }
+  #checkAvailabilityBtn {
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+  }
+  #availabilityResult {
+    border-left: 4px solid;
+    animation: slideIn 0.3s ease-out;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .available-doctor-card {
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .available-doctor-card:hover {
+    border-color: #099aa7;
+    box-shadow: 0 2px 8px rgba(9, 154, 167, 0.15);
+    transform: translateX(3px);
+  }
+
+  /* Minimal Availability Status */
+  .availability-status {
+    border-radius: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+    animation: fadeInDown 0.4s ease-out;
+  }
+  .availability-status.alert-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f1f8ff 100%);
+    border-color: #90caf9;
+  }
+  .availability-status.alert-success {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+    border-color: #81c784;
+  }
+  .availability-status.alert-warning {
+    background: linear-gradient(135deg, #fff3e0 0%, #fffaf5 100%);
+    border-color: #ffb74d;
+  }
+  .status-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .status-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .availability-status.alert-info .status-icon {
+    color: #1976d2;
+  }
+  .availability-status.alert-success .status-icon {
+    color: #388e3c;
+  }
+  .availability-status.alert-warning .status-icon {
+    color: #f57c00;
+  }
+  .status-text {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #2c3e50;
+    font-weight: 500;
+  }
+  .status-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* Smooth Loading Animations */
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes loadingDot {
+    0%, 20% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-4px);
+    }
+    100% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Smooth fade transitions */
+  .availability-status {
+    transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+  }
+  
+  /* Success badge pulse */
+  @keyframes badgePulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgba(25, 135, 84, 0);
+    }
+  }
+  
+  .badge.bg-success {
+    animation: badgePulse 2s infinite;
+  }
+  
+  /* Loading spinner animation */
+  .spinner-border-sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+  }
+
+  /* Booked time slots styling */
+  #time option:disabled {
+    color: #dc3545 !important;
+    background-color: #ffe0e0 !important;
+    font-style: italic;
+  }
+
+</style>
+
+
+</head>
+
+<body class="doctors-page">
+<!-- Header -->
+<header id="header" class="header d-flex align-items-center fixed-top">
+  <div class="container position-relative d-flex align-items-center justify-content-between">
+
+    <a href="techmed.html" class="logo d-flex align-items-center me-auto me-xl-0">
+      <h1 class="sitename">TECH<span>MED</span></h1>
+    </a>
+
+    <nav id="navmenu" class="navmenu">
+      <ul>
+        <li><a href="techmed.html">Home</a></li>
+        <li><a href="doctor.html" class="active">Doctors</a></li>
+        <li><a href="records.html">Records</a></li>
+        <li class="dropdown"><a href="#"><span>Account</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <ul>
+            <li><a id="headerUserName">Loading...</a></li>
+            <li><a href="patientprofile.html">Profile</a></li>
+            <li><a href="#" id="logoutLink">Log Out</a></li>
+          </ul>
+        </li>
+      </ul>
+      <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+
+    <div class="header-actions d-flex align-items-center gap-2">
+      <button class="btn btn-getstarted" id="appointmentBtn">Appointments</button>
+      <button class="btn btn-outline-primary position-relative" id="notificationBtn" aria-label="Notifications">
+        <i class="bi bi-bell"></i>
+        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- Appointment Reminder Banner -->
+<div id="reminderBanner" class="d-none"></div>
+
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="notificationModalLabel">
+          <i class="bi bi-bell-fill me-2"></i>Notifications
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="notificationList">
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-bell fs-1"></i>
+            <p class="mt-2">Loading notifications...</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="markAllReadBtn">Mark All as Read</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Appointment Modal -->
+<div class="modal fade" id="appointmentModal" data-bs-focus="false" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="appointmentModalLabel">Patient Appointments</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" id="appointmentTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-upcoming" data-bs-toggle="tab" data-bs-target="#pane-upcoming" type="button" role="tab" aria-controls="pane-upcoming" aria-selected="true">
+              Upcoming <span class="badge bg-secondary ms-1" id="countUpcoming">0</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-past" data-bs-toggle="tab" data-bs-target="#pane-past" type="button" role="tab" aria-controls="pane-past" aria-selected="false">
+              Past <span class="badge bg-secondary ms-1" id="countPast">0</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content pt-3">
+          <div class="tab-pane fade show active" id="pane-upcoming" role="tabpanel" aria-labelledby="tab-upcoming">
+            <table class="table table-striped">
+              <!-- header removed per new card layout -->
+              <tbody id="appointmentUpcomingBody"></tbody>
+            </table>
+          </div>
+
+          <div class="tab-pane fade" id="pane-past" role="tabpanel" aria-labelledby="tab-past">
+            <table class="table table-striped">
+              <!-- header removed per card layout -->
+              <tbody id="appointmentPastBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reschedule Appointment Modal -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rescheduleModalLabel">Reschedule Appointment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Doctor Info Section -->
+        <div class="mb-4 p-3 bg-light rounded">
+          <div class="d-flex align-items-center mb-2">
+            <img id="rescheduleDoctorAvatar" src="logo.png" alt="Doctor" class="doctor-avatar-sm me-3">
+            <div>
+              <h6 class="mb-0" id="rescheduleDoctorName">Dr. Name</h6>
+              <small class="text-muted" id="rescheduleDoctorSpecialty">Specialty</small>
+            </div>
+          </div>
+          <div class="small text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            Select from available dates and times below
+          </div>
+        </div>
+
+        <div class="row gy-3">
+          <div class="col-md-6">
+            <label for="rescheduleDate" class="form-label fw-semibold">Select Date</label>
+            <input type="text" class="form-control" id="rescheduleDate" placeholder="Select Date" required>
+            <div class="form-text">
+              <i class="bi bi-calendar3 me-1"></i>
+              <span id="rescheduleDateHelp">Choose an available date from the calendar</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="rescheduleTime" class="form-label fw-semibold">Available Time Slots</label>
+            <select class="form-select" id="rescheduleTime" required>
+              <option value="">Select Date First</option>
+            </select>
+            <div class="form-text">
+              <i class="bi bi-clock me-1"></i>
+              <span id="rescheduleTimeHelp">Available times will appear after selecting a date</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reason for Rescheduling -->
+        <div class="mt-3">
+          <label for="rescheduleReason" class="form-label fw-semibold">
+            <i class="bi bi-chat-left-text me-1"></i>
+            Reason for Rescheduling
+          </label>
+          <textarea class="form-control" id="rescheduleReason" rows="3" placeholder="Please explain why you need to reschedule this appointment..." maxlength="500"></textarea>
+          <div class="form-text">Optional: Help us understand your situation (max 500 characters)</div>
+        </div>
+
+        <div id="rescheduleError" class="alert alert-danger d-none mt-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmReschedule" disabled>Confirm Reschedule</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Appointment Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="cancelModalLabel">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Cancel Appointment
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+        
+        <div class="mb-3">
+          <label for="cancelReason" class="form-label fw-semibold">
+            <i class="bi bi-chat-left-text me-1"></i>
+            Reason for Cancellation <span class="text-danger">*</span>
+          </label>
+          <textarea class="form-control" id="cancelReason" rows="3" placeholder="Please explain why you need to cancel this appointment..." maxlength="500" required></textarea>
+          <div class="form-text">Required: Help us understand your situation (max 500 characters)</div>
+        </div>
+        
+        <div id="cancelError" class="alert alert-danger d-none mt-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Appointment</button>
+        <button type="button" class="btn btn-danger" id="confirmCancel">Cancel Appointment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Past Appointment Details Modal -->
+<div class="modal fade" id="pastDetailModal" tabindex="-1" aria-labelledby="pastDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pastDetailModalLabel">Consultation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-grow-1">
+            <div id="pastDetailDoctor" class="fw-semibold"></div>
+            <div class="text-muted small mt-2" id="pastDetailTime"></div>
+            <div class="text-muted small" id="pastDetailDate"></div>
+          </div>
+          <div class="position-relative ms-3">
+            <img id="pastDetailAvatar" src="logo.png" alt="Doctor" class="doctor-avatar-md">
+            <span class="position-absolute bottom-0 end-0 translate-middle p-2 bg-white rounded-circle border">
+              <i class="bi bi-camera-video text-info"></i>
+            </span>
+          </div>
+        </div>
+
+        <hr/>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-grow-1">
+            <div id="pastDetailClinicName" class="fw-semibold"></div>
+            <div id="pastDetailClinicAddress" class="text-muted"></div>
+          </div>
+          <div class="ms-3">
+            <img id="pastDetailClinicLogo" src="logo.png" alt="Clinic" class="clinic-logo">
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="fw-semibold">Diagnosis</div>
+          <div id="pastDetailDiagnosisTitle" class="small fw-semibold mt-2"></div>
+          <div id="pastDetailDiagnosis" class="text-muted text-prewrap"></div>
+        </div>
+
+        <div class="mt-4">
+          <div class="fw-semibold">Prescription</div>
+          <div id="pastDetailRxActions" class="mt-2"></div>
+          <div id="pastDetailRxPassword" class="border rounded-4 p-3 mt-3 d-none">
+            <div class="small text-muted mb-3">Please confirm your password to view or download your prescription.</div>
+            <form id="rxPasswordForm">
+              <div class="mb-2">
+                <label for="rxPasswordInput" class="form-label">Password</label>
+                <input type="password" class="form-control" id="rxPasswordInput" autocomplete="current-password" required>
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-2">
+                <button type="submit" class="btn btn-accent btn-sm" id="rxPasswordSubmit">Confirm Access</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="rxPasswordCancel">Cancel</button>
+              </div>
+              <div id="rxPasswordError" class="text-danger small mt-2 d-none"></div>
+            </form>
+          </div>
+          <div id="pastDetailRxContent" class="d-none">
+            <div id="pastDetailRxTitle" class="small fw-semibold mt-2"></div>
+            <div id="pastDetailRxText" class="text-muted text-prewrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Doctor Profile Modal -->
+<div class="modal fade" id="doctorProfileModal" tabindex="-1" aria-labelledby="doctorProfileModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="doctorProfileModalLabel">Doctor Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Doctor Header -->
+        <div class="d-flex align-items-start mb-4">
+          <img id="modalDoctorPhoto" src="logo.png" alt="Doctor" class="doctor-avatar-lg me-3">
+          <div class="flex-grow-1">
+            <h4 class="mb-1" id="modalDoctorName">Dr. Name</h4>
+            <p class="text-muted mb-2" id="modalDoctorSpecialty">Specialty</p>
+            <div class="mb-1">
+              <p class="mb-1" id="modalDoctorPhone"><i class="bi bi-telephone me-2"></i><span>Phone</span></p>
+              <p class="mb-1" id="modalDoctorEmail"><i class="bi bi-envelope me-2"></i><span>Email</span></p>
+              <p class="mb-0" id="modalDoctorStatus"><i class="bi bi-circle-fill me-2" style="font-size: 0.5rem;"></i><span>Status</span></p>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- About Section -->
+        <div class="mb-4" id="modalAboutSection">
+          <h6 class="fw-bold mb-2"><i class="bi bi-person-badge me-2"></i>About</h6>
+          <p id="modalDoctorBio" class="text-muted" style="white-space: pre-wrap; word-wrap: break-word;">Doctor biography will appear here.</p>
+        </div>
+
+        <!-- Education Section -->
+        <div class="mb-4 d-none" id="modalEducationSection">
+          <h6 class="fw-bold mb-2"><i class="bi bi-mortarboard me-2"></i>Education & Qualifications</h6>
+          <div id="modalDoctorEducation" class="text-muted"></div>
+        </div>
+
+        <!-- Languages Section -->
+        <div class="mb-4 d-none" id="modalLanguagesSection">
+          <h6 class="fw-bold mb-2"><i class="bi bi-translate me-2"></i>Languages</h6>
+          <div id="modalDoctorLanguages" class="text-muted"></div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="mb-4 d-none" id="modalReviewsSection">
+          <h6 class="fw-bold mb-2"><i class="bi bi-star me-2"></i>Reviews & Ratings</h6>
+          <div id="modalDoctorReviews" class="text-muted"></div>
+        </div>
+
+        <!-- Consultation Fee Section -->
+        <div class="mb-4 d-none" id="modalFeeSection">
+          <h6 class="fw-bold mb-2"><i class="bi bi-cash me-2"></i>Consultation Fee</h6>
+          <div id="modalDoctorFee" class="text-muted"></div>
+        </div>
+
+        <!-- Additional Information Section -->
+        <div class="mb-4 d-none" id="modalAdditionalSection">
+          <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Additional Information</h6>
+          <div id="modalDoctorAdditional" class="text-muted"></div>
+        </div>
+
+        <!-- Schedule Section -->
+        <div class="mb-4">
+          <h6 class="fw-bold mb-2"><i class="bi bi-calendar-week me-2"></i>Schedule & Availability</h6>
+          <div id="modalDoctorSchedule">
+            <p class="text-muted">Schedule information will appear here.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="bookFromProfileBtn">Book Appointment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Record Detail Modal (with E-Prescription password protection) -->
+<div class="modal fade" id="recordDetailModal" data-bs-focus="false" tabindex="-1" aria-labelledby="recordDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="recordDetailModalLabel">Consultation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-grow-1">
+            <div id="recDetailDoctor" class="fw-semibold"></div>
+            <div class="text-muted small mt-2" id="recDetailTime"></div>
+            <div class="text-muted small" id="recDetailDate"></div>
+          </div>
+          <div class="position-relative ms-3">
+            <img id="recDetailAvatar" src="logo.png" alt="Doctor" class="doctor-avatar-md">
+            <span class="position-absolute bottom-0 end-0 translate-middle p-2 bg-white rounded-circle border">
+              <i class="bi bi-camera-video text-info"></i>
+            </span>
+          </div>
+        </div>
+        <hr/>
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-grow-1">
+            <div id="recDetailClinicName" class="fw-semibold"></div>
+            <div id="recDetailClinicAddress" class="text-muted"></div>
+          </div>
+          <div class="ms-3">
+            <img id="recDetailClinicLogo" src="logo.png" alt="Clinic" class="clinic-logo">
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="fw-semibold">Diagnosis</div>
+          <div id="recDetailDiagnosisTitle" class="small fw-semibold mt-2"></div>
+          <div id="recDetailDiagnosis" class="text-muted text-prewrap"></div>
+        </div>
+        <div class="mt-4">
+          <div class="fw-semibold">E-Prescription</div>
+          <div id="recDetailRxActions" class="mt-2"></div>
+          <div id="recDetailRxPassword" class="border rounded-4 p-3 mt-3 d-none">
+            <div class="small text-muted mb-3">Please confirm your password to view or download your prescription.</div>
+            <form id="recRxPasswordForm">
+              <div class="mb-2">
+                <label for="recRxPasswordInput" class="form-label">Password</label>
+                <input type="password" class="form-control" id="recRxPasswordInput" autocomplete="current-password" required>
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-2">
+                <button type="submit" class="btn btn-accent btn-sm" id="recRxPasswordSubmit">Confirm Access</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="recRxPasswordCancel">Cancel</button>
+              </div>
+              <div id="recRxPasswordError" class="text-danger small mt-2 d-none"></div>
+            </form>
+          </div>
+          <div id="recDetailRxContent" class="d-none">
+            <div id="recDetailRxTitle" class="small fw-semibold mt-2"></div>
+            <div id="recDetailRxText" class="text-muted text-prewrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap & JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Allowed categories and current user
+  const ALLOWED_TYPES = ['appointment', 'reminder', 'account'];
+  const currentUserId = localStorage.getItem('techmed_user_id') || 'user-123';
+
+  // All notifications store (persisted). Seed minimal data if empty.
+  let allNotifications;
+  try {
+    allNotifications = JSON.parse(localStorage.getItem('techmed_notifications_all') || '[]');
+  } catch (_) {
+    allNotifications = [];
+  }
+  // Initialize empty notifications array if none exist
+  if (!allNotifications.length) {
+    allNotifications = [];
+  }
+  function saveAllNotifications() {
+    localStorage.setItem('techmed_notifications_all', JSON.stringify(allNotifications));
+  }
+  function userNotifications() {
+    return (allNotifications || []).filter(n =>
+      n.userId === currentUserId && ALLOWED_TYPES.includes(n.type)
+    );
+  }
+  
+  // Add a new notification
+  function addNotification(type, message, link = null) {
+    const newId = Math.max(0, ...allNotifications.map(n => n.id || 0)) + 1;
+    const notification = {
+      id: newId,
+      userId: currentUserId,
+      type: type,
+      message: message,
+      createdAt: new Date().toISOString(),
+      read: false,
+      link: link
+    };
+    allNotifications.unshift(notification);
+    saveAllNotifications();
+    renderNotifications();
+    return notification;
+  }
+
+  function formatDateTime(iso) {
+    try { return new Date(iso).toLocaleString(); } catch (_) { return iso; }
+  }
+
+  // Elements
+  const notificationBtn = document.getElementById('notificationBtn');
+  const notificationBadge = document.getElementById('notificationBadge');
+  const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+  const notificationLoading = document.getElementById('notificationLoading');
+  const notificationList = document.getElementById('notificationList');
+  const notificationEmpty = document.getElementById('notificationEmpty');
+
+  const appointmentBtn = document.getElementById('appointmentBtn');
+  const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+  const appointmentUpcomingBody = document.getElementById('appointmentUpcomingBody');
+  const appointmentPastBody = document.getElementById('appointmentPastBody');
+  const countUpcomingEl = document.getElementById('countUpcoming');
+  const countPastEl = document.getElementById('countPast');
+
+  // Notifications: render + badge (user + allowed types only)
+  function renderNotifications() {
+    // Reload notifications from localStorage to get latest data
+    try {
+      allNotifications = JSON.parse(localStorage.getItem('techmed_notifications_all') || '[]');
+      console.log('🔄 Reloaded notifications from localStorage:', allNotifications.length);
+    } catch (_) {
+      allNotifications = [];
+    }
+
+    const items = userNotifications();
+    const unread = items.filter(n => !n.read).length;
+
+    if (unread > 0) {
+      notificationBadge.textContent = String(unread);
+      notificationBadge.classList.remove('d-none');
+    } else {
+      notificationBadge.classList.add('d-none');
+    }
+
+    if (!items.length) {
+      notificationList.innerHTML = `
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-bell fs-1"></i>
+          <p class="mt-3">No notifications yet</p>
+          <small class="text-muted">You'll be notified about your appointments</small>
+        </div>
+      `;
+      return;
+    }
+
+    notificationList.innerHTML = items.map(n => {
+      const unreadClass = !n.read ? 'unread' : '';
+      const timeAgo = getTimeAgo(new Date(n.createdAt));
+      
+      let icon = 'bell-fill';
+      let title = 'Notification';
+      
+      if (n.type === 'appointment') {
+        icon = 'calendar-check-fill';
+        title = 'Appointment';
+      } else if (n.type === 'reminder') {
+        icon = 'clock-fill';
+        title = 'Reminder';
+      }
+
+      return `
+        <div class="notification-item ${unreadClass}">
+          <div class="d-flex">
+            <div class="notification-type-icon me-3">
+              <i class="bi bi-${icon}"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <h6 class="mb-0 fw-semibold">${title}</h6>
+                ${!n.read ? '<span class="notification-unread-badge"></span>' : ''}
+              </div>
+              <p class="mb-2 text-secondary">${n.message}</p>
+              <div class="notification-time mt-2">${timeAgo}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  // Helper function to get time ago
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000); // seconds
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + ' days ago';
+    return date.toLocaleDateString();
+  }
+  
+  // Expose renderNotifications globally so appointment.js can refresh notifications after booking
+  window.reloadNotifications = renderNotifications;
+
+  // Show notifications, then mark only the user's allowed ones as read
+  notificationBtn.addEventListener('click', () => {
+    notificationModal.show();
+    renderNotifications();
+
+    let changed = false;
+    allNotifications = (allNotifications || []).map(n => {
+      if (n.userId === currentUserId && ALLOWED_TYPES.includes(n.type) && !n.read) {
+        changed = true;
+        return { ...n, read: true };
+      }
+      return n;
+    });
+    if (changed) {
+      saveAllNotifications();
+      setTimeout(() => {
+        const unread = userNotifications().filter(n => !n.read).length;
+        if (unread === 0) notificationBadge.classList.add('d-none');
+      }, 300);
+    }
+  });
+
+  // ===== Appointments helpers =====
+  async function waitForAuthUser() {
+    const auth = firebase.auth();
+    if (auth.currentUser) return auth.currentUser;
+    return new Promise(resolve => {
+      const unsub = auth.onAuthStateChanged(u => { unsub(); resolve(u); });
+    });
+  }
+
+  function isAppointmentDone(a) {
+    const boolFlags = [
+      a.isDone, a.done, a.completed, a.isCompleted,
+      a.finished, a.isFinished,
+      a.marked, a.isMarked,
+      a.cancelled, a.canceled, a.isCancelled, a.isCanceled,
+      a.attended, a.isAttended
+    ];
+    if (boolFlags.some(v => v === true)) return true;
+
+    const statusFields = [a.status, a.appointmentStatus, a.state, a.stage, a.progress];
+    for (const s of statusFields) {
+      if (!s) continue;
+      const str = String(s).trim().toLowerCase();
+      if (/(^|\b)(done|completed|complete|finished|attended|cancelled|canceled|no-?show)(\b|$)/.test(str)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function getAppointmentStartDate(a) {
+    if (a.startAt?.toDate) {
+      try { return a.startAt.toDate(); } catch (_) {}
+    }
+    if (a.datetime) {
+      const d = new Date(a.datetime);
+      if (!isNaN(d)) return d;
+    }
+    if (a.date && a.time) {
+      const d = new Date(`${a.date} ${a.time}`);
+      if (!isNaN(d)) return d;
+    }
+    if (a.date) {
+      const d = new Date(a.date);
+      if (!isNaN(d)) return d;
+    }
+    return null;
+  }
+
+  function isAppointmentUpcoming(a) {
+    const when = getAppointmentStartDate(a);
+    if (!when) return true; // unknowns considered upcoming
+    return when.getTime() >= Date.now();
+  }
+
+  async function loadAndRenderAppointments() {
+    appointmentUpcomingBody.innerHTML = '<tr><td colspan="3" class="text-muted">Loading...</td></tr>';
+    appointmentPastBody.innerHTML = '<tr><td colspan="3" class="text-muted">Loading...</td></tr>';
+
+    const user = await waitForAuthUser();
+    if (!user) {
+      const msg = '<tr><td colspan="3" class="text-muted">Please sign in to view appointments.</td></tr>';
+      appointmentUpcomingBody.innerHTML = msg;
+      appointmentPastBody.innerHTML = msg;
+      countUpcomingEl.textContent = '0';
+      countPastEl.textContent = '0';
+      return;
+    }
+
+    const db = firebase.firestore();
+    let docs = [];
+    let appointmentsListener = null;
+    
+    // Set up real-time listener for appointments
+    const setupAppointmentsListener = () => {
+      try {
+        appointmentsListener = db.collection('appointments')
+          .where('patientId', '==', user.uid)
+          .limit(100)
+          .onSnapshot((snap) => {
+            console.log('📡 Appointments updated in real-time');
+            docs = [];
+            snap.forEach(d => docs.push(d));
+            renderAppointments();
+          }, (error) => {
+            console.warn('appointments listener error:', error);
+          });
+      } catch(e) { 
+        console.warn('appointments listener setup failed', e); 
+      }
+    };
+    
+    // Function to render appointments
+    const renderAppointments = async () => {
+      const withData = docs.map(d => ({ id: d.id, ref: d.ref, data: d.data() }));
+
+    const upcomingDocs = withData.filter(x => !isAppointmentDone(x.data) && isAppointmentUpcoming(x.data));
+    const pastDocs = withData.filter(x => isAppointmentDone(x.data) || !isAppointmentUpcoming(x.data));
+
+    // Pull patient diagnoses and prescriptions from new subcollection structure
+    let patientDiagnoses = [];
+    let patientPrescriptions = [];
+    let patientRxList = [];
+    try {
+      // Try new structure: users/patients/patients/{uid}
+      let pDoc = await db.collection('users').doc('patients').collection('patients').doc(user.uid).get();
+      if (!pDoc.exists) {
+        // Fallback to old structure: patients/{uid}
+        console.log('⚠️ Trying old structure for patient data');
+        pDoc = await db.collection('patients').doc(user.uid).get();
+      }
+      if (pDoc && pDoc.exists) {
+        const p = pDoc.data() || {};
+        patientDiagnoses = Array.isArray(p.diagnoses) ? p.diagnoses : [];
+        patientPrescriptions = Array.isArray(p.prescriptions) ? p.prescriptions : [];
+        console.log(`✅ Loaded ${patientDiagnoses.length} diagnoses from patient document`);
+      }
+    } catch(e) {
+      console.warn('Failed to load patient data:', e);
+    }
+    try {
+      // Try new structure: users/patients/patients/{uid}/prescriptions
+      let rxSnap = await db.collection('users').doc('patients').collection('patients').doc(user.uid).collection('prescriptions').orderBy('createdAt','desc').limit(30).get();
+      if (rxSnap.empty) {
+        // Fallback to old structure: patients/{uid}/prescriptions
+        console.log('⚠️ Trying old structure for prescriptions');
+        rxSnap = await db.collection('patients').doc(user.uid).collection('prescriptions').orderBy('createdAt','desc').limit(30).get();
+      }
+      rxSnap.forEach(doc => {
+        patientRxList.push({ id: doc.id, ...doc.data() });
+      });
+      console.log(`✅ Loaded ${patientRxList.length} prescriptions from Firestore for patient ${user.uid}`);
+    } catch (e) { 
+      console.warn('Failed to load prescriptions:', e);
+      patientRxList = []; 
+    }
+
+    // Add test prescription data for debugging ONLY if no real prescriptions exist
+    if (patientPrescriptions.length === 0 && patientRxList.length === 0) {
+      console.log('No real prescriptions found, adding test data for debugging');
+      patientPrescriptions.push({
+        doctorId: '',  // Empty to match any doctor
+        title: 'Test Prescription',
+        text: 'This is a test prescription for debugging',
+        url: 'https://example.com/prescription.pdf',
+        createdAt: new Date()
+      });
+      patientPrescriptions.push({
+        doctorId: 'testDoctor123',
+        title: 'Test Prescription 2',
+        text: 'Another test prescription',
+        url: 'https://example.com/prescription2.pdf',
+        createdAt: new Date()
+      });
+    } else {
+      console.log('Found real prescriptions:', {
+        patientPrescriptions: patientPrescriptions.length,
+        patientRxList: patientRxList.length
+      });
+    }
+
+    const getTime = x => {
+      const dt = getAppointmentStartDate(x.data);
+      return dt ? dt.getTime() : 0;
+    };
+    upcomingDocs.sort((a, b) => getTime(a) - getTime(b));
+    pastDocs.sort((a, b) => getTime(b) - getTime(a));
+
+    countUpcomingEl.textContent = String(upcomingDocs.length);
+    countPastEl.textContent = String(pastDocs.length);
+
+    // Doctor avatar helper
+    const __doctorPhotoCache = new Map();
+    async function fetchDoctorPhotoUrl(uid){
+      try{
+        if (!uid) return null;
+        if (__doctorPhotoCache.has(uid)) return __doctorPhotoCache.get(uid);
+        const db = firebase.firestore && firebase.firestore();
+        if (!db) return null;
+        let snap = await db.collection('users').doc('doctors').collection('doctors').doc(uid).get();
+        if (!snap || !snap.exists){
+          try{ const qs = await db.collection('users').doc('doctors').collection('doctors').where('uid','==',uid).limit(1).get(); if (!qs.empty) snap = qs.docs[0]; }catch(_){ }
+        }
+        let url = null;
+        if (snap && snap.exists){ const d = snap.data()||{}; url = d.avatarUrl || d.photoURL || d.photoUrl || d.imageUrl || d.avatar || d.profilePhoto || null; }
+        __doctorPhotoCache.set(uid, url);
+        return url;
+      }catch(_){ return null; }
+    }
+
+    const renderUpcoming = async (items) => {
+      appointmentUpcomingBody.innerHTML = '';
+      if (!items.length) {
+        appointmentUpcomingBody.innerHTML = '<tr><td colspan="3" class="text-muted">No upcoming appointments.</td></tr>';
+        return;
+      }
+
+      await Promise.all(items.map(async (x) => {
+        const a = x.data;
+
+        const doctor =
+          a.doctorName
+          || [a.doctorFirstName, a.doctorLastName].filter(Boolean).join(' ')
+          || a.doctor
+          || 'Doctor';
+
+        const startDate = getAppointmentStartDate(a);
+        const datetime = startDate
+          ? startDate.toLocaleString()
+          : (a.datetime || [a.date, a.time].filter(Boolean).join(' ') || '—');
+
+        const doctorUid = a.doctorId || a.doctorUID || a.doctorUid || '';
+        const roomId = doctorUid ? `doc_${doctorUid}` : (a.roomId || '');
+        const link = roomId
+          ? `VidMeet.html?room=${encodeURIComponent(roomId)}&as=patient${doctorUid ? `&hostUid=${encodeURIComponent(doctorUid)}` : ''}`
+          : (a.meetingUrl || a.videoUrl || a.videoLink || a.joinUrl || '');
+
+        let canJoin = !!link && startDate && (Date.now() >= (startDate.getTime() - 15 * 60 * 1000)) && (Date.now() <= (startDate.getTime() + 60 * 60 * 1000));
+
+        // Calculate time until meeting can be joined
+        let buttonText = 'Join Meeting';
+        let buttonClass = 'btn btn-success btn-sm';
+        let buttonDisabled = false;
+        
+        if (startDate) {
+          const timeUntilJoin = startDate.getTime() - 15 * 60 * 1000 - Date.now();
+          if (timeUntilJoin > 0) {
+            // Too early to join
+            buttonText = 'Join Meeting';
+            buttonClass = 'btn btn-secondary btn-sm';
+            buttonDisabled = true;
+          } else if (Date.now() > (startDate.getTime() + 60 * 60 * 1000)) {
+            // Meeting ended (more than 1 hour after)
+            buttonText = 'Join Meeting';
+            buttonClass = 'btn btn-secondary btn-sm';
+            buttonDisabled = true;
+          } else if (canJoin) {
+            // Can join (within 15 min before to 1 hour after)
+            buttonText = 'Join Meeting';
+            buttonClass = 'btn btn-success btn-sm';
+            buttonDisabled = false;
+          } else {
+            // Default disabled state
+            buttonText = 'Join Meeting';
+            buttonClass = 'btn btn-secondary btn-sm';
+            buttonDisabled = true;
+          }
+        } else {
+          // No start date available
+          buttonText = 'Join Meeting';
+          buttonClass = 'btn btn-secondary btn-sm';
+          buttonDisabled = true;
+        }
+
+        const row = document.createElement('tr');
+        const specialty = a.specialty || a.department || 'Consultation';
+        const isToday = (function(){
+          if (!startDate) return false;
+          const now = new Date();
+          return startDate.getFullYear()===now.getFullYear() && startDate.getMonth()===now.getMonth() && startDate.getDate()===now.getDate();
+        })();
+        const photo = a.doctorPhoto || a.photoUrl || a.imageUrl || 'logo.png';
+        row.innerHTML = `
+          <td colspan="3">
+            <div class="card shadow-sm border-0 rounded-4 mb-3">
+              <div class="card-body d-flex align-items-start">
+                <img src="${photo}" alt="Doctor" class="rounded-circle flex-shrink-0 js-doc-avatar" data-doctorid="${doctorUid}" style="width:48px;height:48px;object-fit:cover;">
+                <div class="ms-3 w-100">
+                  <div class="d-flex align-items-center mb-1">
+                    ${isToday ? '<span class="badge bg-light text-primary border me-2">Today</span>' : ''}
+                    <h6 class="mb-0">${specialty}</h6>
+                  </div>
+                  <div class="text-muted small">${datetime}</div>
+                  <div class="small">${doctor}</div>
+                  <div class="mt-3 d-flex flex-wrap gap-2">
+                    ${canJoin && link && !buttonDisabled
+                      ? `<a href="${link}" class="btn btn-success btn-sm rounded-pill" target="_blank" rel="noopener">Join Meeting</a>`
+                      : `<button class="btn btn-secondary btn-sm rounded-pill" ${buttonDisabled ? 'disabled' : ''}>Join Meeting</button>`}
+                    <button class="btn btn-outline-primary btn-sm rounded-pill btn-reschedule" data-appointment-id="${x.id}">Reschedule</button>
+                    <button class="btn btn-outline-danger btn-sm rounded-pill btn-cancel" data-appointment-id="${x.id}">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        `;
+        appointmentUpcomingBody.appendChild(row);
+      }));
+      // Enhance upcoming avatars after render
+      try{
+        const imgs = appointmentUpcomingBody.querySelectorAll('img.js-doc-avatar[data-doctorid]');
+        for (const img of imgs){ const uid = img.getAttribute('data-doctorid')||''; if (!uid) continue; const url = await fetchDoctorPhotoUrl(uid); if (url) img.src = url; }
+      }catch(_){ }
+
+      // Add event handlers for reschedule and cancel buttons
+      const rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+      const rescheduleError = document.getElementById('rescheduleError');
+      const confirmRescheduleBtn = document.getElementById('confirmReschedule');
+      const rescheduleDateInput = document.getElementById('rescheduleDate');
+      const rescheduleTimeSelect = document.getElementById('rescheduleTime');
+      
+      let currentRescheduleAppointmentId = null;
+      let currentRescheduleAppointmentData = null; // Store for email notification
+      let currentDoctorId = null;
+      let doctorSchedule = [];
+      let bookedSlots = {};
+      let flatpickrInstance = null;
+
+      // Populate doctor information in reschedule modal
+      async function populateDoctorInfo(appointmentData) {
+        try {
+          const doctorName = appointmentData.doctorName || 
+                           [appointmentData.doctorFirstName, appointmentData.doctorLastName].filter(Boolean).join(' ') || 
+                           appointmentData.doctor || 'Doctor';
+          const specialty = appointmentData.specialty || appointmentData.department || 'Consultation';
+          const doctorId = appointmentData.doctorId || appointmentData.doctorUID || appointmentData.doctorUid || '';
+          
+          // Update modal elements
+          document.getElementById('rescheduleDoctorName').textContent = doctorName;
+          document.getElementById('rescheduleDoctorSpecialty').textContent = specialty;
+          
+          // Load doctor avatar
+          const avatarUrl = await fetchDoctorPhotoUrl(doctorId, doctorName);
+          const avatarImg = document.getElementById('rescheduleDoctorAvatar');
+          if (avatarUrl) {
+            avatarImg.src = avatarUrl;
+          } else {
+            avatarImg.src = 'logo.png';
+          }
+          
+        } catch (error) {
+          console.error('Error populating doctor info:', error);
+        }
+      }
+
+      // Helper function to convert 12-hour AM/PM time to 24-hour format
+      function convertTo24Hour(time12h) {
+        const [time, modifier] = time12h.split(' ');
+        let [hours, minutes] = time.split(':');
+        hours = parseInt(hours, 10);
+        
+        if (modifier === 'AM') {
+          if (hours === 12) {
+            hours = 0; // 12 AM = 00:xx
+          }
+        } else if (modifier === 'PM') {
+          if (hours !== 12) {
+            hours += 12; // 1 PM = 13:xx, but 12 PM = 12:xx
+          }
+        }
+        
+        return `${String(hours).padStart(2, '0')}:${minutes}`;
+      }
+
+      // Helper function to generate time slots from a time range
+      function generateTimeSlots(startTime, endTime) {
+        const slots = [];
+        const start = parseTime(startTime);
+        const end = parseTime(endTime);
+        
+        for (let hour = start.hour; hour < end.hour; hour++) {
+          slots.push(formatTime(hour, 0));
+        }
+        
+        return slots;
+      }
+      
+      function parseTime(timeStr) {
+        const [hour, minute] = timeStr.split(':').map(Number);
+        return { hour, minute };
+      }
+      
+      function formatTime(hour, minute) {
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12; // Convert 0 to 12 for midnight, 13-23 to 1-11
+        return `${hour12}:${minute.toString().padStart(2, '0')} ${period}`;
+      }
+      
+      // Helper to normalize time to 12-hour format for comparison
+      function normalizeTimeTo12Hour(timeStr) {
+        if (!timeStr) return '';
+        
+        timeStr = timeStr.trim();
+        
+        // If already in 12-hour format with AM/PM, standardize the format
+        if (timeStr.includes('AM') || timeStr.includes('PM')) {
+          // Remove all spaces and then add one space before AM/PM
+          timeStr = timeStr.replace(/\s+/g, '');
+          timeStr = timeStr.replace(/([AP]M)/i, ' $1');
+          return timeStr;
+        }
+        
+        // Convert 24-hour format to 12-hour format
+        const [hourStr, minuteStr] = timeStr.split(':');
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr || '0', 10);
+        return formatTime(hour, minute);
+      }
+      
+      // Helper to convert 12-hour time to 24-hour format for Date construction
+      function convertTo24HourTime(time12h) {
+        const match = time12h.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (!match) return '00:00';
+        
+        let hour = parseInt(match[1], 10);
+        const minute = match[2];
+        const period = match[3].toUpperCase();
+        
+        if (period === 'PM' && hour !== 12) {
+          hour += 12;
+        } else if (period === 'AM' && hour === 12) {
+          hour = 0;
+        }
+        
+        return `${hour.toString().padStart(2, '0')}:${minute}`;
+      }
+      
+      // Send reschedule notification email
+      async function sendRescheduleNotification(appointmentData, newDate, newTime, reason) {
+        try {
+          const patientName = appointmentData.patientName || 
+                            [appointmentData.patientFirstName, appointmentData.patientLastName].filter(Boolean).join(' ') || 
+                            appointmentData.name || '';
+          let patientEmail = appointmentData.patientEmail || appointmentData.email || '';
+          const doctorName = appointmentData.doctorName || 
+                           [appointmentData.doctorFirstName, appointmentData.doctorLastName].filter(Boolean).join(' ') || 
+                           appointmentData.doctor || '';
+          
+          // If no email in appointment data, use current user's email
+          if (!patientEmail) {
+            const auth = firebase.auth();
+            const currentUser = auth.currentUser;
+            if (currentUser && currentUser.email) {
+              patientEmail = currentUser.email;
+              console.log('📧 Using current user email:', patientEmail);
+            }
+          }
+          
+          console.log('📧 Sending email notification:', { patientName, patientEmail, doctorName, newDate, newTime });
+          
+          if (!patientEmail) {
+            console.warn('⚠️ No patient email found, skipping notification');
+            console.log('Appointment data:', appointmentData);
+            return;
+          }
+          
+          const formData = new FormData();
+          formData.append('patientName', patientName);
+          formData.append('patientEmail', patientEmail);
+          formData.append('doctorName', doctorName);
+          formData.append('oldDate', appointmentData.date || '');
+          formData.append('oldTime', appointmentData.time || '');
+          formData.append('newDate', newDate);
+          formData.append('newTime', newTime);
+          formData.append('reason', reason || '');
+          
+          const response = await fetch('forms/reschedule-notification.php', {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (response.ok) {
+            console.log('✅ Reschedule notification email sent successfully');
+          } else {
+            console.warn('⚠️ Email notification failed, but reschedule was successful');
+          }
+        } catch (error) {
+          console.error('Error sending reschedule notification:', error);
+          // Don't throw - email failure shouldn't prevent reschedule success
+        }
+      }
+
+      // Load doctor schedule and booked slots
+      async function loadDoctorAvailability(doctorId) {
+        try {
+          // Fetch doctor's schedule from doctors collection
+          const doctorDoc = await db.collection('users').doc('doctors').collection('doctors').doc(doctorId).get();
+          
+          if (doctorDoc.exists) {
+            const doctorData = doctorDoc.data();
+            const rawSchedule = doctorData.schedule || [];
+            
+            console.log('🔍 [DOCTOR.HTML] Raw schedule from Firestore:', rawSchedule);
+            console.log('🔍 [DOCTOR.HTML] Schedule is array:', Array.isArray(rawSchedule));
+            
+            // Convert time ranges to individual slots
+            doctorSchedule = [];
+            rawSchedule.forEach((slot, index) => {
+              console.log(`🔍 [DOCTOR.HTML] Processing slot ${index}:`, { day: slot.day, date: slot.date, timeRange: slot.time });
+              // Handle both date-based and day-based formats
+              const day = slot.day; // e.g., "Monday"
+              const date = slot.date; // e.g., "2025-11-07"
+              let timeRange = slot.time; // e.g., "10:00 AM - 3:00 PM" or "10:00 - 12:00"
+              
+              // Convert AM/PM format to 24-hour format
+              if (timeRange && (timeRange.includes('AM') || timeRange.includes('PM'))) {
+                timeRange = timeRange.replace(/\s+/g, ' '); // normalize spaces
+                const parts = timeRange.split(' - ');
+                if (parts.length === 2) {
+                  const start24 = convertTo24Hour(parts[0].trim());
+                  const end24 = convertTo24Hour(parts[1].trim());
+                  timeRange = `${start24} - ${end24}`;
+                }
+              }
+              
+              if (timeRange && timeRange.includes(' - ')) {
+                const [startTime, endTime] = timeRange.split(' - ');
+                const slots = generateTimeSlots(startTime, endTime);
+                slots.forEach(time => {
+                  if (date) {
+                    doctorSchedule.push({ date: date, time: time });
+                  } else if (day) {
+                    doctorSchedule.push({ day: day, time: time });
+                  }
+                });
+              } else {
+                if (date) {
+                  doctorSchedule.push({ date: date, time: timeRange });
+                } else if (day) {
+                  doctorSchedule.push({ day: day, time: timeRange });
+                }
+              }
+            });
+            
+            console.log('📅 Doctor schedule slots:', doctorSchedule.length, 'slots');
+            if (doctorSchedule.length > 0) {
+              console.log('Sample schedule slots:', doctorSchedule.slice(0, 5));
+            }
+          } else {
+            doctorSchedule = [];
+          }
+          
+          const startDate = new Date();
+          const endDate = new Date();
+          endDate.setMonth(endDate.getMonth() + 3);
+          
+          // Simplified query to avoid index requirement (temporary fix)
+          const appointmentsSnap = await db.collection('appointments')
+            .where('doctorId', '==', doctorId)
+            .get();
+          
+          bookedSlots = {};
+          appointmentsSnap.forEach(doc => {
+            const apt = doc.data();
+            if (apt.status !== 'cancelled' && apt.startAt) {
+              const appointmentDate = apt.startAt.toDate();
+              // Filter appointments within the next 3 months (client-side)
+              if (appointmentDate >= startDate && appointmentDate <= endDate) {
+                const dateStr = apt.date || appointmentDate.toISOString().split('T')[0];
+                
+                // Extract time from various possible fields
+                let timeStr = apt.time || apt.appointmentTime || apt.slot;
+                
+                // If no time field, extract from startAt timestamp
+                if (!timeStr && apt.startAt) {
+                  const date = apt.startAt.toDate();
+                  const hours = date.getHours();
+                  const minutes = date.getMinutes();
+                  timeStr = formatTime(hours, minutes);
+                }
+                
+                const normalizedTime = normalizeTimeTo12Hour(timeStr).trim();
+                const key = `${dateStr}_${normalizedTime}`;
+                bookedSlots[key] = true;
+                console.log(`🔒 Booked slot: ${key} (original: "${timeStr}")`);
+              }
+            }
+          });
+          
+          console.log('📋 Total booked slots:', Object.keys(bookedSlots).length);
+          console.log('🗓️ Booked slots:', bookedSlots);
+          
+          // Update schedule info display
+          updateScheduleInfo();
+          
+        } catch (error) {
+          console.error('Error loading doctor availability:', error);
+          const errorEl = document.getElementById('rescheduleScheduleInfo');
+          if (errorEl) {
+            errorEl.innerHTML = '<span class="text-danger">Error loading schedule information</span>';
+          }
+        }
+      }
+
+      // Update schedule info display
+      function updateScheduleInfo() {
+        const scheduleInfoEl = document.getElementById('rescheduleScheduleInfo');
+        // Element doesn't exist anymore (replaced with Reason field), so skip
+        if (!scheduleInfoEl) {
+          return;
+        }
+        
+        if (!doctorSchedule || doctorSchedule.length === 0) {
+          scheduleInfoEl.innerHTML = '<span class="text-warning">No schedule information available</span>';
+          return;
+        }
+
+        // Group schedule by day
+        const scheduleByDay = {};
+        doctorSchedule.forEach(slot => {
+          const day = slot.day || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][slot.dayOfWeek] || 'Unknown';
+          if (!scheduleByDay[day]) {
+            scheduleByDay[day] = [];
+          }
+          const time = slot.time || slot.startTime || 'Time not specified';
+          scheduleByDay[day].push(time);
+        });
+
+        // Create schedule display
+        let scheduleHtml = '';
+        const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        dayOrder.forEach(day => {
+          if (scheduleByDay[day]) {
+            const times = scheduleByDay[day].sort().join(', ');
+            scheduleHtml += `<div class="mb-1"><strong>${day}:</strong> ${times}</div>`;
+          }
+        });
+
+        if (scheduleHtml) {
+          scheduleInfoEl.innerHTML = scheduleHtml;
+        } else {
+          scheduleInfoEl.innerHTML = '<span class="text-muted">Schedule information not available</span>';
+        }
+      }
+      
+      async function loadTimeSlots(dateStr) {
+        const selectedDate = new Date(dateStr);
+        const dayOfWeek = selectedDate.getDay();
+        const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dayOfWeek];
+        const dayAbbr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dayOfWeek];
+        
+        // Get available times for this day (check both date-based and day-based)
+        const daySlots = doctorSchedule.filter(s => 
+          s.date === dateStr ||    // Date-based schedule
+          s.day === dayName ||      // Day-based schedule
+          s.day === dayAbbr || 
+          s.dayOfWeek === dayOfWeek
+        );
+        
+        rescheduleTimeSelect.innerHTML = '<option value="">Select Time</option>';
+        
+        if (daySlots.length === 0) {
+          rescheduleTimeSelect.disabled = true;
+          confirmRescheduleBtn.disabled = true;
+          return;
+        }
+        
+        rescheduleTimeSelect.disabled = false;
+        
+        daySlots.forEach(slot => {
+          const time = slot.time || slot.startTime || '';
+          const normalizedTime = normalizeTimeTo12Hour(time).trim();
+          const key = `${dateStr}_${normalizedTime}`;
+          const isBooked = bookedSlots[key] || false;
+          
+          const option = document.createElement('option');
+          option.value = time;
+          option.textContent = time;
+          option.className = isBooked ? 'slot-booked' : 'slot-available';
+          option.disabled = isBooked;
+          if (isBooked) option.textContent += ' (Booked)';
+          
+          rescheduleTimeSelect.appendChild(option);
+        });
+      }
+
+      appointmentUpcomingBody.querySelectorAll('.btn-reschedule').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          currentRescheduleAppointmentId = btn.getAttribute('data-appointment-id');
+          if (!currentRescheduleAppointmentId) return;
+          
+          const appointmentDoc = await db.collection('appointments').doc(currentRescheduleAppointmentId).get();
+          const appointmentData = appointmentDoc.data();
+          currentDoctorId = appointmentData.doctorId;
+          currentRescheduleAppointmentData = appointmentData; // Store for email notification
+          
+          // Populate doctor information in modal
+          await populateDoctorInfo(appointmentData);
+          
+          rescheduleTimeSelect.innerHTML = '<option value="">Select Date First</option>';
+          rescheduleTimeSelect.disabled = true;
+          rescheduleError.classList.add('d-none');
+          confirmRescheduleBtn.disabled = true;
+          document.getElementById('rescheduleReason').value = ''; // Clear reason field
+          
+          // Update help text
+          document.getElementById('rescheduleDateHelp').textContent = 'Choose an available date from the calendar';
+          document.getElementById('rescheduleTimeHelp').textContent = 'Available times will appear after selecting a date';
+          
+          await loadDoctorAvailability(currentDoctorId);
+          
+          if (flatpickrInstance) {
+            flatpickrInstance.destroy();
+          }
+          
+          // Suppress Flatpickr CSS access errors
+          const originalError = console.error;
+          console.error = function(...args) {
+            if (args[0] && args[0].toString().includes('cssRules')) {
+              return; // Suppress CSS rules error
+            }
+            originalError.apply(console, args);
+          };
+          
+          flatpickrInstance = flatpickr(rescheduleDateInput, {
+            minDate: 'today',
+            dateFormat: 'Y-m-d',
+            disableMobile: true, // Prevents mobile-specific CSS issues
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+              // Use local date to avoid timezone issues
+              const localDate = dayElem.dateObj;
+              const year = localDate.getFullYear();
+              const month = String(localDate.getMonth() + 1).padStart(2, '0');
+              const day = String(localDate.getDate()).padStart(2, '0');
+              const dateStr = `${year}-${month}-${day}`;
+              
+              const dayOfWeek = localDate.getDay();
+              const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dayOfWeek];
+              const dayAbbr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dayOfWeek];
+              
+              // Check if date is in the past
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const currentDate = new Date(dayElem.dateObj);
+              currentDate.setHours(0, 0, 0, 0);
+              
+              if (currentDate < today) {
+                dayElem.classList.add('non-working');
+                return;
+              }
+              
+              // Check for both date-based and day-based schedules
+              const hasSchedule = doctorSchedule.some(s => 
+                s.date === dateStr || // Date-based schedule
+                s.day === dayName ||   // Day-based schedule
+                s.day === dayAbbr || 
+                s.dayOfWeek === dayOfWeek
+              );
+              
+              if (!hasSchedule) {
+                dayElem.classList.add('non-working');
+              } else {
+                const daySlots = doctorSchedule.filter(s => 
+                  s.date === dateStr || // Date-based
+                  s.day === dayName ||  // Day-based
+                  s.day === dayAbbr || 
+                  s.dayOfWeek === dayOfWeek
+                );
+                
+                // Check if all slots are booked (normalize times before checking)
+                let bookedCount = 0;
+                const allBooked = daySlots.every(slot => {
+                  const time = slot.time || slot.startTime || '';
+                  const normalizedTime = normalizeTimeTo12Hour(time).trim();
+                  const key = `${dateStr}_${normalizedTime}`;
+                  const isBooked = bookedSlots[key];
+                  if (isBooked) bookedCount++;
+                  return isBooked;
+                });
+                
+                // Debug logging for problematic dates
+                if (daySlots.length > 0 && bookedCount > 0) {
+                  console.log(`📅 ${dateStr}: ${bookedCount}/${daySlots.length} slots booked`, {
+                    slots: daySlots.map(s => {
+                      const time = s.time || s.startTime || '';
+                      const normalized = normalizeTimeTo12Hour(time).trim();
+                      const key = `${dateStr}_${normalized}`;
+                      return { original: time, normalized, key, booked: !!bookedSlots[key] };
+                    })
+                  });
+                }
+                
+                if (allBooked && daySlots.length > 0) {
+                  dayElem.classList.add('booked');
+                  dayElem.classList.add('flatpickr-disabled');
+                } else {
+                  dayElem.classList.add('available');
+                }
+              }
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+              if (dateStr) {
+                loadTimeSlots(dateStr);
+                document.getElementById('rescheduleTimeHelp').textContent = `Available times for ${dateStr}`;
+              }
+            }
+          });
+          
+          // Restore console.error
+          setTimeout(() => {
+            console.error = originalError;
+          }, 100);
+          
+          rescheduleModal.show();
+        });
+      });
+      
+      rescheduleTimeSelect.addEventListener('change', () => {
+        confirmRescheduleBtn.disabled = !rescheduleTimeSelect.value;
+      });
+
+      confirmRescheduleBtn.addEventListener('click', async () => {
+        const dateStr = rescheduleDateInput.value;
+        const timeStr = rescheduleTimeSelect.value;
+        const reasonText = document.getElementById('rescheduleReason').value.trim();
+        
+        if (!dateStr || !timeStr) {
+          rescheduleError.textContent = 'Please select both date and time.';
+          rescheduleError.classList.remove('d-none');
+          return;
+        }
+        
+        // Require reason for rescheduling
+        if (!reasonText) {
+          rescheduleError.textContent = 'Please provide a reason for rescheduling.';
+          rescheduleError.classList.remove('d-none');
+          return;
+        }
+
+        // Convert 12-hour time to 24-hour format for Date construction
+        const time24h = convertTo24HourTime(timeStr);
+        const newDateTime = new Date(`${dateStr}T${time24h}:00`);
+        
+        if (newDateTime < new Date()) {
+          rescheduleError.textContent = 'Cannot schedule in the past.';
+          rescheduleError.classList.remove('d-none');
+          return;
+        }
+
+        confirmRescheduleBtn.disabled = true;
+        confirmRescheduleBtn.textContent = 'Rescheduling...';
+        rescheduleError.classList.add('d-none');
+
+        try {
+          const updateData = {
+            startAt: firebase.firestore.Timestamp.fromDate(newDateTime),
+            date: dateStr,
+            time: timeStr,
+            datetime: `${dateStr} ${timeStr}`,
+            status: 'rescheduled',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          
+          // Add reason if provided
+          if (reasonText) {
+            updateData.rescheduleReason = reasonText;
+            updateData.rescheduleNote = reasonText; // Alternative field name
+          }
+          
+          await db.collection('appointments').doc(currentRescheduleAppointmentId).update(updateData);
+          
+          // Send email notification (don't wait for it)
+          if (currentRescheduleAppointmentData) {
+            sendRescheduleNotification(currentRescheduleAppointmentData, dateStr, timeStr, reasonText).catch(err => {
+              console.error('Email notification error:', err);
+            });
+          }
+          
+          // Create doctor notification in Firestore
+          console.log('📧 Creating reschedule notification...');
+          console.log('   currentRescheduleAppointmentData:', currentRescheduleAppointmentData);
+          
+          if (currentRescheduleAppointmentData) {
+            try {
+              const patientName = currentRescheduleAppointmentData.patientName || 
+                                [currentRescheduleAppointmentData.patientFirstName, currentRescheduleAppointmentData.patientLastName].filter(Boolean).join(' ') || 
+                                'A patient';
+              const doctorId = currentRescheduleAppointmentData.doctorId || currentRescheduleAppointmentData.doctorUID || currentRescheduleAppointmentData.doctorUid || '';
+              const oldDate = currentRescheduleAppointmentData.date || '';
+              const oldTime = currentRescheduleAppointmentData.time || '';
+              
+              console.log('📋 Notification data:');
+              console.log('   patientName:', patientName);
+              console.log('   doctorId:', doctorId);
+              console.log('   oldDate:', oldDate);
+              console.log('   oldTime:', oldTime);
+              console.log('   newDate:', dateStr);
+              console.log('   newTime:', timeStr);
+              console.log('   reason:', reasonText || '(none)');
+              
+              if (!doctorId) {
+                console.error('❌ Cannot create notification: doctorId is empty');
+                console.log('   Available fields in appointment data:', Object.keys(currentRescheduleAppointmentData));
+              } else {
+                console.log('📧 Creating reschedule notification for doctor:', doctorId);
+                const notificationData = {
+                  type: 'appointment_rescheduled',
+                  recipientType: 'secretary',
+                  doctorId: doctorId,
+                  patientId: firebase.auth().currentUser?.uid || '',
+                  patientName: patientName,
+                  appointmentId: currentRescheduleAppointmentId,
+                  oldDate: oldDate,
+                  oldTime: oldTime,
+                  newDate: dateStr,
+                  newTime: timeStr,
+                  reason: reasonText || '',
+                  message: `${patientName} rescheduled their appointment from ${oldDate} ${oldTime} to ${dateStr} ${timeStr}`,
+                  read: false,
+                  timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                console.log('📧 Reschedule notification data:', notificationData);
+                
+                console.log('💾 Attempting to save notification to Firestore...');
+                const docRef = await db.collection('notifications').add(notificationData);
+                console.log('✅ Doctor notification created successfully for reschedule with ID:', docRef.id);
+              }
+            } catch (notifError) {
+              console.error('❌ Error creating doctor notification:', notifError);
+              console.error('   Error code:', notifError.code);
+              console.error('   Error message:', notifError.message);
+              // Don't fail the reschedule if notification creation fails
+            }
+          } else {
+            console.warn('⚠️ No appointment data available for notification');
+          }
+          
+          // Add in-app notification
+          const doctorName = currentRescheduleAppointmentData?.doctorName || 
+                           [currentRescheduleAppointmentData?.doctorFirstName, currentRescheduleAppointmentData?.doctorLastName].filter(Boolean).join(' ') || 
+                           'your doctor';
+          const formattedDate = newDateTime.toLocaleDateString('en-US', { 
+            month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' 
+          });
+          addNotification(
+            'appointment',
+            `Appointment with ${doctorName} rescheduled to ${formattedDate}`,
+            null
+          );
+          
+          // Update badge immediately
+          const unreadCount = userNotifications().filter(n => !n.read).length;
+          if (unreadCount > 0) {
+            notificationBadge.textContent = String(unreadCount);
+            notificationBadge.classList.remove('d-none');
+          }
+          
+          rescheduleModal.hide();
+          alert('Appointment rescheduled successfully! A confirmation email has been sent.');
+          loadAndRenderAppointments();
+        } catch (error) {
+          console.error('Error rescheduling appointment:', error);
+          rescheduleError.textContent = 'Failed to reschedule: ' + (error.message || 'Please try again.');
+          rescheduleError.classList.remove('d-none');
+        } finally {
+          confirmRescheduleBtn.disabled = false;
+          confirmRescheduleBtn.textContent = 'Confirm Reschedule';
+        }
+      });
+
+      // Cancel appointment modal setup
+      const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+      const cancelReasonTextarea = document.getElementById('cancelReason');
+      const cancelError = document.getElementById('cancelError');
+      const confirmCancelBtn = document.getElementById('confirmCancel');
+      let currentCancelAppointmentId = null;
+
+      appointmentUpcomingBody.querySelectorAll('.btn-cancel').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          currentCancelAppointmentId = btn.getAttribute('data-appointment-id');
+          if (!currentCancelAppointmentId) return;
+          
+          // Reset modal state
+          cancelReasonTextarea.value = '';
+          cancelError.classList.add('d-none');
+          
+          // Show cancel modal
+          cancelModal.show();
+        });
+      });
+
+      // Confirm cancel button handler
+      confirmCancelBtn.addEventListener('click', async () => {
+        const reasonText = cancelReasonTextarea.value.trim();
+        
+        // Validate reason is provided
+        if (!reasonText) {
+          cancelError.textContent = 'Please provide a reason for cancellation.';
+          cancelError.classList.remove('d-none');
+          return;
+        }
+        
+        confirmCancelBtn.disabled = true;
+        confirmCancelBtn.textContent = 'Cancelling...';
+        
+        try {
+          await db.collection('appointments').doc(currentCancelAppointmentId).update({
+            status: 'cancelled',
+            cancelled: true,
+            cancelReason: reasonText,
+            cancelNote: reasonText, // Alternative field name
+            cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          
+          cancelModal.hide();
+          alert('Appointment cancelled successfully.');
+          loadAndRenderAppointments();
+        } catch (error) {
+          console.error('Error cancelling appointment:', error);
+          cancelError.textContent = 'Failed to cancel: ' + (error.message || 'Please try again.');
+          cancelError.classList.remove('d-none');
+        } finally {
+          confirmCancelBtn.disabled = false;
+          confirmCancelBtn.textContent = 'Cancel Appointment';
+        }
+      });
+    };
+
+    const pastDetailModalInstance = new bootstrap.Modal(document.getElementById('pastDetailModal'), {
+      focus: false
+    });
+
+    function openPastDetailFromCard(card){
+      if (!card) return;
+      console.log('Opening past detail modal from card:', card);
+      
+      const doc = document;
+      const doctor = card.getAttribute('data-doctor') || '';
+      const spec = card.getAttribute('data-specialty') || '';
+      const timeText = card.getAttribute('data-time') || '';
+      const dateText = card.getAttribute('data-date') || '';
+      const avatar = card.getAttribute('data-avatar') || 'logo.png';
+      const docUid = card.getAttribute('data-doctorid') || '';
+      const clinic = card.getAttribute('data-clinic') || '';
+      const address = card.getAttribute('data-address') || '';
+      const clinicLogo = card.getAttribute('data-cliniclogo') || 'logo.png';
+      const diagTitle = card.getAttribute('data-diagtitle') || '';
+      const diagnosis = card.getAttribute('data-diagnosis') || '';
+      const rxTitle = card.getAttribute('data-rxtitle') || '';
+      const rxText = card.getAttribute('data-rxtext') || '';
+      const rxUrl = card.getAttribute('data-rxurl') || '';
+      
+      console.log('Extracted prescription data from card:', {
+        rxTitle,
+        rxText,
+        rxUrl,
+        docUid
+      });
+      
+      // Additional debug: Check if data attributes are empty
+      if (!rxTitle && !rxText && !rxUrl) {
+        console.warn('No prescription data found in card attributes. This might mean:');
+        console.warn('1. No prescription data in database for this appointment');
+        console.warn('2. doctorId/docId mismatch when filtering prescriptions');
+        console.warn('3. Prescription data exists but not being extracted properly');
+        console.log('Card data-rxtitle:', card.getAttribute('data-rxtitle'));
+        console.log('Card data-rxtext:', card.getAttribute('data-rxtext'));
+        console.log('Card data-rxurl:', card.getAttribute('data-rxurl'));
+        console.log('Card data-doctorid:', card.getAttribute('data-doctorid'));
+      }
+
+      const set = (id, val) => { const el = doc.getElementById(id); if (el) el.textContent = val || ''; };
+      set('pastDetailDoctor', `${doctor}${spec ? ` (${spec})` : ''}`);
+      set('pastDetailTime', timeText);
+      set('pastDetailDate', dateText);
+  
+      const av = doc.getElementById('pastDetailAvatar'); if (av) av.src = avatar;
+      // Try updating avatar from doctors/{uid}
+      (async function(){ try{ if (docUid){ const url = await fetchDoctorPhotoUrl(docUid); if (url) av.src = url; } }catch(_){ } })();
+      set('pastDetailClinicName', clinic);
+      set('pastDetailClinicAddress', address);
+      const cl = doc.getElementById('pastDetailClinicLogo'); if (cl) cl.src = clinicLogo;
+      set('pastDetailDiagnosisTitle', diagTitle);
+      set('pastDetailDiagnosis', diagnosis);
+
+      // Handle prescription buttons
+      const rxActionsEl = doc.getElementById('pastDetailRxActions');
+      const rxPasswordEl = doc.getElementById('pastDetailRxPassword');
+      const rxContentEl = doc.getElementById('pastDetailRxContent');
+      const rxTitleEl = doc.getElementById('pastDetailRxTitle');
+      const rxTextEl = doc.getElementById('pastDetailRxText');
+      
+      // Set prescription content (even if hidden, so it's ready when password is verified)
+      if (rxTitleEl) rxTitleEl.textContent = rxTitle || 'Prescription';
+      if (rxTextEl) {
+        const rxNorm = (rxText || 'Test prescription content - this is a test to verify the prescription display works.').replace(/\r\n|\n|\r/g, '\n').replace(/\u2028|\u2029/g, '\n');
+        rxTextEl.style.whiteSpace = 'pre-wrap';
+        rxTextEl.style.wordBreak = 'break-word';
+        rxTextEl.textContent = rxNorm;
+      }
+      
+      if (rxActionsEl) {
+        let actionsHtml = '';
+        const hasContent = rxTitle || rxText;
+        const safeUrl = rxUrl && (rxUrl.startsWith('http://') || rxUrl.startsWith('https://') || rxUrl.startsWith('/'));
+        
+        console.log('Button generation check:', {
+          hasContent,
+          safeUrl,
+          rxTitle,
+          rxText,
+          rxUrl
+        });
+        
+        // TEMPORARY: Always show buttons for testing
+        const tempHasContent = true;
+        const tempSafeUrl = true;
+        
+        if (tempHasContent) {
+          actionsHtml += '<button type="button" id="btnToggleRx" class="btn btn-sm btn-accent me-1">View Prescription</button>';
+          console.log('Added View Prescription button (forced for testing)');
+        }
+        if (tempSafeUrl) {
+          actionsHtml += `<button type="button" id="btnDownloadRx" class="btn btn-sm btn-outline-primary" data-url="https://example.com/test.pdf">Download</button>`;
+          console.log('Added Download button (forced for testing)');
+        }
+        
+        console.log('Final actionsHtml:', actionsHtml);
+        rxActionsEl.innerHTML = actionsHtml;
+        
+        // Setup event listeners with password protection
+        const toggleBtn = rxActionsEl.querySelector('#btnToggleRx');
+        if (toggleBtn && rxContentEl) {
+          toggleBtn.addEventListener('click', () => {
+            console.log('Toggle button clicked - requesting password');
+            const isShown = !rxContentEl.classList.contains('d-none');
+            
+            if (isShown) {
+              // Hide prescription
+              rxContentEl.classList.add('d-none');
+              toggleBtn.textContent = 'View Prescription';
+              hideRxPasswordPanel();
+              return;
+            }
+            
+            // Show password panel and set action
+            console.log('About to request password verification, rxContentEl:', rxContentEl);
+            requestRxPasswordVerification(function(){
+              console.log('ACTION EXECUTING: Password verified, showing prescription');
+              console.log('ACTION: rxContentEl is:', rxContentEl);
+              rxContentEl.classList.remove('d-none');
+              toggleBtn.textContent = 'Hide Prescription';
+              console.log('ACTION: Prescription display updated');
+            });
+          });
+        }
+        
+        const downloadBtn = rxActionsEl.querySelector('#btnDownloadRx');
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', () => {
+            console.log('Download button clicked - requesting password');
+            const capturedUrl = downloadBtn.dataset.url || 'https://example.com/test.pdf';
+            requestRxPasswordVerification(function(){
+              console.log('Password verified, opening download URL:', capturedUrl);
+              window.open(capturedUrl, '_blank');
+            });
+          });
+        }
+      }
+      
+      // Hide password panel and content when opening modal
+      hideRxPasswordPanel();
+      if (rxContentEl) rxContentEl.classList.add('d-none');
+
+      pastDetailModalInstance.show();
+    }
+
+    const renderPast = (items) => {
+      appointmentPastBody.innerHTML = '';
+      if (!items.length) {
+        appointmentPastBody.innerHTML = '<tr><td colspan="3" class="text-muted">No past appointments.</td></tr>';
+        return;
+      }
+
+      items.forEach((x) => {
+        const a = x.data;
+
+        const doctor =
+          a.doctorName
+          || [a.doctorFirstName, a.doctorLastName].filter(Boolean).join(' ')
+          || a.doctor
+          || 'Doctor';
+
+        const startDate = getAppointmentStartDate(a);
+        const datetime = startDate
+          ? startDate.toLocaleString()
+          : (a.datetime || [a.date, a.time].filter(Boolean).join(' ') || '—');
+
+        let statusText = 'Past';
+        const statusFields = [a.status, a.appointmentStatus, a.state, a.stage, a.progress]
+          .map(s => (s ? String(s).trim().toLowerCase() : ''));
+        if (statusFields.some(s => /(cancel)/.test(s))) statusText = 'Cancelled';
+        else if (statusFields.some(s => /(no-?show)/.test(s))) statusText = 'No-show';
+        else if (isAppointmentDone(a)) statusText = 'Completed';
+
+        const specialty = a.specialty || a.department || a.reason || 'Consultation';
+        const clinic = a.clinicName || a.clinic || a.facility || a.location || '';
+        const clinicAddress = a.clinicAddress || a.address || '';
+        const docId = a.doctorId || a.doctorUID || a.doctorUid || '';
+        let diagTitle = a.diagnosisTitle || 'Diagnosis';
+        let diagnosis = a.diagnosis || a.diagnosisDescription || a.icd10 || a.icdCode || '';
+        
+        // First check if appointment has its own diagnosis stored
+        if (a.diagnosis && (a.diagnosis.text || a.diagnosis.description)) {
+          diagnosis = a.diagnosis.text || a.diagnosis.description || diagnosis;
+          diagTitle = a.diagnosis.title || a.diagnosis.name || diagTitle;
+        } else {
+          // Find diagnosis that matches this appointment's timeframe
+          try {
+            const rel = patientDiagnoses.filter(d => (d.doctorId || d.doctorUID || d.doctorUid || '') === docId);
+            if (rel.length && startDate) {
+              const apptTime = startDate.getTime();
+              const getMs = (x)=>{ try{ const t=x?.createdAt; if(!t) return 0; return t.toDate? t.toDate().getTime(): new Date(t).getTime(); } catch { return 0; } };
+              
+              // Find diagnosis created closest to appointment time (within 24 hours before/after)
+              const nearAppt = rel.filter(d => {
+                const diagTime = getMs(d);
+                return Math.abs(diagTime - apptTime) <= (24 * 60 * 60 * 1000); // Within 24 hours
+              }).sort((a,b) => Math.abs(getMs(a) - apptTime) - Math.abs(getMs(b) - apptTime));
+              
+              if (nearAppt.length) {
+                const matched = nearAppt[0];
+                diagTitle = matched?.title || matched?.name || diagTitle;
+                diagnosis = matched?.text || matched?.description || matched?.icd10 || matched?.icdCode || diagnosis;
+                console.log(`📋 [doctor.html] Matched diagnosis for appointment ${x.id}:`, diagnosis);
+              } else {
+                // Fallback to most recent diagnosis from this doctor
+                const latest = [...rel].sort((a,b)=> getMs(b)-getMs(a))[0];
+                diagTitle = latest?.title || latest?.name || diagTitle;
+                diagnosis = latest?.text || latest?.description || latest?.icd10 || latest?.icdCode || diagnosis;
+              }
+            }
+          } catch {}
+        }
+        const avatar = a.doctorPhoto || a.photoUrl || a.imageUrl || 'logo.png';
+        const clinicLogo = a.clinicLogo || 'logo.png';
+        const timeText = startDate ? startDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+        const dateText = startDate ? startDate.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' }) : (a.date || '');
+
+        // Extract prescription data using the same logic as records.html
+        let rxTitle = '';
+        let rxText = '';
+        let rxUrl = '';
+        try {
+          // Debug: Log available data
+          console.log('Prescription data for doctor', docId, {
+            patientRxList: patientRxList.length,
+            patientPrescriptions: patientPrescriptions.length
+          });
+          
+          // Helper functions from records.html
+          const normalizeText = (s) => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+          const formatItemsText = (items) => {
+            try {
+              if (!Array.isArray(items) || !items.length) return '';
+              return items.map(it => {
+                const name = it.name || it.medication || it.drug || '';
+                const dose = it.dose || it.dosage || '';
+                const freq = it.frequency || it.freq || '';
+                const dur = it.duration || it.period || '';
+                const notes = it.notes || it.instructions || '';
+                return [name, dose, freq, dur, notes].filter(Boolean).join(' — ');
+              }).filter(Boolean).join('\n');
+            } catch (_) { return ''; }
+          };
+          
+          const pickRxFor = (doctorUid, diagnosisText, when, appointmentId) => {
+            // First, try to find prescription that matches this specific appointment's diagnosis
+            const dxn = normalizeText(diagnosisText);
+            const byDoc = (patientRxList || []).filter(r => (r.doctorId || r.doctorUID || r.doctorUid || '') === doctorUid);
+            
+            // If we have a specific diagnosis text, try to match it exactly
+            if (dxn) {
+              const exact = byDoc.filter(r => normalizeText(r.diagnosis || '') === dxn);
+              if (exact.length) {
+                // If we have appointment time, find the prescription closest to that time
+                if (when) {
+                  const wms = when.getTime ? when.getTime() : (new Date(when).getTime() || 0);
+                  const getMs = (r) => {
+                    try {
+                      const t = r.createdAt;
+                      return t && t.toDate ? t.toDate().getTime() : (t ? new Date(t).getTime() : 0);
+                    } catch (_) { return 0; }
+                  };
+                  // Find prescription created closest to appointment time (within 24 hours after)
+                  const afterAppt = exact.filter(r => {
+                    const rxTime = getMs(r);
+                    return rxTime >= wms && rxTime <= (wms + 24 * 60 * 60 * 1000); // Within 24 hours after appointment
+                  }).sort((a,b) => getMs(a) - getMs(b)); // Earliest first
+                  
+                  if (afterAppt.length) return afterAppt[0];
+                  
+                  // If no prescription after appointment, get the most recent one before
+                  const beforeAppt = exact.filter(r => getMs(r) <= wms).sort((a,b) => getMs(b) - getMs(a));
+                  if (beforeAppt.length) return beforeAppt[0];
+                }
+                // Return most recent exact match
+                return exact.sort((a,b) => {
+                  const getMs = (r) => {
+                    try {
+                      const t = r.createdAt;
+                      return t && t.toDate ? t.toDate().getTime() : (t ? new Date(t).getTime() : 0);
+                    } catch (_) { return 0; }
+                  };
+                  return getMs(b) - getMs(a);
+                })[0];
+              }
+            }
+            
+            // Fallback: return most recent prescription from this doctor
+            if (byDoc.length) {
+              return byDoc.sort((a,b) => {
+                const getMs = (r) => {
+                  try {
+                    const t = r.createdAt;
+                    return t && t.toDate ? t.toDate().getTime() : (t ? new Date(t).getTime() : 0);
+                  } catch (_) { return 0; }
+                };
+                return getMs(b) - getMs(a);
+              })[0];
+            }
+            
+            return null;
+          };
+          
+          // Get appointment date for better matching
+          const appointmentDate = startDate || new Date();
+          
+          // First try to match from subcollection using sophisticated matching
+          const matchedRx = pickRxFor(docId, diagnosis, appointmentDate, x.id);
+          console.log(`🔍 [doctor.html] Appointment ${x.id} - Doctor: ${docId}, Diagnosis: "${diagnosis}", Date: ${appointmentDate}`);
+          if (matchedRx) {
+            rxTitle = matchedRx.title || matchedRx.name || 'Prescription';
+            const itemsText = formatItemsText(matchedRx.items);
+            rxText = itemsText || matchedRx.text || matchedRx.instructions || matchedRx.content || '';
+            rxUrl = matchedRx.pdfUrl ? String(matchedRx.pdfUrl) : (matchedRx.url || matchedRx.downloadUrl || matchedRx.fileUrl || '');
+            console.log('Extracted matched prescription:', { rxTitle, rxText, rxUrl });
+          } else {
+            // Fallback: Try to get prescription from patientRxList for this doctor
+            if (docId && patientRxList.length) {
+              const rel = patientRxList.filter(r => (r.doctorId || r.doctorUID || r.doctorUid || '') === docId);
+              console.log('Found prescriptions in patientRxList:', rel.length, rel);
+              if (rel.length) {
+                const getMs = (x)=>{ try{ const t=x?.createdAt; if(!t) return 0; return t.toDate? t.toDate().getTime(): new Date(t).getTime(); } catch { return 0; } };
+                rel.sort((a,b)=> getMs(b)-getMs(a));
+                const latest = rel[0];
+                rxTitle = latest.title || latest.name || latest.prescriptionTitle || '';
+                rxText = latest.text || latest.content || latest.description || latest.prescription || '';
+                rxUrl = latest.url || latest.downloadUrl || latest.fileUrl || '';
+                console.log('Extracted from patientRxList:', { rxTitle, rxText, rxUrl });
+              }
+            }
+            
+            // If still empty, try from patientPrescriptions array
+            if (!rxTitle && !rxText && !rxUrl && patientPrescriptions.length) {
+              const rel = patientPrescriptions.filter(r => (r.doctorId || r.doctorUID || r.doctorUid || '') === docId);
+              console.log('Found prescriptions in patientPrescriptions with doctorId:', rel.length, rel);
+              if (rel.length) {
+                const getMs = (x)=>{ try{ const t=x?.createdAt; if(!t) return 0; return t.toDate? t.toDate().getTime(): new Date(t).getTime(); } catch { return 0; } };
+                rel.sort((a,b)=> getMs(b)-getMs(a));
+                const latest = rel[0];
+                rxTitle = latest.title || latest.name || latest.prescriptionTitle || '';
+                rxText = latest.text || latest.content || latest.description || latest.prescription || '';
+                rxUrl = latest.url || latest.downloadUrl || latest.fileUrl || '';
+                console.log('Extracted from patientPrescriptions:', { rxTitle, rxText, rxUrl });
+              } else {
+                // If no match with specific doctorId, try prescriptions with empty doctorId (fallback/test data)
+                const fallbackRel = patientPrescriptions.filter(r => !(r.doctorId || r.doctorUID || r.doctorUid || ''));
+                console.log('Found prescriptions with empty doctorId (fallback):', fallbackRel.length, fallbackRel);
+                if (fallbackRel.length) {
+                  const getMs = (x)=>{ try{ const t=x?.createdAt; if(!t) return 0; return t.toDate? t.toDate().getTime(): new Date(t).getTime(); } catch { return 0; } };
+                  fallbackRel.sort((a,b)=> getMs(b)-getMs(a));
+                  const latest = fallbackRel[0];
+                  rxTitle = latest.title || latest.name || latest.prescriptionTitle || '';
+                  rxText = latest.text || latest.content || latest.description || latest.prescription || '';
+                  rxUrl = latest.url || latest.downloadUrl || latest.fileUrl || '';
+                  console.log('Extracted from patientPrescriptions (fallback):', { rxTitle, rxText, rxUrl });
+                }
+              }
+            }
+          }
+          
+          console.log('Final prescription data:', { rxTitle, rxText, rxUrl });
+        } catch(_) {}
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan="3">
+            <div class="card shadow-sm border-0 rounded-4 mb-3 past-card"
+                 data-doctor="${doctor}"
+                 data-specialty="${specialty}"
+                 data-time="${timeText}"
+                 data-date="${dateText}"
+                 data-avatar="${avatar}"
+                 data-clinic="${clinic}"
+                 data-address="${clinicAddress}"
+                 data-cliniclogo="${clinicLogo}"
+                 data-diagtitle="${diagTitle}"
+                 data-doctorid="${docId || ''}"
+                 data-diagnosis="${diagnosis}"
+                 data-rxtitle="${rxTitle}"
+                 data-rxtext="${rxText}"
+                 data-rxurl="${rxUrl}">
+              <div class="card-body d-flex align-items-start">
+                <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width:42px;height:42px;background:#e6f7fb;">
+                  <i class="bi bi-camera-video text-info"></i>
+                </div>
+                <div class="w-100">
+                  <h6 class="mb-1">${specialty}</h6>
+                  <div class="text-muted small">${datetime}</div>
+                  <div class="small">${doctor}</div>
+                  ${clinic ? `<div class="small text-muted">${clinic}</div>` : ''}
+                  <div class="mt-2">
+                    <button type="button" class="btn btn-accent btn-sm rounded-pill view-record-btn">View Record</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        `;
+        appointmentPastBody.appendChild(row);
+
+        // Wire up View Record button
+        const cardEl = row.querySelector('.past-card');
+        const viewBtn = row.querySelector('.view-record-btn');
+        if(viewBtn && cardEl){
+          viewBtn.addEventListener('click', function(evt){
+            evt.stopPropagation();
+            const payload = {
+              doctor: cardEl.getAttribute('data-doctor')||'',
+              specialty: cardEl.getAttribute('data-specialty')||'',
+              clinic: cardEl.getAttribute('data-clinic')||'',
+              clinicAddress: cardEl.getAttribute('data-address')||'',
+              clinicLogo: cardEl.getAttribute('data-cliniclogo')||'logo.png',
+              avatar: cardEl.getAttribute('data-avatar')||'logo.png',
+              timeText: cardEl.getAttribute('data-time')||'',
+              dateText: cardEl.getAttribute('data-date')||'',
+              diagTitle: cardEl.getAttribute('data-diagtitle')||'',
+              diagnosis: cardEl.getAttribute('data-diagnosis')||'',
+              rxTitle: cardEl.getAttribute('data-rxtitle')||'',
+              rxText: cardEl.getAttribute('data-rxtext')||'',
+              rxUrl: cardEl.getAttribute('data-rxurl')||'',
+              doctorUid: cardEl.getAttribute('data-doctorid')||''
+            };
+            if(typeof window.openRecordDetailModal === 'function'){
+              window.openRecordDetailModal(payload);
+            }
+          });
+        }
+      });
+      // Enhance past avatars after render
+      (async function(){ try{ const cards = appointmentPastBody.querySelectorAll('.past-card[data-doctorid]'); for (const c of cards){ const uid=c.getAttribute('data-doctorid')||''; if(!uid) continue; const url = await fetchDoctorPhotoUrl(uid); if (url) c.setAttribute('data-avatar', url); } }catch(_){ } })();
+    };
+
+      await renderUpcoming(upcomingDocs);
+      await renderPast(pastDocs);
+      
+      // Check for reminders after rendering
+      checkAppointmentReminders();
+    };
+    
+    // Appointment Reminder System
+    const checkAppointmentReminders = () => {
+      const now = Date.now();
+      const reminderBanner = document.getElementById('reminderBanner');
+      const shownReminders = JSON.parse(localStorage.getItem('shownReminders') || '{}');
+      
+      // Get upcoming appointments
+      const withData = docs.map(d=>({ id:d.id, ref:d.ref, data:d.data() }));
+      const upcomingAppointments = withData.filter(x=> !isAppointmentDone(x.data) && isAppointmentUpcoming(x.data));
+      
+      for (const apt of upcomingAppointments) {
+        const aptData = apt.data;
+        let aptDate = null;
+        
+        // Parse appointment date
+        try {
+          if (aptData.date) {
+            if (typeof aptData.date === 'string') {
+              aptDate = new Date(aptData.date);
+            } else if (aptData.date.toDate) {
+              aptDate = aptData.date.toDate();
+            }
+          }
+        } catch(e) { console.warn('Date parse error:', e); }
+        
+        if (!aptDate || isNaN(aptDate.getTime())) continue;
+        
+        const aptTime = aptDate.getTime();
+        const timeDiff = aptTime - now;
+        
+        // 3 days = 3 * 24 * 60 * 60 * 1000 = 259,200,000 ms
+        // Check if within 3-day window (3 days ± 1 hour)
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        const oneHour = 60 * 60 * 1000;
+        
+        // 10 minutes = 10 * 60 * 1000 = 600,000 ms
+        const tenMinutes = 10 * 60 * 1000;
+        const twoMinutes = 2 * 60 * 1000;
+        
+        const reminderKey3 = `${apt.id}-3days`;
+        const reminderKey10 = `${apt.id}-10mins`;
+        
+        let reminderType = null;
+        let reminderKey = null;
+        
+        // Check 3-day reminder (show if between 3 days and 2 days 23 hours)
+        if (timeDiff > 0 && timeDiff <= threeDays && timeDiff >= (threeDays - oneHour) && !shownReminders[reminderKey3]) {
+          reminderType = '3days';
+          reminderKey = reminderKey3;
+        }
+        // Check 10-minute reminder (show if between 10 mins and 8 mins)
+        else if (timeDiff > 0 && timeDiff <= tenMinutes && timeDiff >= (tenMinutes - twoMinutes) && !shownReminders[reminderKey10]) {
+          reminderType = '10mins';
+          reminderKey = reminderKey10;
+        }
+        
+        if (reminderType && reminderKey) {
+          // Show reminder
+          showAppointmentReminder(apt, reminderType);
+          
+          // Mark as shown
+          shownReminders[reminderKey] = Date.now();
+          localStorage.setItem('shownReminders', JSON.stringify(shownReminders));
+          
+          // Only show one reminder at a time
+          break;
+        }
+      }
+      
+      // Clean up old reminder records (older than 60 days)
+      const sixtyDays = 60 * 24 * 60 * 60 * 1000;
+      let cleaned = false;
+      for (const key in shownReminders) {
+        if (now - shownReminders[key] > sixtyDays) {
+          delete shownReminders[key];
+          cleaned = true;
+        }
+      }
+      if (cleaned) {
+        localStorage.setItem('shownReminders', JSON.stringify(shownReminders));
+      }
+    };
+    
+    const showAppointmentReminder = (appointment, type) => {
+      const reminderBanner = document.getElementById('reminderBanner');
+      const aptData = appointment.data;
+      
+      let aptDate = null;
+      try {
+        if (aptData.date) {
+          if (typeof aptData.date === 'string') {
+            aptDate = new Date(aptData.date);
+          } else if (aptData.date.toDate) {
+            aptDate = aptData.date.toDate();
+          }
+        }
+      } catch(e) {}
+      
+      const doctorName = aptData.doctor || 'your doctor';
+      const dateStr = aptDate ? aptDate.toLocaleDateString('en-US', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      }) : 'your scheduled date';
+      const timeStr = aptData.time || 'your scheduled time';
+      
+      let title = '';
+      let message = '';
+      let icon = '';
+      let cssClass = '';
+      
+      if (type === '3days') {
+        title = 'Appointment Reminder';
+        message = `Your appointment with <strong>${doctorName}</strong> is coming up in <strong>3 days</strong> on <strong>${dateStr}</strong> at <strong>${timeStr}</strong>.`;
+        icon = 'bi-calendar-check';
+        cssClass = 'reminder-30days';
+      } else if (type === '10mins') {
+        title = 'Appointment Starting Soon!';
+        message = `Your appointment with <strong>${doctorName}</strong> starts in <strong>10 minutes</strong> at <strong>${timeStr}</strong>. Please prepare to join.`;
+        icon = 'bi-alarm';
+        cssClass = 'reminder-10mins';
+      }
+      
+      reminderBanner.innerHTML = `
+        <div class="reminder-banner ${cssClass} d-flex align-items-start" role="alert">
+          <div class="reminder-icon-circle me-3">
+            <i class="bi ${icon}"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h6>${title}</h6>
+            <p>${message}</p>
+          </div>
+          <button type="button" class="btn-close" aria-label="Close" onclick="document.getElementById('reminderBanner').classList.add('d-none')"></button>
+        </div>
+      `;
+      
+      reminderBanner.classList.remove('d-none');
+      
+      // Auto-hide after 15 seconds for 3-day reminder, 30 seconds for 10-minute reminder
+      const autoHideDelay = type === '3days' ? 15000 : 30000;
+      setTimeout(() => {
+        reminderBanner.classList.add('d-none');
+      }, autoHideDelay);
+      
+      console.log(`🔔 Reminder shown: ${type} for appointment ${appointment.id}`);
+    };
+    
+    // Start the real-time listener
+    setupAppointmentsListener();
+    
+    // Set up periodic reminder check (every 60 seconds)
+    setInterval(() => {
+      checkAppointmentReminders();
+    }, 60000);
+  }
+
+  // Verify password function
+  async function verifyPassword(password) {
+    if (!password) throw new Error('Password is required.');
+    const auth = firebase.auth();
+    const user = auth.currentUser;
+    if (!user || !user.email) throw new Error('Unable to verify password for this account.');
+    
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
+    await user.reauthenticateWithCredential(credential);
+    // If we reach here, password is correct
+  }
+
+  // Password panel handlers for recordDetailModal
+  var recPasswordPanel = document.getElementById('recDetailRxPassword');
+  var recPasswordForm = document.getElementById('recRxPasswordForm');
+  var recPasswordInput = document.getElementById('recRxPasswordInput');
+  var recPasswordError = document.getElementById('recRxPasswordError');
+  var recPasswordSubmit = document.getElementById('recRxPasswordSubmit');
+  var recPasswordCancel = document.getElementById('recRxPasswordCancel');
+  var pendingAction = null;
+
+  function hideRecPasswordPanel(){
+    if(recPasswordPanel) recPasswordPanel.classList.add('d-none');
+    if(recPasswordForm) recPasswordForm.reset();
+    if(recPasswordError) recPasswordError.classList.add('d-none');
+    pendingAction = null;
+  }
+
+  function showRecPasswordPanel(action){
+    pendingAction = action;
+    if(recPasswordPanel) recPasswordPanel.classList.remove('d-none');
+    if(recPasswordInput) recPasswordInput.focus();
+  }
+
+  if(recPasswordForm){
+    recPasswordForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const pwd = recPasswordInput.value.trim();
+      if(!pwd){ recPasswordError.textContent='Password required'; recPasswordError.classList.remove('d-none'); return; }
+      recPasswordError.classList.add('d-none');
+      recPasswordSubmit.disabled=true;
+      recPasswordSubmit.textContent='Verifying...';
+      try{
+        await verifyPassword(pwd);
+        console.log('Password verified, pendingAction type:', typeof pendingAction);
+        if(pendingAction) {
+          console.log('Executing pendingAction...');
+          pendingAction();
+        } else {
+          console.warn('No pendingAction to execute!');
+        }
+        hideRecPasswordPanel();
+      }catch(err){
+        recPasswordError.textContent=err.message||'Incorrect password';
+        recPasswordError.classList.remove('d-none');
+      }finally{
+        recPasswordSubmit.disabled=false;
+        recPasswordSubmit.textContent='Confirm Access';
+      }
+    });
+  }
+
+  if(recPasswordCancel) recPasswordCancel.addEventListener('click', hideRecPasswordPanel);
+
+  // Past Detail Modal Password Panel Management (like techmed.html)
+  var rxPasswordPanel = document.getElementById('pastDetailRxPassword');
+  var rxPasswordForm = document.getElementById('rxPasswordForm');
+  var rxPasswordInput = document.getElementById('rxPasswordInput');
+  var rxPasswordError = document.getElementById('rxPasswordError');
+  var rxPasswordSubmit = document.getElementById('rxPasswordSubmit');
+  var rxPasswordCancel = document.getElementById('rxPasswordCancel');
+  var pendingRxAction = null;
+
+  function showRxPasswordPanel(action){
+    if (typeof action !== 'function') action = function(){};
+    pendingRxAction = action;
+    if (rxPasswordForm) rxPasswordForm.reset();
+    if (rxPasswordError) {
+      rxPasswordError.classList.add('d-none');
+      rxPasswordError.textContent = '';
+    }
+    if (rxPasswordPanel) rxPasswordPanel.classList.remove('d-none');
+    setTimeout(function(){ if (rxPasswordInput) rxPasswordInput.focus(); }, 150);
+  }
+
+  function hideRxPasswordPanel(clearAction){
+    if (rxPasswordPanel) rxPasswordPanel.classList.add('d-none');
+    if (clearAction !== false) pendingRxAction = null;
+    if (rxPasswordError) {
+      rxPasswordError.classList.add('d-none');
+      rxPasswordError.textContent = '';
+    }
+    if (rxPasswordForm) rxPasswordForm.reset();
+  }
+
+  function completeRxAction(){
+    const fn = pendingRxAction;
+    pendingRxAction = null;
+    if (typeof fn === 'function') fn();
+  }
+
+  function requestRxPasswordVerification(action){
+    showRxPasswordPanel(action);
+  }
+
+  // Password form submit handler for past detail modal
+  if (rxPasswordForm) {
+    rxPasswordForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      if (!rxPasswordInput) return;
+      const pwd = rxPasswordInput.value.trim();
+      if (!pwd) {
+        if (rxPasswordError) {
+          rxPasswordError.textContent = 'Password is required.';
+          rxPasswordError.classList.remove('d-none');
+        }
+        return;
+      }
+      if (rxPasswordError) rxPasswordError.classList.add('d-none');
+      if (rxPasswordSubmit) {
+        rxPasswordSubmit.disabled = true;
+        rxPasswordSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Verifying...';
+      }
+      try {
+        await verifyPassword(pwd);
+        hideRxPasswordPanel(false);
+        completeRxAction();
+      } catch(err) {
+        if (rxPasswordError) {
+          rxPasswordError.textContent = err && err.message ? err.message : 'Password incorrect.';
+          rxPasswordError.classList.remove('d-none');
+        }
+      } finally {
+        if (rxPasswordSubmit) {
+          rxPasswordSubmit.disabled = false;
+          rxPasswordSubmit.textContent = 'Confirm Access';
+        }
+      }
+    });
+  }
+
+  if (rxPasswordCancel) {
+    rxPasswordCancel.addEventListener('click', function(){
+      hideRxPasswordPanel();
+    });
+  }
+
+  // Hide password panel when modal is closed
+  var pastDetailModalEl = document.getElementById('pastDetailModal');
+  if (pastDetailModalEl) {
+    pastDetailModalEl.addEventListener('hidden.bs.modal', function(){
+      hideRxPasswordPanel();
+    });
+  }
+
+  // window.openRecordDetailModal function
+  window.openRecordDetailModal = function(details){
+    if(!details) return;
+    document.getElementById('recDetailDoctor').textContent = (details.doctor||'') + (details.specialty ? ' ('+details.specialty+')' : '');
+    document.getElementById('recDetailTime').textContent = details.timeText||'';
+    document.getElementById('recDetailDate').textContent = details.dateText||'';
+    document.getElementById('recDetailAvatar').src = details.avatar||'logo.png';
+    document.getElementById('recDetailClinicName').textContent = details.clinic||'';
+    document.getElementById('recDetailClinicAddress').textContent = details.clinicAddress||'';
+    document.getElementById('recDetailClinicLogo').src = details.clinicLogo||'logo.png';
+    document.getElementById('recDetailDiagnosisTitle').textContent = details.diagTitle||'';
+    document.getElementById('recDetailDiagnosis').textContent = details.diagnosis||'';
+    document.getElementById('recDetailRxTitle').textContent = details.rxTitle||'';
+    document.getElementById('recDetailRxText').textContent = details.rxText||'';
+    document.getElementById('recDetailRxContent').classList.add('d-none');
+    hideRecPasswordPanel();
+
+    var rxActionsEl = document.getElementById('recDetailRxActions');
+    var hasRx = (details.rxTitle||details.rxText||'').trim();
+    var hasUrl = (details.rxUrl||'').trim();
+    var html='';
+    if(hasRx) html+='<button type="button" id="btnViewRx" class="btn btn-sm btn-accent me-1">View Prescription</button>';
+    if(hasUrl) html+='<button type="button" id="btnDownloadRx" class="btn btn-sm btn-outline-secondary" data-url="'+hasUrl+'">Download</button>';
+    if(!hasRx && !hasUrl) html='<div class="text-muted small">No prescription available.</div>';
+    rxActionsEl.innerHTML=html;
+
+    var btnView=document.getElementById('btnViewRx');
+    var btnDownload=document.getElementById('btnDownloadRx');
+    if(btnView){
+      btnView.addEventListener('click', function(){
+        console.log('=== VIEW PRESCRIPTION BUTTON CLICKED ===');
+        var rxEl = document.getElementById('recDetailRxContent');
+        var isVisible = !rxEl.classList.contains('d-none');
+        
+        if (isVisible) {
+          // Hide prescription
+          rxEl.classList.add('d-none');
+          btnView.textContent = 'View Prescription';
+          hideRecPasswordPanel();
+        } else {
+          // Show prescription with password verification
+          showRecPasswordPanel(function(){
+            console.log('=== PASSWORD VERIFIED - SHOWING PRESCRIPTION ===');
+            console.log('rxEl:', rxEl);
+            console.log('rxEl innerHTML:', rxEl ? rxEl.innerHTML : 'NULL');
+            rxEl.classList.remove('d-none');
+            btnView.textContent = 'Hide Prescription';
+          });
+        }
+      });
+    }
+    if(btnDownload){
+      btnDownload.addEventListener('click', function(){
+        showRecPasswordPanel(function(){
+          console.log('=== PASSWORD VERIFIED - EXECUTING ACTION ===');
+          window.open(btnDownload.dataset.url, '_blank');
+        });
+      });
+    }
+
+    new bootstrap.Modal(document.getElementById('recordDetailModal')).show();
+  };
+
+  // Open modal and render appointments
+  if (appointmentBtn) {
+    appointmentBtn.addEventListener('click', async () => {
+      try {
+        appointmentModal.show();
+        await loadAndRenderAppointments();
+      } catch (e) {
+        console.error('Error opening appointment modal:', e);
+      }
+    });
+  }
+
+  // Initialize badge (user + allowed only)
+  (function initBadge() {
+    const unread = userNotifications().filter(n => !n.read).length;
+    if (unread > 0) {
+      notificationBadge.textContent = String(unread);
+      notificationBadge.classList.remove('d-none');
+    } else {
+      notificationBadge.classList.add('d-none');
+    }
+  })();
+
+  // Auto-initialize appointment listener for reminders (without opening modal)
+  (async () => {
+    try {
+      console.log('🔔 Initializing appointment reminder system...');
+      const user = await waitForAuthUser();
+      if (user) {
+        await loadAndRenderAppointments();
+        console.log('✅ Reminder system initialized successfully!');
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not initialize reminder system:', error);
+    }
+  })();
+
+  // TEMPORARILY DISABLED: Watch for appointment approvals 
+  // This function was causing Firebase initialization issues
+  // Will be re-enabled after doctor fetching is working
+  console.log('[DEBUG] Approval notifications temporarily disabled');
+</script>
+
+<!-- Bootstrap & JS -->
+
+<main class="main">
+  <!-- Page Title -->
+  <div class="page-title">
+    <div class="heading">
+      <div class="container">
+        <div class="row d-flex justify-content-center text-center">
+          <div class="col-lg-8">
+            <h1 class="heading-title">Doctors</h1>
+            <p class="mb-0">TechMed brings together licensed and highly qualified specialists...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="breadcrumbs">
+      <div class="container">
+        <ol>
+          <li><a href="techmed.html">Home</a></li>
+          <li class="current">Doctors</li>
+        </ol>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Doctors Section -->
+  <section id="doctors" class="doctors section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <!-- VIEW CARD (SLIDER) 
+      <div class="compact-view mt-5">
+        <div class="swiper">
+          <div class="swiper-wrapper"></div>
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+          <br>
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>-->  <!-- populated by patient-directory.js -->
+
+      <!-- Doctor Profile with Tabs 
+      <div class="profile-tabs mt-5">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <div class="tab-profile-card">
+              <img id="doctor-image" src="logo.png" class="img-fluid rounded-3" alt="">
+              <div class="pt-3">
+                <h3 id="doctor-name" class="mb-1">Select a Doctor</h3>
+                <p id="doctor-specialty" class="mb-2">Specialty</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-8">
+            <ul class="nav nav-pills mb-3" role="tablist">
+              <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-bio">Bio</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-schedule">Schedule</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-reviews">Reviews</button></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="tab-bio">
+                <p id="doctor-bio">Click a doctor card to see their profile.</p>
+              </div>
+              <div class="tab-pane fade" id="tab-schedule">
+                <div id="doctor-schedule" class="schedule-grid"></div>
+              </div>
+              <div class="tab-pane fade" id="tab-reviews">
+                <p id="doctor-reviews">Reviews will appear here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>-->
+
+      <br><br>
+
+      <!-- Filterable Doctor Directory -->
+      <div class="doctor-directory mb-5">
+        <div class="directory-bar p-3 p-md-4 rounded-3">
+
+          <!-- Directory Filters -->
+          <div class="row g-3 align-items-end mb-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="col-md-5">
+              <label for="dirDate" class="form-label small mb-1">
+                <i class="bi bi-calendar-event me-1"></i>Select Your Preferred Date
+              </label>
+              <input type="text" id="dirDate" class="form-control" placeholder="Choose a date...">
+            </div>
+            <div class="col-md-4">
+              <label for="dirTime" class="form-label small mb-1">
+                <i class="bi bi-clock me-1"></i>Select Your Preferred Time
+              </label>
+              <select id="dirTime" class="form-select">
+                <option value="">Select Time...</option>
+                <option value="8:00 AM">8:00 AM</option>
+                <option value="9:00 AM">9:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="12:00 PM">12:00 PM</option>
+                <option value="1:00 PM">1:00 PM</option>
+                <option value="2:00 PM">2:00 PM</option>
+                <option value="3:00 PM">3:00 PM</option>
+                <option value="4:00 PM">4:00 PM</option>
+                <option value="5:00 PM">5:00 PM</option>
+              </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <button id="dirClear" type="button" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-x-circle me-1"></i>Clear Filters
+              </button>
+            </div>
+          </div>
+          
+          <!-- Availability Status -->
+          <div id="availabilityStatus" class="availability-status d-none mb-4" role="status">
+            <div class="status-content">
+              <i class="status-icon bi bi-info-circle"></i>
+              <span id="availabilityStatusText" class="status-text"></span>
+            </div>
+          </div>
+          
+          <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="300">
+            <!-- Loading skeleton -->
+            <div id="doctorLoadingSkeleton">
+              <div class="row gy-4">
+                <div class="col-lg-4 col-md-6">
+                  <div class="card doctor-card border-0 shadow-sm">
+                    <div class="skeleton-loader">
+                      <div class="skeleton-image" style="height:220px;"></div>
+                      <div class="card-body">
+                        <div class="skeleton-line mb-3" style="width:70%;height:24px;"></div>
+                        <div class="skeleton-line mb-2" style="width:50%;height:16px;"></div>
+                        <div class="skeleton-line mb-3" style="width:60%;height:16px;"></div>
+                        <div class="skeleton-line" style="width:40%;height:14px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <div class="card doctor-card border-0 shadow-sm">
+                    <div class="skeleton-loader">
+                      <div class="skeleton-image" style="height:220px;"></div>
+                      <div class="card-body">
+                        <div class="skeleton-line mb-3" style="width:70%;height:24px;"></div>
+                        <div class="skeleton-line mb-2" style="width:50%;height:16px;"></div>
+                        <div class="skeleton-line mb-3" style="width:60%;height:16px;"></div>
+                        <div class="skeleton-line" style="width:40%;height:14px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <div class="card doctor-card border-0 shadow-sm">
+                    <div class="skeleton-loader">
+                      <div class="skeleton-image" style="height:220px;"></div>
+                      <div class="card-body">
+                        <div class="skeleton-line mb-3" style="width:70%;height:24px;"></div>
+                        <div class="skeleton-line mb-2" style="width:50%;height:16px;"></div>
+                        <div class="skeleton-line mb-3" style="width:60%;height:16px;"></div>
+                        <div class="skeleton-line" style="width:40%;height:14px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- populated by patient-directory.js -->
+             
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Appointment Section -->
+  <section id="appointment" class="appointmnet section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="row gy-4">
+        <div class="col-lg-6">
+          <div class="appointment-info">
+            <h3>Quick &amp; Easy Online Booking</h3>
+            <p class="mb-4">Book your appointment in just a few simple steps.</p>
+            <!-- features ... -->
+
+            <!-- Process Steps -->
+            <div class="process-steps mt-5" data-aos="fade-up" data-aos-delay="300">
+              <div class="row text-center gy-4">
+                <div class="col-lg-3 col-md-6">
+                  <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                      <i class="bi bi-person-fill"></i>
+                    </div>
+                    <h5>Fill Details</h5>
+                    <p>Provide your personal information and select your preferred department</p>
+                  </div>
+                </div><!-- End Step -->
+
+                <div class="col-lg-3 col-md-6">
+                  <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                      <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <h5>Choose Date</h5>
+                    <p>Select your preferred date and time slot from available options</p>
+                  </div>
+                </div><!-- End Step -->
+
+                <div class="col-lg-3 col-md-6">
+                  <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                      <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h5>Confirmation</h5>
+                    <p>Receive instant confirmation and appointment details via email or SMS</p>
+                  </div>
+                </div><!-- End Step -->
+
+                <div class="col-lg-3 col-md-6">
+                  <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">
+                      <i class="bi bi-heart-pulse"></i>
+                    </div>
+                    <h5>Get Treatment</h5>
+                    <p>Visit our clinic at your scheduled time and receive quality healthcare</p>
+                  </div>
+                </div><!-- End Step -->
+
+              </div>
+            </div><!-- End Process Steps -->
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="appointment-form-wrapper" data-aos="fade-up" data-aos-delay="200">
+            <form id="appointment-form" class="appointment-form">
+              <div class="row gy-3">
+                <div class="col-md-6">
+                  <input type="text" name="name" id="patientName" class="form-control" placeholder="Your Full Name" required>
+                </div>
+                <div class="col-md-6">
+                  <input type="email" name="email" id="patientEmail" class="form-control" placeholder="Your Email" required>
+                </div>
+                <div class="col-md-6">
+                  <input type="tel" name="phone" id="patientPhone" class="form-control" placeholder="Your Phone Number" inputmode="tel" maxlength="11" oninput="this.value=this.value.replace(/(?!^\\+)[^\\d]/g,'')" required>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" name="doctor" id="doctor" class="form-control" placeholder="Selected Doctor" readonly>
+                  <input type="hidden" id="doctorId" name="doctorId">
+                </div>
+                <div class="col-md-6">
+                  <div class="calendar-wrapper">
+                    <input type="text" name="date" id="date" class="form-control" placeholder="Select Date" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <select name="time" id="time" class="form-select" required>
+                    <option value="">Select Time</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <div class="loading d-none">Loading</div>
+                  <div class="error-message text-danger"></div>
+                  <div class="sent-message text-success d-none">Your appointment request has been sent successfully.</div>
+                  <button type="submit" class="btn btn-appointment w-100">
+                    <i class="bi bi-calendar-plus me-2"></i>Book Appointment
+                  </button>
+                </div>
+              </div>
+            </form>
+            
+            <!-- Doctor Availability Display -->
+            <div id="doctor-availability-display" class="mt-4" style="display: none;">
+              <!-- Availability will be populated here by JavaScript -->
+            </div>
+            
+            <!-- Automated Scheduling Suggestions -->
+            <div id="automated-suggestions" class="mt-4" style="display: none;">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h6 class="mb-1" style="font-weight: 500; color: #212529;">Suggested Times</h6>
+                  <p class="text-muted small mb-0" style="font-size: 12px;">Based on doctor availability</p>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary" id="refreshSuggestionsBtn" style="display: none;">
+                  <i class="bi bi-arrow-clockwise"></i>
+                </button>
+              </div>
+              <div id="suggestions-container">
+                <!-- Suggestions will be populated here by JavaScript -->
+              </div>
+              <div id="suggestions-loading" class="text-center py-3" style="display: none;">
+                <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted small mb-0">Finding times...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Appointment Confirmation Modal -->
+  <div class="modal fade" id="confirmAppointmentModal" tabindex="-1" aria-labelledby="confirmAppointmentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmAppointmentLabel">Confirm Your Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Please review your information before booking:</p>
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Full Name</span><span id="confirmName" class="fw-medium"></span></li>
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Email</span><span id="confirmEmail" class="fw-medium"></span></li>
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Phone</span><span id="confirmPhone" class="fw-medium"></span></li>
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Doctor</span><span id="confirmDoctor" class="fw-medium"></span></li>
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Date</span><span id="confirmDate" class="fw-medium"></span></li>
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Time</span><span id="confirmTime" class="fw-medium"></span></li>
+            <li class="list-group-item d-flex justify-content-between d-none" id="confirmDepartmentRow"><span class="text-muted">Department</span><span id="confirmDepartment" class="fw-medium"></span></li>
+            <li class="list-group-item d-flex justify-content-between d-none" id="confirmReasonRow"><span class="text-muted">Reason</span><span id="confirmReason" class="fw-medium text-end"></span></li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Edit</button>
+          <button type="button" id="confirmAppointmentProceed" class="btn btn-primary">
+            <i class="bi bi-check2-circle me-1"></i>Confirm & Book
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alternative Doctors Modal -->
+  <div class="modal fade" id="alternativeDoctorsModal" tabindex="-1" aria-labelledby="alternativeDoctorsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-info text-white">
+          <div>
+            <h5 class="modal-title mb-1" id="alternativeDoctorsLabel">
+              <i class="bi bi-people-fill me-2"></i>Alternative Doctors Available
+            </h5>
+            <p class="mb-0 small opacity-90" id="alternativeDoctorsSubtitle">Your preferred doctor is booked. Choose from these available doctors:</p>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0">
+          <div id="alternativeDoctorsContainer" class="p-3">
+            <!-- Alternative doctors will be populated here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alternative Times Modal -->
+  <div class="modal fade" id="alternativeTimesModal" tabindex="-1" aria-labelledby="alternativeTimesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <div>
+            <h5 class="modal-title mb-1" id="alternativeTimesLabel">
+              <i class="bi bi-clock-fill me-2"></i>Alternative Time Slots
+            </h5>
+            <p class="mb-0 small" id="alternativeTimesSubtitle">No doctors available at your preferred time. Choose from these alternatives:</p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0">
+          <div id="alternativeTimesContainer" class="p-3">
+            <!-- Alternative times will be populated here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer id="footer" class="footer position-relative">
+  <!-- footer content unchanged -->
+  <div class="container copyright text-center mt-4">
+    <p> 2023 <span>Copyright</span> <strong>TECHMED</strong>&nbsp;<span>All Rights Reserved</span></p>
+    <div class="credits">Designed by <a href="">Lester Ramirez</a></div>
+  </div>
+</footer>
+
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+<div id="preloader"></div>
+
+<!-- Vendor JS Files -->
+<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/php-email-form/validate.js"></script>
+<script src="assets/vendor/aos/aos.js"></script>
+<script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+<script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+<script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+<script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+
+<!-- Swiper JS (single source) -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<!-- Firebase compat + init -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"></script>
+<script src="./notification-manager.js"></script>
+<script src="./appointment-reminder.js"></script>
+<script src="./firebase-init.js"></script>
+
+<!-- Directory logic (loads doctors into slider + directory and wires schedule) -->
+<script src="./patient-directory.js"></script>
+
+<!-- Appointment submission logic -->
+<script src="./appointment.js"></script>
+
+<!-- Constraint-based Automated Scheduler -->
+<script src="./constraint-scheduler.js"></script>
+
+<!-- Smart Booking Engine for Alternative Doctors & Times -->
+<script src="./smart-booking-engine.js"></script>
+
+<!-- Smart Booking Integration Layer -->
+<script src="./smart-booking-integration.js"></script>
+
+<!-- Directory Availability Filter -->
+<script src="./directory-availability-filter.js"></script>
+
+<!-- Appointment Auto-Fill -->
+<script src="./appointment-autofill.js"></script>
+
+<!-- Auth header + logout + prefill only (no duplicate submit) -->
+<script>
+  (function () {
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Header auth + logout + prefill patient info
+    auth.onAuthStateChanged(async (user) => {
+      const nameEl = document.getElementById('headerUserName');
+      const logoutEl = document.getElementById('logoutLink');
+
+      if (!user) { window.location.replace('index.html'); return; }
+
+      // Enable push notifications for patient
+      try {
+        if (window.NotificationManager) {
+          console.log('🔔 Enabling push notifications for patient...');
+          await window.NotificationManager.enableNotifications(user.uid, 'patient');
+        }
+      } catch (notifError) {
+        console.warn('⚠️ Could not enable push notifications:', notifError);
+        // Don't block the app if notifications fail
+      }
+
+      // Initialize appointment reminder system
+      try {
+        if (window.AppointmentReminder) {
+          console.log('⏰ Initializing appointment reminder system...');
+          await window.AppointmentReminder.initialize(user.uid, 'patient');
+        }
+      } catch (reminderError) {
+        console.warn('⚠️ Could not initialize appointment reminders:', reminderError);
+      }
+
+      // Read patient data from both new and old structures
+      let data = {};
+      try {
+        console.log('🔍 Loading patient data for UID:', user.uid);
+        
+        // Try new subcollection structure first: users/patients/patients/{uid}
+        let uDoc = await db.collection('users').doc('patients').collection('patients').doc(user.uid).get();
+        
+        if (!uDoc.exists) {
+          console.log('⚠️ Patient not found in new structure, trying old structure');
+          // Fallback to old structure: users/{uid}
+          uDoc = await db.collection('users').doc(user.uid).get();
+        }
+        
+        if (uDoc.exists) {
+          data = uDoc.data();
+          console.log('📋 Raw patient data:', data);
+        } else {
+          console.log('❌ No patient data found in either structure');
+        }
+      } catch (error) {
+        console.error('❌ Error loading patient data:', error);
+      }
+      
+      // Extract patient information (matching patientprofile.html exactly)
+      const firstName = data.firstName || data.first_name || "";
+      const lastName = data.lastName || data.last_name || "";
+      const fullName = data.fullName || `${firstName} ${lastName}`.trim();
+      const phone = data.phone || data.phoneNumber || '';
+
+      if (nameEl) {
+        if (fullName && fullName.trim() && fullName !== "Account") {
+          nameEl.textContent = fullName;
+          nameEl.style.display = '';
+        } else {
+          nameEl.style.display = 'none';
+        }
+      }
+
+      // Store patient data globally for later use
+      window.patientData = {
+        fullName: fullName,
+        email: user.email,
+        phone: phone
+      };
+      
+      console.log('💾 Patient data stored:', window.patientData);
+
+      if (logoutEl) {
+        logoutEl.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await auth.signOut();
+          window.location.replace('index.html');
+        });
+      }
+    });
+    
+    // Approval notifications temporarily disabled to fix Firebase issues
+    console.log('[DEBUG] Approval notifications disabled - focusing on doctor fetching');
+  })();
+</script>
+
+<!-- Automated Scheduling Logic -->
+<script>
+  (function() {
+    'use strict';
+    
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    let currentScheduler = null;
+    let currentDoctorData = null;
+    
+    // Function to initialize automated scheduling for a doctor
+    async function initializeAutomatedScheduling(doctorId, doctorName) {
+      if (!doctorId || !window.ConstraintScheduler) {
+        console.log('❌ Cannot initialize scheduler: missing doctorId or ConstraintScheduler');
+        return;
+      }
+      
+      console.log('🤖 Initializing automated scheduling for doctor:', doctorName);
+      
+      try {
+        // Show loading state
+        const suggestionsContainer = document.getElementById('automated-suggestions');
+        const loadingEl = document.getElementById('suggestions-loading');
+        const contentEl = document.getElementById('suggestions-container');
+        
+        if (suggestionsContainer) {
+          suggestionsContainer.style.display = 'block';
+        }
+        if (loadingEl) {
+          loadingEl.style.display = 'block';
+        }
+        if (contentEl) {
+          contentEl.innerHTML = '';
+        }
+        
+        // Fetch doctor data
+        let doctorDoc = await db.collection('public_doctors').doc(doctorId).get();
+        if (!doctorDoc.exists) {
+          doctorDoc = await db.collection('doctors').doc(doctorId).get();
+        }
+        if (!doctorDoc.exists) {
+          // Try new structure
+          doctorDoc = await db.collection('users').doc('doctors').collection('doctors').doc(doctorId).get();
+        }
+        
+        if (!doctorDoc.exists) {
+          console.error('❌ Doctor not found:', doctorId);
+          if (loadingEl) loadingEl.style.display = 'none';
+          return;
+        }
+        
+        currentDoctorData = { id: doctorDoc.id, ...doctorDoc.data() };
+        console.log('👨‍⚕️ Doctor data loaded:', currentDoctorData);
+        
+        // Fetch existing appointments
+        const appointmentsSnap = await db.collection('appointments')
+          .where('doctorId', '==', doctorId)
+          .where('status', 'in', ['pending', 'confirmed', 'approved'])
+          .get();
+        
+        const existingAppointments = [];
+        appointmentsSnap.forEach(doc => {
+          existingAppointments.push({ id: doc.id, ...doc.data() });
+        });
+        
+        console.log(`📅 Found ${existingAppointments.length} existing appointments`);
+        
+        // Create scheduler instance
+        currentScheduler = new window.ConstraintScheduler(currentDoctorData, existingAppointments);
+        
+        // Find optimal slots
+        const optimalSlots = await currentScheduler.findOptimalSlots({
+          preferredDates: null, // All dates in next 30 days
+          preferredTimes: [9, 10, 14, 15, 16], // Morning and afternoon
+          durationMinutes: 60,
+          urgency: 'normal',
+          appointmentType: 'consultation',
+          maxResults: 5
+        });
+        
+        console.log(`✅ Found ${optimalSlots.length} optimal slots`);
+        
+        // Hide loading, display suggestions
+        if (loadingEl) {
+          loadingEl.style.display = 'none';
+        }
+        
+        displayAutomatedSuggestions(optimalSlots);
+        
+        // Show refresh button
+        const refreshBtn = document.getElementById('refreshSuggestionsBtn');
+        if (refreshBtn) {
+          refreshBtn.style.display = 'inline-block';
+          refreshBtn.onclick = () => initializeAutomatedScheduling(doctorId, doctorName);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error initializing automated scheduling:', error);
+        const loadingEl = document.getElementById('suggestions-loading');
+        if (loadingEl) {
+          loadingEl.style.display = 'none';
+        }
+        const contentEl = document.getElementById('suggestions-container');
+        if (contentEl) {
+          contentEl.innerHTML = `
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              Unable to generate scheduling suggestions at this time.
+            </div>
+          `;
+        }
+      }
+    }
+    
+    // Display automated suggestions
+    function displayAutomatedSuggestions(slots) {
+      const container = document.getElementById('suggestions-container');
+      if (!container) return;
+      
+      if (!slots || slots.length === 0) {
+        container.innerHTML = `
+          <div class="alert alert-warning">
+            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>No Available Slots Found</h6>
+            <p class="mb-2">The automated scheduler could not find available appointment times in the next 30 days.</p>
+            <hr>
+            <p class="mb-1"><strong>Possible reasons:</strong></p>
+            <ul class="mb-2">
+              <li>Doctor has not set availability schedule yet</li>
+              <li>All available dates are fully booked</li>
+              <li>Available dates are in the past</li>
+            </ul>
+            <p class="mb-0"><strong>What to do:</strong> Please try manual booking below or contact the doctor's office.</p>
+          </div>
+        `;
+        
+        // Log for debugging
+        console.log('⚠️ No slots found. Doctor data:', currentDoctorData);
+        console.log('Doctor schedule:', currentDoctorData?.schedule);
+        
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      slots.forEach((slotData, index) => {
+        const { slot, score } = slotData;
+        const rank = index + 1;
+        
+        const card = document.createElement('div');
+        card.className = `suggestion-card rank-${rank <= 3 ? rank : 'default'}`;
+        
+        const dateStr = slot.toLocaleDateString('en-US', { 
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        });
+        const timeStr = slot.toLocaleTimeString('en-US', { 
+          hour: 'numeric', minute: '2-digit', hour12: true 
+        });
+        
+        // Calculate relative time
+        const now = new Date();
+        const diffTime = slot - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        let relativeTime = '';
+        if (diffDays === 0) relativeTime = 'Today';
+        else if (diffDays === 1) relativeTime = 'Tomorrow';
+        else if (diffDays < 7) relativeTime = `In ${diffDays} days`;
+        else relativeTime = `In ${Math.ceil(diffDays / 7)} weeks`;
+        
+        // Determine badge label
+        let badgeLabel = '';
+        if (rank === 1) badgeLabel = 'Best Match';
+        else if (rank === 2) badgeLabel = '2nd Best';
+        else if (rank === 3) badgeLabel = '3rd Best';
+        else badgeLabel = `Recommended #${rank}`;
+        
+        card.innerHTML = `
+          <div class="rank-badge rank-${rank <= 3 ? rank : 'default'}">
+            ${badgeLabel}
+          </div>
+          <div class="slot-info">
+            <div class="slot-details">
+              <div class="slot-date">
+                ${dateStr}
+              </div>
+              <div class="slot-time">
+                ${timeStr}
+              </div>
+              <div class="slot-score">
+                ${relativeTime} • Score: ${score.toFixed(0)}/100
+              </div>
+            </div>
+            <div class="slot-actions">
+              <button class="book-suggested-btn">
+                <i class="bi bi-calendar-check"></i>
+                Book
+              </button>
+            </div>
+          </div>
+        `;
+        
+        const bookBtn = card.querySelector('.book-suggested-btn');
+        bookBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          bookSuggestedSlot(slot.toISOString());
+        });
+        
+        card.addEventListener('click', () => bookSuggestedSlot(slot.toISOString()));
+        container.appendChild(card);
+      });
+    }
+    
+    // Book a suggested slot
+    function bookSuggestedSlot(slotISO) {
+      if (!slotISO) {
+        console.error('❌ Invalid slot: no date provided');
+        return;
+      }
+      
+      const slot = new Date(slotISO);
+      
+      // Validate date
+      if (isNaN(slot.getTime()) || slot.getFullYear() < 2000) {
+        console.error('❌ Invalid slot date:', slotISO, slot);
+        showBookingToast('Error: Invalid appointment time selected. Please try again.');
+        return;
+      }
+      
+      console.log('📅 Booking suggested slot:', slot);
+      
+      // Format date for input (YYYY-MM-DD)
+      const year = slot.getFullYear();
+      const month = String(slot.getMonth() + 1).padStart(2, '0');
+      const day = String(slot.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      // Format time for select (HH:MM AM/PM)
+      const hours = slot.getHours();
+      const minutes = slot.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const hours12 = hours % 12 || 12;
+      const timeStr = `${String(hours12)}:${String(minutes).padStart(2, '0')} ${ampm}`;
+      
+      // Pre-fill form
+      const dateInput = document.getElementById('dateInput');
+      const timeSelect = document.getElementById('timeSelect');
+      
+      if (dateInput) {
+        // Trigger Flatpickr to set the date
+        if (dateInput._flatpickr) {
+          dateInput._flatpickr.setDate(slot, true);
+        } else {
+          dateInput.value = dateStr;
+        }
+      }
+      
+      if (timeSelect) {
+        // Add the time option if it doesn't exist
+        let optionExists = false;
+        for (let i = 0; i < timeSelect.options.length; i++) {
+          if (timeSelect.options[i].value === timeStr) {
+            optionExists = true;
+            break;
+          }
+        }
+        
+        if (!optionExists) {
+          const option = document.createElement('option');
+          option.value = timeStr;
+          option.textContent = timeStr;
+          timeSelect.appendChild(option);
+        }
+        
+        timeSelect.value = timeStr;
+        
+        // Trigger change event to update form
+        const event = new Event('change', { bubbles: true });
+        timeSelect.dispatchEvent(event);
+      }
+      
+      // Show success toast
+      showBookingToast(`Appointment time selected: ${timeStr} on ${slot.toLocaleDateString('en-US', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      })}`);
+      
+      // Scroll to booking form
+      const form = document.getElementById('appointment-form');
+      if (form) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add highlight effect
+        form.style.transition = 'box-shadow 0.3s ease';
+        form.style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.3)';
+        setTimeout(() => {
+          form.style.boxShadow = '';
+        }, 2000);
+      }
+    }
+    
+    // Show toast notification
+    function showBookingToast(message) {
+      try {
+        const hasBootstrap = !!(window.bootstrap && window.bootstrap.Toast);
+        let container = document.getElementById('globalToastContainer');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'globalToastContainer';
+          container.className = 'toast-container position-fixed top-0 end-0 p-3';
+          container.style.zIndex = '1080';
+          document.body.appendChild(container);
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-bg-success border-0';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        toast.innerHTML = `
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="bi bi-check-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        if (hasBootstrap) {
+          const t = new window.bootstrap.Toast(toast, { delay: 4000 });
+          t.show();
+          toast.addEventListener('hidden.bs.toast', () => { toast.remove(); });
+        } else {
+          setTimeout(() => toast.classList.add('show'), 10);
+          setTimeout(() => { if (toast && toast.parentNode) toast.parentNode.removeChild(toast); }, 4500);
+        }
+      } catch (error) {
+        console.error('Error showing toast:', error);
+      }
+    }
+    
+    // Listen for doctor selection events from patient-directory.js
+    // This will be triggered when a doctor is selected from the directory
+    document.addEventListener('DOMContentLoaded', () => {
+      // Watch for changes to the doctor input field
+      const doctorInput = document.getElementById('doctorInput');
+      const doctorIdHidden = document.getElementById('doctorIdHidden');
+      
+      if (doctorInput && doctorIdHidden) {
+        // Set up observer for changes
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+              const doctorId = doctorIdHidden.value;
+              const doctorName = doctorInput.value;
+              
+              if (doctorId && doctorName) {
+                console.log('👨‍⚕️ Doctor selected, initializing automated scheduling...');
+                initializeAutomatedScheduling(doctorId, doctorName);
+              }
+            }
+          });
+        });
+        
+        // Also listen for input events
+        doctorIdHidden.addEventListener('change', () => {
+          const doctorId = doctorIdHidden.value;
+          const doctorName = doctorInput.value;
+          
+          if (doctorId && doctorName) {
+            console.log('👨‍⚕️ Doctor selected (via change event), initializing automated scheduling...');
+            initializeAutomatedScheduling(doctorId, doctorName);
+          }
+        });
+        
+        observer.observe(doctorIdHidden, { attributes: true });
+      }
+    });
+    
+    // Export for global access
+    window.initializeAutomatedScheduling = initializeAutomatedScheduling;
+    
+    console.log('✅ Automated scheduling logic initialized');
+  })();
+</script>
+
+<!-- Appointment Form Flatpickr Calendar -->
+<script>
+  (function() {
+    'use strict';
+    
+    console.log('📅 Initializing appointment form calendar...');
+    
+    const db = firebase.firestore();
+    let currentDoctorSchedule = [];
+    let currentBookedSlots = {};
+    let flatpickrInstance = null;
+    let loadingDoctorId = null; // Track currently loading doctor
+    let isLoading = false; // Prevent simultaneous loads
+    
+    // Load doctor availability data
+    async function loadDoctorAvailability(doctorId) {
+      if (!doctorId) {
+        console.warn('⚠️ No doctor ID provided');
+        return;
+      }
+      
+      // Prevent duplicate calls while actively loading
+      if (isLoading && loadingDoctorId === doctorId) {
+        console.log('⏳ Already loading this doctor, skipping duplicate call');
+        return;
+      }
+      
+      // If data already loaded for this doctor, just reinitialize calendar
+      if (loadingDoctorId === doctorId && currentDoctorSchedule.length > 0 && !isLoading) {
+        console.log('✅ Doctor data already loaded, reinitializing calendar with existing data...');
+        
+        // Just reinitialize the calendar with existing data
+        if (flatpickrInstance) {
+          const dateInput = document.getElementById('date');
+          const currentValue = dateInput.value;
+          
+          flatpickrInstance.destroy();
+          flatpickrInstance = null;
+          
+          setTimeout(() => {
+            console.log('🎨 Reinitializing calendar with', currentDoctorSchedule.length, 'existing schedule entries');
+            initAppointmentCalendar();
+            
+            if (currentValue && flatpickrInstance) {
+              flatpickrInstance.setDate(currentValue, false);
+            }
+            
+            console.log('✅ Calendar reinitialized with existing data!');
+          }, 100);
+        }
+        return;
+      }
+      
+      isLoading = true;
+      loadingDoctorId = doctorId;
+      console.log('🔍 Loading availability for doctor:', doctorId);
+      
+      try {
+        // Fetch doctor schedule - try multiple collections
+        let doctorDoc = await db.collection('users').doc('doctors').collection('doctors').doc(doctorId).get();
+        if (!doctorDoc.exists) {
+          doctorDoc = await db.collection('public_doctors').doc(doctorId).get();
+        }
+        if (!doctorDoc.exists) {
+          doctorDoc = await db.collection('doctors').doc(doctorId).get();
+        }
+        
+        if (doctorDoc.exists) {
+          const doctorData = doctorDoc.data();
+          currentDoctorSchedule = doctorData.schedule || doctorData.availability?.schedule || [];
+          console.log('✅ Doctor schedule loaded:', currentDoctorSchedule.length, 'entries');
+        } else {
+          console.warn('⚠️ Doctor document not found');
+          currentDoctorSchedule = [];
+        }
+        
+        // Fetch booked appointments for this doctor
+        const now = new Date();
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 90);
+        
+        const appointmentsSnap = await db.collection('appointments')
+          .where('doctorId', '==', doctorId)
+          .where('status', 'in', ['pending', 'confirmed', 'approved'])
+          .get();
+        
+        currentBookedSlots = {};
+        appointmentsSnap.forEach(doc => {
+          const apt = doc.data();
+          if (apt.startAt) {
+            const date = apt.startAt.toDate ? apt.startAt.toDate() : new Date(apt.startAt);
+            const dateStr = date.toISOString().split('T')[0];
+            if (!currentBookedSlots[dateStr]) {
+              currentBookedSlots[dateStr] = [];
+            }
+            currentBookedSlots[dateStr].push({
+              time: date.toTimeString().substring(0, 5),
+              duration: apt.durationMinutes || 60
+            });
+          }
+        });
+        
+        console.log('✅ Booked slots loaded:', Object.keys(currentBookedSlots).length, 'dates');
+        console.log('   📋 Schedule sample:', currentDoctorSchedule.slice(0, 2));
+        console.log('   📅 Booked dates:', Object.keys(currentBookedSlots).slice(0, 3));
+        console.log('   ✅ DATA READY - Schedule entries:', currentDoctorSchedule.length);
+        
+        // Force full calendar reinitialization to show color coding
+        if (flatpickrInstance) {
+          console.log('🔄 Destroying old calendar...');
+          
+          // Destroy and recreate the calendar
+          const dateInput = document.getElementById('date');
+          const currentValue = dateInput.value;
+          
+          flatpickrInstance.destroy();
+          flatpickrInstance = null;
+          
+          // Reinitialize after a brief delay
+          setTimeout(() => {
+            console.log('🎨 Reinitializing with', currentDoctorSchedule.length, 'schedule entries available');
+            initAppointmentCalendar();
+            
+            // Restore selected date if any
+            if (currentValue && flatpickrInstance) {
+              flatpickrInstance.setDate(currentValue, false);
+            }
+            
+            console.log('✅ Calendar reinitialized - color coding active!');
+            isLoading = false; // Reset loading flag
+          }, 150);
+        } else {
+          console.log('📅 No existing calendar, creating new one...');
+          initAppointmentCalendar();
+          isLoading = false; // Reset loading flag
+        }
+        
+      } catch (error) {
+        console.error('❌ Error loading doctor availability:', error);
+        isLoading = false; // Reset loading flag on error
+      }
+    }
+    
+    // Check if a date has available slots
+    function checkDateAvailability(dateStr) {
+      const date = new Date(dateStr);
+      const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+      
+      // Find schedule for this day
+      const daySchedule = currentDoctorSchedule.find(s => 
+        s.day === dayOfWeek || s.dayOfWeek === dayOfWeek
+      );
+      
+      if (!daySchedule || !daySchedule.available) {
+        // console.log(`   ${dateStr} (${dayOfWeek}): non-working`);
+        return 'non-working'; // Grey - not a working day
+      }
+      
+      // Get slots for this day
+      const slots = daySchedule.slots || daySchedule.timeSlots || [];
+      if (slots.length === 0) {
+        // console.log(`   ${dateStr} (${dayOfWeek}): non-working (no slots)`);
+        return 'non-working';
+      }
+      
+      // Check if any slots are available (not booked)
+      const bookedForDay = currentBookedSlots[dateStr] || [];
+      const availableSlots = slots.filter(slot => {
+        const slotTime = slot.start || slot.time || slot.startTime;
+        return !bookedForDay.some(booked => booked.time === slotTime);
+      });
+      
+      if (availableSlots.length === 0) {
+        // console.log(`   ${dateStr} (${dayOfWeek}): booked (${slots.length} slots, all taken)`);
+        return 'booked'; // Red - all slots booked
+      }
+      
+      // console.log(`   ${dateStr} (${dayOfWeek}): available (${availableSlots.length}/${slots.length} slots)`);
+      return 'available'; // Green - has available slots
+    }
+    
+    // Initialize Flatpickr calendar with color coding
+    function initAppointmentCalendar() {
+      const dateInput = document.getElementById('date');
+      
+      if (!dateInput) {
+        console.warn('⚠️ Date input not found');
+        return;
+      }
+      
+      // Check if flatpickr is available
+      if (typeof flatpickr === 'undefined') {
+        console.warn('⚠️ Flatpickr library not loaded');
+        return;
+      }
+      
+      // Destroy existing instance if any
+      if (dateInput._flatpickr) {
+        dateInput._flatpickr.destroy();
+      }
+      
+      // Suppress Flatpickr CSS access errors (CORS issue with CDN stylesheets)
+      const originalError = console.error;
+      console.error = function(...args) {
+        const errorMsg = args[0]?.toString() || '';
+        if (errorMsg.includes('cssRules') || errorMsg.includes('CSSStyleSheet')) {
+          // Suppress CSS-related errors from Flatpickr
+          return;
+        }
+        originalError.apply(console, args);
+      };
+      
+      // Initialize Flatpickr calendar with color coding (wrapped in try-catch for CSS errors)
+      try {
+        flatpickrInstance = flatpickr(dateInput, {
+        minDate: 'today',
+        maxDate: new Date().fp_incr(90), // 90 days from today
+        dateFormat: 'Y-m-d',
+        disableMobile: true,
+        allowInput: false,
+        clickOpens: true,
+        onChange: function(selectedDates, dateStr, instance) {
+          console.log('📅 Date selected:', dateStr);
+          
+          // Trigger change event for other scripts
+          const event = new Event('change', { bubbles: true });
+          dateInput.dispatchEvent(event);
+        },
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+          const date = dayElem.dateObj;
+          const dateStr = date.toISOString().split('T')[0];
+          
+          // Debug: Log first date to verify schedule is available
+          if (date.getDate() === 1) {
+            console.log('🎨 onDayCreate running - Schedule available:', currentDoctorSchedule.length, 'entries');
+          }
+          
+          // Only color code if we have doctor data
+          if (currentDoctorSchedule.length > 0) {
+            const status = checkDateAvailability(dateStr);
+            
+            // Remove existing classes
+            dayElem.classList.remove('available', 'booked', 'non-working');
+            
+            // Add appropriate class
+            dayElem.classList.add(status);
+            
+            // Debug: Log color application for today and tomorrow
+            const today = new Date();
+            const dateDay = date.getDate();
+            if (dateDay === today.getDate() || dateDay === today.getDate() + 1) {
+              console.log(`   🎨 ${dateStr}: ${status}`);
+            }
+            
+            // Disable fully booked dates
+            if (status === 'booked') {
+              dayElem.classList.add('flatpickr-disabled');
+            }
+          } else {
+            // First time: Log that no schedule is available yet
+            if (date.getDate() === 1) {
+              console.log('⚠️ onDayCreate: No schedule data available yet');
+            }
+          }
+        },
+        onOpen: function(selectedDates, dateStr, instance) {
+          if (currentDoctorSchedule.length > 0) {
+            console.log('📅 Calendar opened with color coding enabled');
+            console.log('   Schedule entries:', currentDoctorSchedule.length);
+            console.log('   Booked dates:', Object.keys(currentBookedSlots).length);
+          } else {
+            console.warn('⚠️ Calendar opened but no doctor schedule loaded');
+            console.log('   Tip: Select a doctor first to see availability colors');
+          }
+        },
+        onReady: function(selectedDates, dateStr, instance) {
+          console.log('✅ Appointment calendar ready');
+        }
+      });
+      
+      // Store instance globally for access by auto-fill script
+      window.appointmentCalendar = flatpickrInstance;
+      
+      console.log('✅ Flatpickr calendar initialized for appointment form');
+      
+      } catch (error) {
+        // Catch and suppress CSS-related errors
+        if (error.message && (error.message.includes('cssRules') || error.message.includes('CSSStyleSheet'))) {
+          console.log('ℹ️ CSS access error suppressed (harmless)');
+        } else {
+          console.error('❌ Error initializing calendar:', error);
+        }
+      }
+    }
+    
+    // Watch for doctor selection changes
+    function watchDoctorSelection() {
+      const doctorIdInput = document.getElementById('doctorId');
+      
+      if (!doctorIdInput) {
+        console.warn('⚠️ Doctor ID input not found');
+        return;
+      }
+      
+      // Check if patient-directory.js has control (don't override its calendar)
+      const checkIfPatientDirectoryActive = () => {
+        // If patient-directory.js has initialized the calendar with proper color coding,
+        // it sets window.currentSelectedDoctorId. Don't override in that case.
+        if (window.currentSelectedDoctorId) {
+          console.log('ℹ️ patient-directory.js has control of calendar, skipping override');
+          return true;
+        }
+        return false;
+      };
+      
+      // Store original value setter
+      const originalValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      
+      // Override value setter to detect changes
+      Object.defineProperty(doctorIdInput, 'value', {
+        get() {
+          return originalValueSetter.call(this);
+        },
+        set(newValue) {
+          const oldValue = this.value;
+          originalValueSetter.call(this, newValue);
+          
+          // Trigger availability load if value changed
+          if (newValue && newValue !== oldValue) {
+            console.log('👨‍⚕️ Doctor ID changed:', newValue);
+            
+            // Only load if patient-directory.js doesn't have control
+            if (!checkIfPatientDirectoryActive()) {
+              setTimeout(() => {
+                loadDoctorAvailability(newValue);
+              }, 100);
+            }
+          }
+        }
+      });
+      
+      // Also watch for input events
+      doctorIdInput.addEventListener('input', () => {
+        const doctorId = doctorIdInput.value;
+        if (doctorId && !checkIfPatientDirectoryActive()) {
+          console.log('👨‍⚕️ Doctor selected via input event');
+          loadDoctorAvailability(doctorId);
+        }
+      });
+      
+      // Watch for change events
+      doctorIdInput.addEventListener('change', () => {
+        const doctorId = doctorIdInput.value;
+        if (doctorId && !checkIfPatientDirectoryActive()) {
+          console.log('👨‍⚕️ Doctor selected via change event');
+          loadDoctorAvailability(doctorId);
+        }
+      });
+      
+      // Check if doctor is already selected
+      setTimeout(() => {
+        if (doctorIdInput.value && !checkIfPatientDirectoryActive()) {
+          console.log('👨‍⚕️ Doctor already selected:', doctorIdInput.value);
+          loadDoctorAvailability(doctorIdInput.value);
+        }
+      }, 500);
+    }
+    
+    // Update time dropdown to show booked slots in red
+    function updateTimeDropdown() {
+      const dateInput = document.getElementById('date');
+      const timeSelect = document.getElementById('time');
+      
+      if (!dateInput || !timeSelect || !dateInput.value) {
+        return;
+      }
+      
+      const selectedDate = dateInput.value;
+      const bookedForDay = currentBookedSlots[selectedDate] || [];
+      
+      console.log('🕐 Updating time dropdown for', selectedDate);
+      console.log('   Booked slots:', bookedForDay);
+      
+      // Get all options except the first (placeholder)
+      const options = Array.from(timeSelect.options).slice(1);
+      
+      options.forEach(option => {
+        const optionTime = option.value;
+        const isBooked = bookedForDay.some(booked => booked.time === optionTime);
+        
+        if (isBooked) {
+          option.disabled = true;
+          option.style.color = '#dc3545'; // Red color
+          option.style.backgroundColor = '#ffe0e0';
+          option.textContent = option.textContent.replace(' (Booked)', '') + ' (Booked)';
+          console.log('   ❌ Disabled:', optionTime);
+        } else {
+          option.disabled = false;
+          option.style.color = '';
+          option.style.backgroundColor = '';
+          option.textContent = option.textContent.replace(' (Booked)', '');
+        }
+      });
+    }
+    
+    // Watch for date changes to update time dropdown
+    function watchDateChanges() {
+      const dateInput = document.getElementById('date');
+      
+      if (!dateInput) {
+        return;
+      }
+      
+      // Listen for date changes
+      dateInput.addEventListener('change', () => {
+        console.log('📅 Date changed, updating time dropdown...');
+        setTimeout(() => {
+          updateTimeDropdown();
+        }, 500); // Wait for time slots to load
+      });
+    }
+    
+    // Expose functions globally
+    window.loadDoctorAvailabilityForCalendar = loadDoctorAvailability;
+    window.updateTimeDropdownForBookedSlots = updateTimeDropdown;
+    
+    // Debug helper to check current state
+    window.debugCalendarData = function() {
+      console.log('📊 Calendar Debug Info:');
+      console.log('   Doctor ID:', loadingDoctorId);
+      console.log('   Schedule entries:', currentDoctorSchedule.length);
+      console.log('   Booked dates:', Object.keys(currentBookedSlots).length);
+      console.log('   Calendar instance:', flatpickrInstance ? 'Yes' : 'No');
+      console.log('   Full schedule:', currentDoctorSchedule);
+      console.log('   Full booked slots:', currentBookedSlots);
+    };
+    
+    // Manual refresh function
+    window.refreshCalendarColors = function() {
+      if (!flatpickrInstance) {
+        console.warn('⚠️ No calendar instance');
+        return;
+      }
+      console.log('🔄 Manually refreshing calendar...');
+      const dateInput = document.getElementById('date');
+      const currentValue = dateInput.value;
+      flatpickrInstance.destroy();
+      flatpickrInstance = null;
+      setTimeout(() => {
+        initAppointmentCalendar();
+        if (currentValue && flatpickrInstance) {
+          flatpickrInstance.setDate(currentValue, false);
+        }
+        console.log('✅ Calendar refreshed');
+      }, 100);
+    };
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        // Don't initialize calendar immediately - let patient-directory.js handle it
+        // Only initialize if explicitly needed (not during manual booking flow)
+        // initAppointmentCalendar(); // DISABLED - patient-directory.js handles this
+        watchDoctorSelection();
+        watchDateChanges();
+      });
+    } else {
+      // Don't initialize calendar immediately - let patient-directory.js handle it
+      // initAppointmentCalendar(); // DISABLED - patient-directory.js handles this
+      watchDoctorSelection();
+      watchDateChanges();
+    }
+    
+    console.log('ℹ️ Calendar initialization delegated to patient-directory.js for manual booking flow');
+  })();
+</script>
+
+<!-- Main JS File -->
+<script src="assets/js/main.js"></script>
+
+</body>
+</html>

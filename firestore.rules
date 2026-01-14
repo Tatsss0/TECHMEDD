@@ -1,0 +1,653 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() {
+      return signedIn() && (
+        // Check main users collection first
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        // Check if admin email (fallback for special admin accounts)
+        request.auth.token.email == 'admin@techmed.local'
+      );
+    }
+
+    // SECRETARIES: now under users subcollection
+    function secretaryDoc(uid) {
+      // Try new subcollection structure first, then fall back to old
+      return exists(/databases/$(database)/documents/users/secretaries/secretaries/$(uid)) ?
+        get(/databases/$(database)/documents/users/secretaries/secretaries/$(uid)) :
+        get(/databases/$(database)/documents/secretaries/$(uid));
+    }
+    function secretaryExists(uid) {
+      return exists(/databases/$(database)/documents/users/secretaries/secretaries/$(uid)) ||
+             exists(/databases/$(database)/documents/secretaries/$(uid));
+    }
+    function isSecretary(uid) {
+      return secretaryExists(uid) && (secretaryDoc(uid).data.role in ['secretary','Secretary','SECRETARY']);
+    }
+    function secretaryAssignedDoctorName(uid) {
+      let d = secretaryDoc(uid).data;
+      return d.assignedDoctorName != null ? d.assignedDoctorName : d.doctorName;
+    }
+    function secretaryAssignedDoctorId(uid) {
+      let d = secretaryDoc(uid).data;
+      return d.assignedDoctorId != null ? d.assignedDoctorId : d.doctorId;
+    }
+
+    // Treat names equal if they only differ by case or a leading "Dr." / "Dr "
+    function equalsName(a, b) {
+      return a != null && b != null && (
+        lower(a) == lower(b) ||
+        ('dr. ' + lower(b)) == lower(a) ||
+        ('dr '  + lower(b)) == lower(a) ||
+        ('dr. ' + lower(a)) == lower(b) ||
+        ('dr '  + lower(a)) == lower(b)
+      );
+    }
+
+    // PATIENT/DOCTOR relationship helpers - updated for new structure
+    function doctorAssignedToPatient(pid) {
+      return signedIn() && (
+        get(/databases/$(database)/documents/users/patients/patients/$(pid)).data.doctorId == request.auth.uid ||
+        request.auth.uid in get(/databases/$(database)/documents/users/patients/patients/$(pid)).data.doctorIds
+      );
+    }
+    function patientAssignedToDoctor(doctorId) {
+      return signedIn() && (
+        get(/databases/$(database)/documents/users/patients/patients/$(request.auth.uid)).data.doctorId == doctorId ||
+        request.auth.uid in get(/databases/$(database)/documents/users/patients/patients/$(request.auth.uid)).data.doctorIds
+      );
+    }
+
+    // Secretary may read patients assigned to their doctor
+    function secretaryCanReadPatient(pid) {
+      return isSecretary(request.auth.uid) && (
+        get(/databases/$(database)/documents/users/patients/patients/$(pid)).data.doctorId == secretaryAssignedDoctorId(request.auth.uid) ||
+        (
+          get(/databases/$(database)/documents/users/patients/patients/$(pid)).data.doctorIds is list &&
+          secretaryAssignedDoctorId(request.auth.uid) in get(/databases/$(database)/documents/users/patients/patients/$(pid)).data.doctorIds
+        ) ||
+        equalsName(
+          get(/databases/$(database)/documents/users/patients/patients/$(pid)).data.doctorName,
+          secretaryAssignedDoctorName(request.auth.uid)
+        )
+      );
+    }
+
+    // === ADDED: DOCTOR + APPOINTMENT HELPERS (used below) ===
+    function isDoctor() {
+      return signedIn() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'doctor' ||
+        exists(/databases/$(database)/documents/users/doctors/doctors/$(request.auth.uid))
+      );
+    }
+
+    function isPatient(uid) {
+      return signedIn() && (
+        get(/databases/$(database)/documents/users/$(uid)).data.role == 'patient' ||
+        exists(/databases/$(database)/documents/users/patients/patients/$(uid))
+      );
+    }
+
+    function allowedAppointmentStatuses() {
+      return ['pending','confirmed','cancelled','rejected','rescheduled','done','not completed'];
+    }
+
+    // Update must be on an existing appointment; verify the updater is the assigned doctor
+    function isAssignedDoctorForAppointment() {
+      return isDoctor() && resource.data.doctorId == request.auth.uid;
+    }
+
+    // Allow doctor to update only status/completion timestamps without changing doctorId
+    function validAppointmentStatusUpdate() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return changed.hasOnly(['status','updatedAt','completedAt']) &&
+             request.resource.data.doctorId == resource.data.doctorId &&
+             (request.resource.data.status in allowedAppointmentStatuses());
+    }
+
+    // Allow doctor to attach/update a diagnosis object (and updatedAt) for the appointment
+    function validAppointmentDiagnosisUpdate() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return changed.hasOnly(['diagnosis','updatedAt']) &&
+             request.resource.data.doctorId == resource.data.doctorId &&
+             (request.resource.data.diagnosis is map) &&
+             request.resource.data.diagnosis.keys().hasOnly(['text','doctorId','doctorName','createdAt']) &&
+             request.resource.data.diagnosis.doctorId == request.auth.uid;
+    }
+
+    // NEW: Allow patients to reschedule or cancel their own appointments
+    function validPatientAppointmentUpdate() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return resource.data.patientId == request.auth.uid &&
+             request.resource.data.patientId == resource.data.patientId &&
+             request.resource.data.doctorId == resource.data.doctorId &&
+             (
+               // Allow full reschedule with new date/time (with optional reason)
+               (
+                 (
+                   changed.hasOnly(['startAt','date','time','datetime','status','updatedAt']) ||
+                   changed.hasOnly(['startAt','date','time','datetime','status','updatedAt','rescheduleReason']) ||
+                   changed.hasOnly(['startAt','date','time','datetime','status','updatedAt','rescheduleNote']) ||
+                   changed.hasOnly(['startAt','date','time','datetime','status','updatedAt','rescheduleReason','rescheduleNote'])
+                 ) &&
+                 request.resource.data.status in ['pending', 'rescheduled'] &&
+                 request.resource.data.startAt is timestamp &&
+                 request.resource.data.date is string &&
+                 request.resource.data.time is string &&
+                 request.resource.data.datetime is string
+               ) ||
+               // Allow cancellation (with optional reason)
+               (
+                 (
+                   changed.hasOnly(['status','cancelled','cancelledAt','updatedAt']) ||
+                   changed.hasOnly(['status','cancelled','cancelledAt','updatedAt','cancelReason']) ||
+                   changed.hasOnly(['status','cancelled','cancelledAt','updatedAt','cancelNote']) ||
+                   changed.hasOnly(['status','cancelled','cancelledAt','updatedAt','cancelReason','cancelNote'])
+                 ) &&
+                 request.resource.data.status == 'cancelled' &&
+                 request.resource.data.cancelled == true
+               )
+             );
+    }
+
+    // Allow secretary to update status for appointments of their assigned doctor
+    function validSecretaryAppointmentUpdate() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return isSecretary(request.auth.uid) &&
+             resource.data.doctorId == secretaryAssignedDoctorId(request.auth.uid) &&
+             request.resource.data.doctorId == resource.data.doctorId &&
+             (
+               // Allow status-only updates
+               (
+                 changed.hasOnly(['status','updatedAt']) &&
+                 (request.resource.data.status in allowedAppointmentStatuses())
+               ) ||
+               // Allow rescheduling with new date/time
+               (
+                 (
+                   changed.hasOnly(['date','time','datetime','status','updatedAt']) ||
+                   changed.hasOnly(['startAt','date','time','datetime','status','updatedAt'])
+                 ) &&
+                 request.resource.data.status == 'rescheduled'
+               )
+             );
+    }
+    // === END ADDED HELPERS ===
+
+    // === ADDED: Verification helpers (email/SMS) ===
+    function verificationFieldsOnly() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return changed.hasOnly([
+        'verificationMethod',
+        'emailVerified',
+        'emailCode',
+        'emailCodeExpiresAt',
+        'phoneVerified',
+        'status',
+        'updatedAt'
+      ]);
+    }
+    // === END ADDED ===
+
+    // DOCTORS (private profile data)
+    match /doctors/{uid} {
+      allow read: if true;
+      // Allow secretaries to write without field restrictions
+      allow write: if isSecretary(request.auth.uid) && secretaryAssignedDoctorId(request.auth.uid) == uid;
+      // Allow self and admin with field restrictions
+      allow write: if (isSelf(uid) || isAdmin())
+                   && request.writeFields().hasOnly([
+                     'uid','email','fullName','role','specialty','phone','about',
+                     'schedule','avatarUrl','createdAt','updatedAt',
+                     'yearsExperience','clinic','license'
+                   ]);
+      
+      // Doctor licenses subcollection
+      match /licenses/{licenseId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+    }
+
+    // SECRETARIES
+    match /secretaries/{uid} {
+      allow read, write: if isSelf(uid);
+    }
+
+    // PATIENTS
+    match /patients/{uid} {
+      allow create: if signedIn() && (
+        request.resource.data.doctorId == request.auth.uid ||
+        (
+          request.resource.data.doctorIds is list &&
+          request.auth.uid in request.resource.data.doctorIds
+        ) ||
+        (uid == request.auth.uid)
+      );
+
+      // Read (query-safe): assigned doctor(s), the patient themselves, or a secretary assigned to that doctor, or admin
+      allow read: if signedIn() && (
+        (resource.data.doctorId == request.auth.uid) ||
+        (resource.data.doctorIds is list && request.auth.uid in resource.data.doctorIds) ||
+        (uid == request.auth.uid) ||
+        (isSecretary(request.auth.uid) && secretaryCanReadPatient(uid)) ||
+        isAdmin()
+      );
+
+      // Delete: assigned doctor(s) or patient
+      allow delete: if signedIn() && (
+        (resource.data.doctorId == request.auth.uid) ||
+        (resource.data.doctorIds is list && request.auth.uid in resource.data.doctorIds) ||
+        (uid == request.auth.uid)
+      );
+
+      // Update: allow five cases (same as original patients rules)
+      allow update: if signedIn() && (
+        (
+          (
+            (resource.data.doctorId == request.auth.uid) ||
+            (resource.data.doctorIds is list && request.auth.uid in resource.data.doctorIds) ||
+            (uid == request.auth.uid)
+          )
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly(['diagnoses','updatedAt'])
+        )
+        || (
+          (
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['doctorIds']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['doctorIds','updatedAt'])
+          )
+          && (request.resource.data.doctorIds is list)
+          && (request.auth.uid in request.resource.data.doctorIds)
+        )
+        || (
+          (
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['doctorId']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['doctorId','updatedAt'])
+          )
+          && (request.resource.data.doctorId == request.auth.uid)
+        )
+        || (
+          (
+            (resource.data.doctorId == request.auth.uid) ||
+            (resource.data.doctorIds is list && request.auth.uid in resource.data.doctorIds) ||
+            (uid == request.auth.uid)
+          )
+          && (
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['sex','updatedAt']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['pregnant','updatedAt']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['allergies','updatedAt']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['weightKg','updatedAt']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['dob','updatedAt']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['age','updatedAt']) ||
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['sex','pregnant','allergies','weightKg','dob','age','updatedAt'])
+          )
+          && (
+            (request.resource.data.sex == null || request.resource.data.sex is string) &&
+            (request.resource.data.pregnant == null || request.resource.data.pregnant is bool) &&
+            (request.resource.data.allergies == null || request.resource.data.allergies is list) &&
+            (request.resource.data.weightKg == null || request.resource.data.weightKg is number) &&
+            (request.resource.data.dob == null || request.resource.data.dob is timestamp || request.resource.data.dob is string) &&
+            (request.resource.data.age == null || request.resource.data.age is number)
+          )
+        )
+      );
+    }
+    
+    // Allow secretaries to read any subcollections under a doctor (e.g., licenses, profiles, attachments)
+    match /users/doctors/doctors/{doctorId}/{document=**} {
+      allow read: if isSelf(doctorId) || isSecretary(request.auth.uid);
+      allow write: if isSelf(doctorId) || isAdmin();
+    }
+
+    // USERS - Main collection
+    match /users/{uid} {
+      allow read: if signedIn() && (
+        resource.data.role == "doctor" ||
+        resource.data.role == "secretary" ||
+        isSelf(uid) ||
+        doctorAssignedToPatient(uid) ||
+        patientAssignedToDoctor(uid) ||
+        uid == request.auth.uid
+      );
+      allow write: if isSelf(uid);
+      allow create: if signedIn();
+      // === ADDED: Explicitly allow verification-only updates by the owner ===
+      allow update: if isSelf(uid) && verificationFieldsOnly();
+      // === END ADDED ===
+    }
+
+    // USERS collection with subcollections - FIXED for proper path matching
+    match /users/{userType} {
+      allow read, write: if isAdmin(); // Admin can manage the user type documents
+      
+      // DOCTORS subcollection - Fixed path structure
+      match /doctors/{uid} {
+        allow read: if signedIn(); // Allow all signed-in users to read doctor info
+        allow create: if isAdmin() || request.auth.token.email == 'admin@techmed.local'; // Admin can create doctor accounts
+        allow update: if isSelf(uid) || isAdmin(); // Doctor can update own profile, admin can update any
+        allow delete: if isAdmin(); // Only admin can delete doctor accounts
+      }
+
+      // SECRETARIES subcollection  
+      match /secretaries/{uid} {
+        allow read: if signedIn(); // Allow all signed-in users to read secretary info
+        allow create: if isAdmin() || request.auth.token.email == 'admin@techmed.local'; // Admin can create secretary accounts
+        allow update: if isSelf(uid) || isAdmin(); // Secretary can update own profile, admin can update any
+        allow delete: if isAdmin(); // Only admin can delete secretary accounts
+      }
+
+      // PATIENTS subcollection
+      match /patients/{uid} {
+        allow read: if signedIn() && (
+          isSelf(uid) ||
+          doctorAssignedToPatient(uid) ||
+          isAdmin() ||
+          (isSecretary(request.auth.uid) && secretaryCanReadPatient(uid))
+        );
+        allow create: if signedIn(); // Allow patients to create their own profiles
+        allow update: if isSelf(uid) || isAdmin(); // Patient can update own profile, admin can update any
+        allow delete: if isAdmin(); // Only admin can delete patient accounts
+      }
+    }
+
+    // EXPLICIT rules for the new subcollection structure used by your code
+    match /users/doctors/doctors/{uid} {
+      allow read: if signedIn(); // Allow all signed-in users to read doctor info
+      // Allow secretaries to write without field restrictions
+      allow write: if isSecretary(request.auth.uid) && secretaryAssignedDoctorId(request.auth.uid) == uid;
+      // Allow self and admin with field restrictions
+      allow write: if (isSelf(uid) || isAdmin())
+                   && request.writeFields().hasOnly([
+                     'uid','email','fullName','role','specialty','phone','about',
+                     'schedule','avatarUrl','createdAt','updatedAt',
+                     'yearsExperience','clinic','license'
+                   ]);
+      allow delete: if isAdmin(); // Only admin can delete doctor accounts
+      
+      // Doctor licenses subcollection
+      match /licenses/{licenseId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+    }
+
+    match /users/secretaries/secretaries/{uid} {
+      allow read: if signedIn(); // Allow all signed-in users to read secretary info
+      allow create: if isAdmin() || request.auth.token.email == 'admin@techmed.local'; // Admin can create secretary accounts
+      allow update: if isSelf(uid) || isAdmin(); // Secretary can update own profile, admin can update any
+      allow delete: if isAdmin(); // Only admin can delete secretary accounts
+    }
+
+    match /users/patients/patients/{uid} {
+      // Allow doctors to list and read patient documents
+      // (Doctors need to read patient data for appointments they're handling)
+      allow list, get: if signedIn() && (
+        isDoctor() ||
+        isSelf(uid) ||
+        isAdmin() ||
+        isSecretary(request.auth.uid)
+      );
+      
+      // Allow creation with doctor assignment
+      allow create: if signedIn() && (
+        isDoctor() ||
+        isSelf(uid) ||
+        isAdmin()
+      );
+      
+      allow update: if signedIn() && (
+        // Patients can update their own profile (including verification fields)
+        isSelf(uid) ||
+        // Admins can update any patient
+        isAdmin() ||
+        // Doctors can update specific fields
+        (isDoctor() && (
+          // Allow doctor assignment and basic patient creation
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['doctorIds','updatedAt','fullName','email','phone','userUid','id','createdAt']) ||
+          // Allow diagnosis updates
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['diagnoses','updatedAt']) ||
+          // Allow patient info updates (all fields)
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['sex','pregnant','allergies','weightKg','dob','updatedAt']) ||
+          // Allow individual patient info fields
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['sex','updatedAt']) ||
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['pregnant','updatedAt']) ||
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['allergies','updatedAt']) ||
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['weightKg','updatedAt']) ||
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['dob','updatedAt']) ||
+          // Allow combined updates (doctor assignment + diagnosis)
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['doctorIds','diagnoses','updatedAt']) ||
+          // Allow combined updates (doctor assignment + patient info)
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['doctorIds','sex','pregnant','allergies','weightKg','dob','updatedAt']) ||
+          // Allow diagnosis + patient info combined
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['diagnoses','sex','pregnant','allergies','weightKg','dob','updatedAt'])
+        ))
+      );
+      
+      allow delete: if isAdmin(); // Only admin can delete patient accounts
+    }
+
+    // PHONE INDEX
+    match /phone_index/{phone} {
+      allow create: if signedIn() && !exists(/databases/$(database)/documents/phone_index/$(phone));
+      // Allow unauthenticated read access for phone number login lookup
+      // This is secure because: phone numbers are login identifiers (semi-public),
+      // and anyone with a phone number can attempt login anyway
+      allow read: if true;
+      allow update, delete: if false;
+    }
+
+    // PUBLIC DOCTORS (public card; includes image URL)
+    match /public_doctors/{doctorId} {
+      allow read: if true;
+      allow write: if (isSelf(doctorId) || isAdmin() || 
+                       (isSecretary(request.auth.uid) && secretaryAssignedDoctorId(request.auth.uid) == doctorId));
+      // Optional: daily availability overrides under public_doctors
+      match /availability/{dateDoc} {
+        allow read: if true;
+        allow write: if (isSelf(doctorId) || isAdmin());
+      }
+    }
+
+
+    match /users/patients/patients/{pid}/consultations/{cid} {
+      // Secretaries can read consultations for dashboard; write remains restricted
+      allow read: if signedIn() && (
+        isSecretary(request.auth.uid) || doctorAssignedToPatient(pid) || (pid == request.auth.uid)
+      );
+      allow write: if signedIn() && (
+        doctorAssignedToPatient(pid) || (pid == request.auth.uid)
+      );
+    }
+
+    // PRESCRIPTIONS (generated by Cloud Functions)
+    match /users/patients/patients/{pid}/prescriptions/{rid} {
+      // Allow patients and assigned doctors (and secretaries for the assigned doctor) to read
+      allow read: if signedIn() && (
+        (pid == request.auth.uid) ||
+        doctorAssignedToPatient(pid) ||
+        (isSecretary(request.auth.uid) && secretaryCanReadPatient(pid)) ||
+        isAdmin()
+      );
+      // Allow assigned doctor to update items/diagnosis (to regenerate PDF via function), and updatedAt
+      allow update: if signedIn() && doctorAssignedToPatient(pid) && (
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['items','updatedAt']) ||
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['items','diagnosis','updatedAt']) ||
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['diagnosis','updatedAt'])
+      ) && (
+        !request.resource.data.keys().hasAny(['items']) || request.resource.data.items is list
+      );
+      // Create/delete only by server (function)
+      allow create, delete: if false;
+    }
+
+    // APPOINTMENTS
+    match /appointments/{appointmentId} {
+      // Allow any authenticated user to read appointments
+      // Secretaries need this to view appointments for their assigned doctor
+      allow read: if signedIn();
+      
+      allow create: if signedIn()
+        && request.resource.data.patientId == request.auth.uid
+        && request.resource.data.startAt is timestamp
+        && request.time < request.resource.data.startAt
+        && request.resource.data.status in ['pending','confirmed','cancelled']
+        && request.resource.data.doctorId is string
+        && (
+          exists(/databases/$(database)/documents/public_doctors/$(request.resource.data.doctorId)) ||
+          exists(/databases/$(database)/documents/doctors/$(request.resource.data.doctorId)) ||
+          exists(/databases/$(database)/documents/users/doctors/doctors/$(request.resource.data.doctorId))
+        );
+      
+      // Allow updates by:
+      // 1. Assigned doctor (status/diagnosis updates)
+      // 2. Secretary of the assigned doctor (status updates)
+      // 3. Patient (reschedule/cancel their own appointments)
+      allow update: if (
+        isAssignedDoctorForAppointment() && (
+          validAppointmentStatusUpdate() || validAppointmentDiagnosisUpdate()
+        )
+      ) || validSecretaryAppointmentUpdate() || validPatientAppointmentUpdate();
+      
+      allow delete: if false;
+    }
+
+    // SCHEDULES
+    match /schedules/{scheduleId} {
+      allow read: if signedIn() && (
+        (
+          isSecretary(request.auth.uid) &&
+          (
+            (resource.data.doctorId != null && resource.data.doctorId == secretaryAssignedDoctorId(request.auth.uid)) ||
+            (resource.data.doctorName != null && equalsName(resource.data.doctorName, secretaryAssignedDoctorName(request.auth.uid)))
+          )
+        ) ||
+        (resource.data.doctorId != null && request.auth.uid == resource.data.doctorId) ||
+        // Allow any authenticated user to read schedules for rescheduling (simplified)
+        true ||
+        isAdmin()
+      );
+
+      allow create, update, delete: if signedIn() && (
+        (
+          isSecretary(request.auth.uid) &&
+          (
+            // Compare against incoming payload (create or update)
+            (request.resource.data.doctorId != null && request.resource.data.doctorId == secretaryAssignedDoctorId(request.auth.uid)) ||
+            (request.resource.data.doctorName != null &&
+             equalsName(request.resource.data.doctorName, secretaryAssignedDoctorName(request.auth.uid))) ||
+            // Also allow when the existing doc already belongs to the secretary's doctor (updates)
+            (resource.data.doctorId != null && resource.data.doctorId == secretaryAssignedDoctorId(request.auth.uid)) ||
+            (resource.data.doctorName != null &&
+             equalsName(resource.data.doctorName, secretaryAssignedDoctorName(request.auth.uid)))
+          )
+        ) ||
+        (request.resource.data.doctorId != null && request.auth.uid == request.resource.data.doctorId) ||
+        isAdmin()
+      )
+      && request.writeFields().hasOnly(['doctorId','doctorName','availableDates','availableDays','availableTimes','createdAt','updatedAt']);
+    }
+
+    // WebRTC signaling
+    match /calls/{callId} {
+      allow read: if true;
+      allow create, update: if signedIn();
+      allow delete: if false;
+      match /offerCandidates/{candidateId} {
+        allow read: if true;
+        allow create: if signedIn();
+        allow update, delete: if false;
+      }
+      match /answerCandidates/{candidateId} {
+        allow read: if true;
+        allow create: if signedIn();
+        allow update, delete: if false;
+      }
+      match /members/{memberId} {
+        allow read: if true;
+        allow create, update, delete: if signedIn();
+      }
+    }
+
+    // ADMIN ACTION LOGS
+    match /admin_actions/{id} {
+      allow create: if isAdmin();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // NOTIFICATIONS
+    match /notifications/{notificationId} {
+      // Allow authenticated users to create notifications
+      // Patients: when booking/rescheduling appointments
+      // Secretaries: when rescheduling appointments
+      allow create: if signedIn() && 
+                     request.resource.data.read == false &&
+                     (
+                       // New notification format for doctors (appointment bookings/rescheduling)
+                       (
+                         request.resource.data.type in ['appointment_booked', 'appointment_rescheduled', 'reschedule'] &&
+                         request.resource.data.doctorId is string &&
+                         request.resource.data.message is string
+                       ) ||
+                       // Legacy format for secretaries
+                       (
+                         request.resource.data.recipientType == 'secretary' &&
+                         request.resource.data.type == 'reschedule'
+                       )
+                     );
+      
+      // Allow doctors and secretaries to list/query their notifications
+      allow list: if signedIn() && (
+                    isDoctor() || secretaryExists(request.auth.uid)
+                  );
+      
+      // Allow doctors and secretaries to read individual notification documents
+      allow get: if signedIn() && (
+                   // Doctors can read their own notifications
+                   (isDoctor() && resource.data.doctorId == request.auth.uid) ||
+                   // Secretaries can read notifications for their assigned doctor
+                   (isSecretary(request.auth.uid) && 
+                    resource.data.recipientType == 'secretary' &&
+                    resource.data.doctorId == secretaryAssignedDoctorId(request.auth.uid))
+                 );
+      
+      // Allow doctors and secretaries to update notifications (mark as read)
+      allow update: if signedIn() &&
+                     request.resource.data.diff(resource.data).changedKeys().hasOnly(['read', 'readAt']) && (
+                       // Doctors can update their own notifications
+                       (isDoctor() && resource.data.doctorId == request.auth.uid) ||
+                       // Secretaries can update notifications for their assigned doctor
+                       (isSecretary(request.auth.uid) &&
+                        resource.data.recipientType == 'secretary' &&
+                        resource.data.doctorId == secretaryAssignedDoctorId(request.auth.uid))
+                     );
+      
+      // Only admins can delete notifications
+      allow delete: if isAdmin();
+    }
+
+    // ==================== FCM TOKENS (for Push Notifications) ====================
+    match /fcmTokens/{userId} {
+      // Users can read and write their own FCM token
+      allow read, write: if signedIn() && request.auth.uid == userId;
+      
+      // Cloud Functions can read/write any token (for sending notifications)
+      allow read, write: if request.auth.uid != null;
+    }
+
+    // ==================== SENT REMINDERS (to prevent duplicate notifications) ====================
+    match /sentReminders/{reminderId} {
+      // Cloud Functions can read/write sent reminder records
+      allow read, write: if signedIn();
+      
+      // Allow listing for cleanup operations
+      allow list: if signedIn();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

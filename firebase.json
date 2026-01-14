@@ -1,0 +1,46 @@
+{
+  "firestore": {
+    "rules": "public/firestore.rules"
+  },
+  "hosting": [
+    {
+      "target": "main",
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "/agora/token", "function": "agoraToken" },
+        { "source": "/send_verification_email", "function": "sendVerificationEmail" },
+        { "source": "/forms/appointment", "function": "bookAppointment" },
+        { "source": "**", "destination": "/index.html" }
+      ]
+    },
+    {
+      "target": "doctor",
+      "public": "doctor",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ]
+    },
+    {
+      "target": "secretary",
+      "public": "secretary",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ]
+    },
+
+        {
+      "target": "admin",
+      "public": "admin",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/adminlogin.html" }
+      ]
+    }
+  ],
+  "functions": {
+    "source": "functions"
+  }
+}

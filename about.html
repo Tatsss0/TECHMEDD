@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>TECHMED</title>
+  <meta http-equiv="refresh" content="0; url=techmed.html#about">
+  <script>window.location.replace('techmed.html#about');</script>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="logo512.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+
+  <!-- Swiper CSS (single source) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <!-- NAME JS FILE -->
+  <script type="module" src="assets/js/name.js"></script>
+
+  <style>
+  .flatpickr-calendar{ font-size:12px!important; transform:scale(0.89); transform-origin:top left; }
+  .flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay{ visibility:hidden; pointer-events:none; }
+
+  /* Appointment calendar color coding */
+  .flatpickr-day.available {
+    background:#e6ffed !important;  /* green */
+    color:#0f5132 !important;
+    border-radius:50% !important;
+  }
+  .flatpickr-day.booked {
+    background:#ffe0e0 !important;  /* red */
+    color:#842029 !important;
+    border-radius:50% !important;
+  }
+  .flatpickr-day.non-working {
+    background:#f1f3f5 !important;  /* grey */
+    color:#6c757d !important;
+    border-radius:50% !important;
+    pointer-events:none;
+  }
+  .flatpickr-day.selected {
+    background:#87cefa !important;
+    color:#000 !important;
+    border-radius:50%;
+  }
+
+  /* Optional: time dropdown */
+  #timeSelect option.slot-available { color:#198754; font-weight:500; }
+  #timeSelect option.slot-booked    { color:#dc3545; }
+
+  /* Minimal card slider look */
+  .compact-view .minimal-card{cursor:pointer; border:1px solid #e9ecef ; border-radius:12px; padding:14px; transition:box-shadow .2s,border-color .2s; background:#fff;}
+  .compact-view .minimal-card:hover, .compact-view .minimal-card.active{border-color:#0d6efd; box-shadow:0 0 0 3px rgba(13,110,253,.12);} .compact-view .minimal-card .avatar{width:120px; height:120px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 10px;}
+  .compact-view .minimal-card .info h4{font-size:1rem; margin:0;}
+  .compact-view .minimal-card .info small{color:#6c757d;}
+  .doctor-card .doctor-media img{width:100%; height:220px; object-fit:cover; border-radius:10px;}
+  .doctor-card .doctor-actions .btn{margin-right:6px;}
+
+  /* Tabs badge tweak */
+  #appointmentTabs .badge { font-size: 0.7rem; }
+  
+  #notificationModal .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  #appointmentModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+</style>
+
+
+</head>
+
+<body class="about-page">
+<!-- Header -->
+<header id="header" class="header d-flex align-items-center fixed-top">
+  <div class="container position-relative d-flex align-items-center justify-content-between">
+
+    <a href="techmed.html" class="logo d-flex align-items-center me-auto me-xl-0">
+      <h1 class="sitename">TECH<span>MED</span></h1>
+    </a>
+
+    <nav id="navmenu" class="navmenu">
+      <ul>
+        <li><a href="techmed.html">Home</a></li>
+        <!-- <li><a href="#about">About</a></li>-->
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="doctor.html" >Doctors</a></li>
+        <li><a href="records.html">Records</a></li>
+        <li class="dropdown"><a href="#"><span>Account</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <ul>
+            <li><a id="headerUserName">Loading...</a></li>
+            <li><a href="patientprofile.html">Profile</a></li>
+            <li><a href="#" id="logoutLink">Log Out</a></li>
+          </ul>
+        </li>
+      </ul>
+      <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+
+    <div class="header-actions d-flex align-items-center gap-2">
+      <button class="btn btn-getstarted" id="appointmentBtn">Appointments</button>
+      <button class="btn btn-outline-primary position-relative" id="notificationBtn" aria-label="Notifications">
+        <i class="bi bi-bell"></i>
+        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="notificationModalLabel">Notifications</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="notificationLoading">Loading...</div>
+        <ul id="notificationList" class="list-group d-none"></ul>
+        <div id="notificationEmpty" class="text-muted d-none">No new notifications</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Appointment Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="appointmentModalLabel">Patient Appointments</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" id="appointmentTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-upcoming" data-bs-toggle="tab" data-bs-target="#pane-upcoming" type="button" role="tab" aria-controls="pane-upcoming" aria-selected="true">
+              Upcoming <span class="badge bg-secondary ms-1" id="countUpcoming">0</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-past" data-bs-toggle="tab" data-bs-target="#pane-past" type="button" role="tab" aria-controls="pane-past" aria-selected="false">
+              Past <span class="badge bg-secondary ms-1" id="countPast">0</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content pt-3">
+          <div class="tab-pane fade show active" id="pane-upcoming" role="tabpanel" aria-labelledby="tab-upcoming">
+            <table class="table table-striped">
+              <!-- header removed per new card layout -->
+              <tbody id="appointmentUpcomingBody"></tbody>
+            </table>
+          </div>
+
+          <div class="tab-pane fade" id="pane-past" role="tabpanel" aria-labelledby="tab-past">
+            <table class="table table-striped">
+              <!-- header removed per card layout -->
+              <tbody id="appointmentPastBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Past Appointment Details Modal -->
+<div class="modal fade" id="pastDetailModal" tabindex="-1" aria-labelledby="pastDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pastDetailModalLabel">Consultation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-grow-1">
+            <div id="pastDetailDoctor" class="fw-semibold"></div>
+            <div class="text-muted small mt-2" id="pastDetailTime"></div>
+            <div class="text-muted small" id="pastDetailDate"></div>
+          </div>
+          <div class="position-relative ms-3">
+            <img id="pastDetailAvatar" src="logo.png" alt="Doctor" class="rounded-circle" style="width:56px;height:56px;object-fit:cover;">
+            <span class="position-absolute bottom-0 end-0 translate-middle p-2 bg-white rounded-circle border">
+              <i class="bi bi-camera-video text-info"></i>
+            </span>
+          </div>
+        </div>
+
+        <hr/>
+
+        <div class="d-flex align-items-start mb-3">
+          <div class="flex-grow-1">
+            <div id="pastDetailClinicName" class="fw-semibold"></div>
+            <div id="pastDetailClinicAddress" class="text-muted"></div>
+          </div>
+          <div class="ms-3">
+            <img id="pastDetailClinicLogo" src="logo.png" alt="Clinic" class="rounded-circle" style="width:48px;height:48px;object-fit:cover;">
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="fw-semibold">Diagnosis</div>
+          <div id="pastDetailDiagnosisTitle" class="small fw-semibold mt-2"></div>
+          <div id="pastDetailDiagnosis" class="text-muted" style="white-space: pre-wrap; word-break: break-word;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap & JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Allowed categories and current user
+  const ALLOWED_TYPES = ['appointment', 'reminder', 'account'];
+  const currentUserId = localStorage.getItem('techmed_user_id') || 'user-123';
+
+  // All notifications store (persisted). Seed minimal data if empty.
+  let allNotifications;
+  try {
+    allNotifications = JSON.parse(localStorage.getItem('techmed_notifications_all') || '[]');
+  } catch (_) {
+    allNotifications = [];
+  }
+  if (!allNotifications.length) {
+    allNotifications = [
+      { id: 1, userId: currentUserId, type: 'appointment', message: 'Your appointment starts in 10 minutes', createdAt: '2025-10-04T09:50:00Z', read: false, link: '#' },
+      { id: 2, userId: currentUserId, type: 'reminder', message: 'Complete your profile details', createdAt: '2025-10-03T16:00:00Z', read: true, link: 'patientprofile.html' },
+      // Not shown: different user or non-allowed type
+      { id: 99, userId: 'other-user', type: 'appointment', message: 'Not your notification', createdAt: '2025-10-01T10:00:00Z', read: false },
+      { id: 100, userId: currentUserId, type: 'system', message: 'System-wide info', createdAt: '2025-10-01T09:00:00Z', read: false }
+    ];
+    localStorage.setItem('techmed_notifications_all', JSON.stringify(allNotifications));
+    localStorage.setItem('techmed_user_id', currentUserId);
+  }
+  function saveAllNotifications() {
+    localStorage.setItem('techmed_notifications_all', JSON.stringify(allNotifications));
+  }
+  function userNotifications() {
+    return (allNotifications || []).filter(n =>
+      n.userId === currentUserId && ALLOWED_TYPES.includes(n.type)
+    );
+  }
+
+  function formatDateTime(iso) {
+    try { return new Date(iso).toLocaleString(); } catch (_) { return iso; }
+  }
+
+  // Elements
+  const notificationBtn = document.getElementById('notificationBtn');
+  const notificationBadge = document.getElementById('notificationBadge');
+  const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+  const notificationLoading = document.getElementById('notificationLoading');
+  const notificationList = document.getElementById('notificationList');
+  const notificationEmpty = document.getElementById('notificationEmpty');
+
+  const appointmentBtn = document.getElementById('appointmentBtn');
+  const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+  const appointmentUpcomingBody = document.getElementById('appointmentUpcomingBody');
+  const appointmentPastBody = document.getElementById('appointmentPastBody');
+  const countUpcomingEl = document.getElementById('countUpcoming');
+  const countPastEl = document.getElementById('countPast');
+
+  // Notifications: render + badge (user + allowed types only)
+  function renderNotifications() {
+    notificationLoading.classList.remove('d-none');
+    notificationList.classList.add('d-none');
+    notificationEmpty.classList.add('d-none');
+
+    setTimeout(() => {
+      notificationLoading.classList.add('d-none');
+      notificationList.innerHTML = '';
+
+      const items = userNotifications();
+      const unread = items.filter(n => !n.read).length;
+
+      if (unread > 0) {
+        notificationBadge.textContent = String(unread);
+        notificationBadge.classList.remove('d-none');
+      } else {
+        notificationBadge.classList.add('d-none');
+      }
+
+      if (!items.length) {
+        notificationEmpty.classList.remove('d-none');
+        return;
+      }
+
+      items.forEach(n => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-start';
+        li.innerHTML = `
+          <div class="me-3">
+            <div>${n.message}</div>
+            <small class="text-muted">${formatDateTime(n.createdAt)}</small>
+          </div>
+          ${n.link ? `<a href="${n.link}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">Open</a>` : ''}
+        `;
+        notificationList.appendChild(li);
+      });
+      notificationList.classList.remove('d-none');
+      try {
+        const bodyEl = document.querySelector('#notificationModal .modal-body');
+        const firstLi = notificationList.querySelector('li');
+        if (bodyEl) {
+          if (firstLi) {
+            const itemH = firstLi.offsetHeight || 60;
+            const desired = Math.round(itemH * 4 + 16);
+            bodyEl.style.maxHeight = desired + 'px';
+          } else {
+            bodyEl.style.maxHeight = '260px';
+          }
+          bodyEl.style.overflowY = 'auto';
+        }
+      } catch (_) {}
+    }, 100);
+  }
+
+  // Show notifications, then mark only the user's allowed ones as read
+  notificationBtn.addEventListener('click', () => {
+    notificationModal.show();
+    renderNotifications();
+
+    let changed = false;
+    allNotifications = (allNotifications || []).map(n => {
+      if (n.userId === currentUserId && ALLOWED_TYPES.includes(n.type) && !n.read) {
+        changed = true;
+        return { ...n, read: true };
+      }
+      return n;
+    });
+    if (changed) {
+      saveAllNotifications();
+      setTimeout(() => {
+        const unread = userNotifications().filter(n => !n.read).length;
+        if (unread === 0) notificationBadge.classList.add('d-none');
+      }, 300);
+    }
+  });
+
+  // ===== Appointments helpers =====
+  async function waitForAuthUser() {
+    const auth = firebase.auth();
+    if (auth.currentUser) return auth.currentUser;
+    return new Promise(resolve => {
+      const unsub = auth.onAuthStateChanged(u => { unsub(); resolve(u); });
+    });
+  }
+
+  function isAppointmentDone(a) {
+    const boolFlags = [
+      a.isDone, a.done, a.completed, a.isCompleted,
+      a.finished, a.isFinished,
+      a.marked, a.isMarked,
+      a.cancelled, a.canceled, a.isCancelled, a.isCanceled,
+      a.attended, a.isAttended
+    ];
+    if (boolFlags.some(v => v === true)) return true;
+
+    const statusFields = [a.status, a.appointmentStatus, a.state, a.stage, a.progress];
+    for (const s of statusFields) {
+      if (!s) continue;
+      const str = String(s).trim().toLowerCase();
+      if (/(^|\b)(done|completed|complete|finished|attended|cancelled|canceled|no-?show)(\b|$)/.test(str)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function getAppointmentStartDate(a) {
+    if (a.startAt?.toDate) {
+      try { return a.startAt.toDate(); } catch (_) {}
+    }
+    if (a.datetime) {
+      const d = new Date(a.datetime);
+      if (!isNaN(d)) return d;
+    }
+    if (a.date && a.time) {
+      const d = new Date(`${a.date} ${a.time}`);
+      if (!isNaN(d)) return d;
+    }
+    if (a.date) {
+      const d = new Date(a.date);
+      if (!isNaN(d)) return d;
+    }
+    return null;
+  }
+
+  function isAppointmentUpcoming(a) {
+    const when = getAppointmentStartDate(a);
+    if (!when) return true; // unknowns considered upcoming
+    return when.getTime() >= Date.now();
+  }
+
+  async function loadAndRenderAppointments() {
+    appointmentUpcomingBody.innerHTML = '<tr><td colspan="3" class="text-muted">Loading...</td></tr>';
+    appointmentPastBody.innerHTML = '<tr><td colspan="3" class="text-muted">Loading...</td></tr>';
+
+    const user = await waitForAuthUser();
+    if (!user) {
+      const msg = '<tr><td colspan="3" class="text-muted">Please sign in to view appointments.</td></tr>';
+      appointmentUpcomingBody.innerHTML = msg;
+      appointmentPastBody.innerHTML = msg;
+      countUpcomingEl.textContent = '0';
+      countPastEl.textContent = '0';
+      return;
+    }
+
+    const db = firebase.firestore();
+    let docs = [];
+
+    try {
+      const snap = await db.collection('appointments')
+        .where('patientId', '==', user.uid)
+        .orderBy('startAt', 'asc')
+        .limit(100)
+        .get();
+      snap.forEach(d => docs.push(d));
+    } catch (_) {
+      const snap = await db.collection('appointments')
+        .where('patientId', '==', user.uid)
+        .limit(100)
+        .get();
+      snap.forEach(d => docs.push(d));
+    }
+
+    const withData = docs.map(d => ({ id: d.id, ref: d.ref, data: d.data() }));
+
+    const upcomingDocs = withData.filter(x => !isAppointmentDone(x.data) && isAppointmentUpcoming(x.data));
+    const pastDocs = withData.filter(x => isAppointmentDone(x.data) || !isAppointmentUpcoming(x.data));
+
+    // Fetch patient diagnoses once
+    let patientDiagnoses = [];
+    try {
+      const pDoc = await db.collection('patients').doc(user.uid).get();
+      if (pDoc && pDoc.exists) {
+        const p = pDoc.data() || {};
+        patientDiagnoses = Array.isArray(p.diagnoses) ? p.diagnoses : [];
+      }
+    } catch {}
+
+    const getTime = x => {
+      const dt = getAppointmentStartDate(x.data);
+      return dt ? dt.getTime() : 0;
+    };
+    upcomingDocs.sort((a, b) => getTime(a) - getTime(b));
+    pastDocs.sort((a, b) => getTime(b) - getTime(a));
+
+    countUpcomingEl.textContent = String(upcomingDocs.length);
+    countPastEl.textContent = String(pastDocs.length);
+
+    // Doctor avatar helper
+    const __doctorPhotoCache = new Map();
+    async function fetchDoctorPhotoUrl(uid){
+      try{
+        if (!uid) return null;
+        if (__doctorPhotoCache.has(uid)) return __doctorPhotoCache.get(uid);
+        const db = firebase.firestore && firebase.firestore();
+        if (!db) return null;
+        let snap = await db.collection('doctors').doc(uid).get();
+        if (!snap || !snap.exists){
+          try{ const qs = await db.collection('doctors').where('uid','==',uid).limit(1).get(); if (!qs.empty) snap = qs.docs[0]; }catch(_){ }
+        }
+        let url = null;
+        if (snap && snap.exists){ const d = snap.data()||{}; url = d.avatarUrl || d.photoURL || d.photoUrl || d.imageUrl || d.avatar || d.profilePhoto || null; }
+        __doctorPhotoCache.set(uid, url);
+        return url;
+      }catch(_){ return null; }
+    }
+
+    const renderUpcoming = async (items) => {
+      appointmentUpcomingBody.innerHTML = '';
+      if (!items.length) {
+        appointmentUpcomingBody.innerHTML = '<tr><td colspan="3" class="text-muted">No upcoming appointments.</td></tr>';
+        return;
+      }
+
+      await Promise.all(items.map(async (x) => {
+        const a = x.data;
+
+        const doctor =
+          a.doctorName
+          || [a.doctorFirstName, a.doctorLastName].filter(Boolean).join(' ')
+          || a.doctor
+          || 'Doctor';
+
+        const startDate = getAppointmentStartDate(a);
+        const datetime = startDate
+          ? startDate.toLocaleString()
+          : (a.datetime || [a.date, a.time].filter(Boolean).join(' ') || '—');
+
+        const doctorUid = a.doctorId || a.doctorUID || a.doctorUid || '';
+        const roomId = doctorUid ? `doc_${doctorUid}` : (a.roomId || '');
+        const link = roomId
+          ? `VidMeet.html?room=${encodeURIComponent(roomId)}&as=patient${doctorUid ? `&hostUid=${encodeURIComponent(doctorUid)}` : ''}`
+          : (a.meetingUrl || a.videoUrl || a.videoLink || a.joinUrl || '');
+
+        let canJoin = !!link && startDate && (Date.now() >= (startDate.getTime() - 15 * 60 * 1000)) && (Date.now() <= (startDate.getTime() + 60 * 60 * 1000));
+
+        let buttonText = 'Join Meeting';
+        let buttonClass = 'btn btn-success btn-sm';
+        let buttonDisabled = false;
+
+        const specialty = a.specialty || a.department || 'Consultation';
+        const isToday = (function(){
+          if (!startDate) return false;
+          const now = new Date();
+          return startDate.getFullYear()===now.getFullYear() && startDate.getMonth()===now.getMonth() && startDate.getDate()===now.getDate();
+        })();
+        const photo = a.doctorPhoto || a.photoUrl || a.imageUrl || 'logo.png';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan="3">
+            <div class="card shadow-sm border-0 rounded-4 mb-3">
+              <div class="card-body d-flex align-items-start">
+                <img src="${photo}" alt="Doctor" class="rounded-circle flex-shrink-0 js-doc-avatar" data-doctorid="${doctorUid}" style="width:48px;height:48px;object-fit:cover;">
+                <div class="ms-3 w-100">
+                  <div class="d-flex align-items-center mb-1">
+                    ${isToday ? '<span class="badge bg-light text-primary border me-2">Today</span>' : ''}
+                    <h6 class="mb-0">${specialty}</h6>
+                  </div>
+                  <div class="text-muted small">${datetime}</div>
+                  <div class="small">${doctor}</div>
+                  <div class="mt-3 d-flex flex-wrap gap-2">
+                    ${canJoin && link && !buttonDisabled
+                      ? `<a href="${link}" class="btn btn-success btn-sm rounded-pill" target="_blank" rel="noopener">Join Meeting</a>`
+                      : `<button class="btn btn-secondary btn-sm rounded-pill" ${buttonDisabled ? 'disabled' : ''}>Join Meeting</button>`}
+                    <button class="btn btn-outline-primary btn-sm rounded-pill">Reschedule</button>
+                    <button class="btn btn-outline-danger btn-sm rounded-pill">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        `;
+        appointmentUpcomingBody.appendChild(row);
+      }));
+      // Enhance upcoming avatars after render
+      try{
+        const imgs = appointmentUpcomingBody.querySelectorAll('img.js-doc-avatar[data-doctorid]');
+        for (const img of imgs){ const uid = img.getAttribute('data-doctorid')||''; if (!uid) continue; const url = await fetchDoctorPhotoUrl(uid); if (url) img.src = url; }
+      }catch(_){ }
+    };
+
+    const pastDetailModalInstance = new bootstrap.Modal(document.getElementById('pastDetailModal'));
+
+    function openPastDetailFromCard(card){
+      if (!card) return;
+      const doctor = card.getAttribute('data-doctor') || '';
+      const spec = card.getAttribute('data-specialty') || '';
+      const timeText = card.getAttribute('data-time') || '';
+      const dateText = card.getAttribute('data-date') || '';
+      const avatar = card.getAttribute('data-avatar') || 'logo.png';
+      const docUid = card.getAttribute('data-doctorid') || '';
+      const clinic = card.getAttribute('data-clinic') || '';
+      const address = card.getAttribute('data-address') || '';
+      const clinicLogo = card.getAttribute('data-cliniclogo') || 'logo.png';
+      const diagTitle = card.getAttribute('data-diagtitle') || '';
+      const diagnosis = card.getAttribute('data-diagnosis') || '';
+
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+      set('pastDetailDoctor', `${doctor}${spec ? ` (${spec})` : ''}`);
+      set('pastDetailTime', timeText);
+      set('pastDetailDate', dateText);
+      const av = document.getElementById('pastDetailAvatar'); if (av) av.src = avatar;
+      // Try updating avatar from doctors/{uid}
+      (async function(){ try{ if (docUid){ const url = await fetchDoctorPhotoUrl(docUid); if (url) av.src = url; } }catch(_){ } })();
+      set('pastDetailClinicName', clinic);
+      set('pastDetailClinicAddress', address);
+      const cl = document.getElementById('pastDetailClinicLogo'); if (cl) cl.src = clinicLogo;
+      set('pastDetailDiagnosisTitle', diagTitle);
+      set('pastDetailDiagnosis', diagnosis);
+
+      pastDetailModalInstance.show();
+    }
+
+    appointmentPastBody.addEventListener('click', (e)=>{
+      const card = e.target.closest('.past-card');
+      if (card) openPastDetailFromCard(card);
+    });
+
+    const renderPast = (items) => {
+      appointmentPastBody.innerHTML = '';
+      if (!items.length) {
+        appointmentPastBody.innerHTML = '<tr><td colspan="3" class="text-muted">No past appointments.</td></tr>';
+        return;
+      }
+
+      items.forEach((x) => {
+        const a = x.data;
+
+        const doctor =
+          a.doctorName
+          || [a.doctorFirstName, a.doctorLastName].filter(Boolean).join(' ')
+          || a.doctor
+          || 'Doctor';
+
+        const startDate = getAppointmentStartDate(a);
+        const datetime = startDate
+          ? startDate.toLocaleString()
+          : (a.datetime || [a.date, a.time].filter(Boolean).join(' ') || '—');
+
+        let statusText = 'Past';
+        const statusFields = [a.status, a.appointmentStatus, a.state, a.stage, a.progress]
+          .map(s => (s ? String(s).trim().toLowerCase() : ''));
+        if (statusFields.some(s => /(cancel)/.test(s))) statusText = 'Cancelled';
+        else if (statusFields.some(s => /(no-?show)/.test(s))) statusText = 'No-show';
+        else if (isAppointmentDone(a)) statusText = 'Completed';
+
+        const specialty = a.specialty || a.department || a.reason || 'Consultation';
+        const clinic = a.clinicName || a.clinic || a.facility || a.location || '';
+        const clinicAddress = a.clinicAddress || a.address || '';
+        // Per-doctor diagnosis
+        const docId = a.doctorId || a.doctorUID || a.doctorUid || '';
+        let diagTitle = a.diagnosisTitle || 'Diagnosis';
+        let diagnosis = a.diagnosis || a.diagnosisDescription || a.icd10 || a.icdCode || '';
+        try {
+          const rel = patientDiagnoses.filter(d => (d.doctorId || d.doctorUID || d.doctorUid || '') === docId);
+          if (rel.length) {
+            const getMs = (x)=>{ try{ const t=x?.createdAt; if(!t) return 0; return t.toDate? t.toDate().getTime(): new Date(t).getTime(); } catch { return 0; } };
+            const latest = [...rel].sort((a,b)=> getMs(b)-getMs(a))[0];
+            diagTitle = latest?.title || latest?.name || diagTitle;
+            diagnosis = latest?.text || latest?.description || latest?.icd10 || latest?.icdCode || diagnosis;
+          }
+        } catch {}
+        const avatar = a.doctorPhoto || a.photoUrl || a.imageUrl || 'logo.png';
+        const clinicLogo = a.clinicLogo || 'logo.png';
+        const timeText = startDate ? startDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+        const dateText = startDate ? startDate.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' }) : (a.date || '');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan=\"3\">
+            <div class=\"card shadow-sm border-0 rounded-4 mb-3 past-card\"
+                 data-doctor=\"${doctor}\"
+                 data-specialty=\"${specialty}\"
+                 data-time=\"${timeText}\"
+                 data-date=\"${dateText}\"
+                 data-avatar=\"${avatar}\"
+                 data-clinic=\"${clinic}\"
+                 data-address=\"${clinicAddress}\"
+                 data-cliniclogo=\"${clinicLogo}\"
+                 data-diagtitle=\"${diagTitle}\"
+                 data-doctorid=\"${docId || ''}\"
+                 data-diagnosis=\"${diagnosis}\"> 
+              <div class=\"card-body d-flex align-items-start\"> 
+                <div class=\"rounded-circle d-flex align-items-center justify-content-center me-3\" style=\"width:42px;height:42px;background:#e6f7fb;\"> 
+                  <i class=\"bi bi-camera-video text-info\"></i> 
+                </div> 
+                <div class=\"w-100\"> 
+                  <h6 class=\"mb-1\">${specialty}</h6> 
+                  <div class=\"text-muted small\">${datetime}</div> 
+                  <div class=\"small\">${doctor}</div> 
+                  ${clinic ? `<div class=\\\"small text-muted\\\">${clinic}</div>` : ''} 
+                  <div class=\"mt-2\"> 
+                    <button type=\"button\" class=\"btn btn-outline-primary btn-sm rounded-pill view-record-btn\">View Record</button> 
+                  </div>
+                </div> 
+              </div> 
+            </div> 
+          </td>
+        `;
+        appointmentPastBody.appendChild(row);
+      });
+      // Enhance past avatars after render
+      (async function(){ try{ const cards = appointmentPastBody.querySelectorAll('.past-card[data-doctorid]'); for (const c of cards){ const uid=c.getAttribute('data-doctorid')||''; if(!uid) continue; const url = await fetchDoctorPhotoUrl(uid); if (url) c.setAttribute('data-avatar', url); } }catch(_){ } })();
+    };
+
+    await renderUpcoming(upcomingDocs);
+    renderPast(pastDocs);
+  }
+
+  // Open modal and render appointments
+  appointmentBtn.addEventListener('click', async () => {
+    await loadAndRenderAppointments();
+    appointmentModal.show();
+  });
+
+  // Initialize badge (user + allowed only)
+  (function initBadge() {
+    const unread = userNotifications().filter(n => !n.read).length;
+    if (unread > 0) {
+      notificationBadge.textContent = String(unread);
+      notificationBadge.classList.remove('d-none');
+    } else {
+      notificationBadge.classList.add('d-none');
+    }
+  })();
+</script>
+
+
+  <main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">About</h1>
+              <p class="mb-0">
+              
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="index.html">Home</a></li>
+            <li class="current">About</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- About Section -->
+    <section id="about" class="about section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="intro-section">
+          <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up" data-aos-delay="100">
+              <h1>TECHMED</h1>
+              <p class="lead">TechMed is an innovative online consultation platform designed specifically for endocrinology. 
+                It integrates advanced machine learning to support doctors in providing accurate, efficient, and patient-centered care.  
+                </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="image-stats-section">
+          <div class="row align-items-center">
+            <div class="col-lg-7" data-aos="fade-right" data-aos-delay="200">
+              <div class="image-gallery">
+                <div class="main-image-container">
+                  <img src="assets/img/health/facilities-3.webp" class="img-fluid main-image" alt="Medical facility">
+                </div>
+                <div class="secondary-images">
+                  <img src="assets/img/health/staff-12.webp" class="img-fluid secondary-image" alt="Medical team" data-aos="zoom-in" data-aos-delay="400">
+                  <img src="assets/img/health/consultation-4.webp" class="img-fluid secondary-image" alt="Patient consultation" data-aos="zoom-in" data-aos-delay="500">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-5" data-aos="fade-left" data-aos-delay="300">
+              <div class="stats-content">
+                <h3>Trusted Healthcare Provider</h3>
+                <p>Balancing your hormones starts with better access to care. 
+                  TechMed empowers you to take control of your endocrine health through convenient, expert-guided online consultations.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mission-section" data-aos="fade-up" data-aos-delay="400">
+          <div class="row">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+              <div class="mission-item">
+                <div class="mission-icon">
+                  <i class="bi bi-heart"></i>
+                </div>
+                <h4>Our Mission</h4>
+                <p>Our mission is to provide accessible, reliable, and expert endocrinology consultations for individuals seeking better hormonal health.
+                  We aim to make specialized care more convenient through technology helping patients connect with endocrinologists anytime, anywhere for effective diagnosis, management, and support.
+                </p>
+              </div>
+            </div>
+
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+              <div class="mission-item">
+                <div class="mission-icon">
+                  <i class="bi bi-eye"></i>
+                </div>
+                <h4>Our Vision</h4>
+                <p>Our vision is to become a trusted digital platform that transforms endocrine care through innovation, compassion, and continuous support. 
+                  We strive to empower individuals to achieve hormonal balance and live healthier, more confident lives with the help of professional online consultations.</p>
+              </p>
+              </div>
+            </div>
+
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+              <div class="mission-item">
+                <div class="mission-icon">
+                  <i class="bi bi-star"></i>
+                </div>
+                <h4>Our Promise</h4>
+                <p>At TechMed, we promise to make quality endocrine care accessible, reliable, and compassionate. 
+                  Through innovative technology and expert medical guidance, we strive to provide efficient consultations that empower individuals to take control of their hormonal health. 
+                  Our commitment is to deliver patient-centered care with trust, empathy, and continuous improvement anytime, anywhere.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+
+    </section><!-- /About Section -->
+
+    <script type="module">
+
+
+const headerUserName = document.getElementById("headerUserName");
+const logoutLink = document.getElementById("logoutLink");
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+
+  let displayName = user.displayName || user.email || "Account";
+  try {
+    const snap = await getDoc(doc(fs, "users", user.uid));
+    if (snap.exists()) {
+      const u = snap.data();
+      const name = `${u.firstName || ""} ${u.lastName || ""}`.trim();
+      if (name) displayName = name;
+    }
+  } catch {}
+
+  if (headerUserName) headerUserName.textContent = displayName;
+
+  if (logoutLink) {
+    logoutLink.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await signOut(auth);
+      window.location.replace("login.html");
+    });
+  }
+});
+</script>
+
+  </main>
+
+  <footer id="footer" class="footer position-relative">
+    <!-- footer content unchanged -->
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong>TECHMED</strong>&nbsp;<span>All Rights Reserved</span></p>
+      <div class="credits">Designed by <a href="">Lester Ramirez</a></div>
+    </div>
+  </footer>
+  
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <div id="preloader"></div>
+  
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  
+  <!-- Swiper JS (single source) -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  
+  <!-- Flatpickr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
+  <!-- Firebase compat + init -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="./firebase-init.js"></script>
+  
+  <!-- Directory logic (loads doctors into slider + directory and wires schedule) -->
+  <script src="./patient-directory.js"></script>
+  
+  <!-- Appointment submission logic -->
+  <script src="./appointment.js"></script>
+  
+  <!-- Auth header + logout + prefill only (no duplicate submit) -->
+  <script>
+    (function () {
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+  
+      // Header auth + logout + prefill patient info
+      auth.onAuthStateChanged(async (user) => {
+        const nameEl = document.getElementById('headerUserName');
+        const logoutEl = document.getElementById('logoutLink');
+  
+        if (!user) { window.location.replace('login.html'); return; }
+  
+        // Read patient data
+        let fullName = user.displayName || '';
+        let phone = '';
+        try {
+          const uDoc = await db.collection('users').doc(user.uid).get();
+          if (uDoc.exists) {
+            const u = uDoc.data();
+            const fn = (u.firstName || '').trim();
+            const ln = (u.lastName || '').trim();
+            fullName = (fn || ln) ? `${fn} ${ln}`.trim() : (user.displayName || user.email || 'Account');
+            phone = u.phone || '';
+          }
+        } catch {}
+  
+        if (nameEl) nameEl.textContent = fullName || user.email || 'Account';
+  
+        // Prefill appointment form
+        const form = document.getElementById('appointment-form');
+        if (form) {
+          const nameInput = form.querySelector('input[name="name"]');
+          const emailInput = form.querySelector('input[name="email"]');
+          const phoneInput = form.querySelector('input[name="phone"]');
+          if (nameInput && fullName) nameInput.value = fullName;
+          if (emailInput && user.email) emailInput.value = user.email;
+          if (phoneInput && phone) phoneInput.value = phone;
+        }
+  
+        if (logoutEl) {
+          logoutEl.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await auth.signOut();
+            window.location.replace('login.html');
+          });
+        }
+      });
+    })();
+  </script>
+  
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+  </body>
+  </html>

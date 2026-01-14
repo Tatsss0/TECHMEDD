@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Action</title>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const apiKey = "AIzaSyCwCjmcUTTz8S34svqAxmhHmhO8QNnz5t8"; // 🔑 Replace with your actual Firebase API key
+
+      // Parse form data from query string (POST simulation via redirect)
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get("email") || "";
+      const password = params.get("password") || "";
+
+      if (!email || !password) {
+        localStorage.setItem("message", "Email and password are required.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              password,
+              returnSecureToken: true,
+            }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (result.idToken) {
+          // Successful login
+          localStorage.setItem("user", JSON.stringify({
+            email: result.email,
+            localId: result.localId,
+            idToken: result.idToken
+          }));
+          window.location.href = "techmed.php"; // redirect after login
+        } else {
+          // Error handling like PHP version
+          let error = result.error?.message || "Login failed.";
+          if (error === "EMAIL_NOT_FOUND") error = "Email not found.";
+          else if (error === "INVALID_PASSWORD") error = "Incorrect password.";
+          else if (error === "USER_DISABLED") error = "User account is disabled.";
+
+          localStorage.setItem("message", error);
+          window.location.href = "login.html";
+        }
+      } catch (err) {
+        console.error("Login request failed:", err);
+        localStorage.setItem("message", "Network error. Please try again.");
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</head>
+<body>
+  <p>Processing login...</p>
+</body>
+</html>
